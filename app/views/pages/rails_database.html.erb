@@ -1,0 +1,9 @@
+<h1>Rails Database</h1>
+<p>
+  <pre>bundle exec rake db:reset</pre>
+  This clears the database and reruns migrate (I think).
+</p>
+<p>
+If you do a db:reset, you must also do <pre>bundle exec rake db:test:prepare</pre>
+I believe this is because the rspec tests use a completely separate "test" db for their tests.
+</p>

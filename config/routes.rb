@@ -1,4 +1,9 @@
 JssNotes::Application.routes.draw do
+
+  root to: 'pages#page'
+  match 'page/:name', via: :get, to: 'pages#page'
+
+
   # The priority is based upon order of creation:
   # first created -> highest priority.
 

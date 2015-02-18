@@ -1,0 +1,52 @@
+<h1>Database Connection In Ruby</h1>
+<ul>
+  <li><%= link_to 'Getting Started With MySql And Ruby On Rails', "http://richonrails.com/articles/getting-started-with-mysql-and-ruby-on-rails", target: '_blank'%></li>
+</ul>
+<h3>Usage Outside of Rails</h3>
+<p>
+  You don't need to use Rails.  You can also do queries at the irb prompt or in Ruby scripts.  First, connect to the database:
+</p>
+
+<pre>
+require 'mysql2'
+client = Mysql2::Client.new(host: "mydomain.com", username: "myuser", password: "mypassword", database: "ecommerce")
+</pre>
+
+
+<p>
+  Now that you are connected, you can do basic queries:
+</p>
+<pre>
+results = client.query("SELECT * FROM products WHERE id = 54")
+</pre>
+
+<p>
+  You can also escape strings:
+</p>
+<pre>
+client.escape("O'Donnel") # returns "O\\'Donnel"
+</pre>
+
+<p>
+  You can iterate over the results easily since they are hashes:
+</p>
+
+<pre>
+results = client.query("SELECT * FROM products")
+
+results.each do |result|
+  puts result["name"]
+end
+</pre>
+
+<p>
+  Finally, you can get the headers using <code>results.fields</code>:
+</p>
+<pre>
+results = client.query("SELECT * FROM products")
+
+results.fields # returns an array with the field names ["id", "name", "weight", "price",...]
+</pre>
+
+<p>
+

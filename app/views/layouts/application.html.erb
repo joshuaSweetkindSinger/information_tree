@@ -7,8 +7,12 @@
   <%= csrf_meta_tags %>
 </head>
 <body>
-
-<%= yield %>
-
+  <div class="app-header">
+    <a href=<%=root_path%>>JSS Notes</a>
+  </div>
+  <div class="container">
+  <%= render 'shared/flash_messages' %>
+  <%= yield %>
+  </div>
 </body>
 </html>
