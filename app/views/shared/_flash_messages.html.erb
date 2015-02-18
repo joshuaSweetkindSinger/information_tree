@@ -1,0 +1,14 @@
+<!-- Render all messages in the rails flash -->
+<% flash.each do |key, value| %>
+  <% if value.is_a?(Array) %>
+    <%= content_tag(:div, class: "alert alert-#{key}") do %>
+      <% value.each do |msg| %>
+        <p><%= msg %></p>
+      <% end %>
+    <% end %>
+  <% elsif value %>
+    <%= content_tag(:div, class: "alert alert-#{key}") do %>
+      <p><%= value %></p>
+    <% end %>
+  <% end %>
+<% end %>
