@@ -1,0 +1,35 @@
+<h1>Rails Migrations</h1>
+<div class="rule"></div>
+<h2>Overview</h2>
+<p>
+  A <em>migration</em> is the way that Rails modifies the database schema. By specifying
+  modifications to the db inside of rails, you allow rails to keep track of all the changes
+  to the schema. This is advantageous because rails knows how to roll back a particular migration
+  or set of migrations, and how to rerun a sequence of migrations to bring the db schema up to date
+  with the latest set of changes.
+</p>
+<p>
+  Further, modifications to the db are modification to your app. Using migrations keeps them
+  inside the app and inside your version control system.
+  If you were instead to effect db changes at, say, a MySql command line, then there would
+  be no record of the changes.
+</p>
+<p>
+  Rails defines a class <em>ActiveRecord::Migration</em> for specifying db modifications,
+  and this class has methods that are relevant to changing the db, methods such as: <code>create_table</code>,
+  <code>add_index</code>, <code>remove_column</code>, and so on.
+</p>
+<p>
+  You run a migration using the <em>rake</em> command. For example:
+  <pre>
+    >rake db:migrate
+  </pre>
+  would update the db to conform to the current set of migrations.
+</p>
+
+<ul>
+  <li><%= link_to 'Rails Guides Documentation', 'http://guides.rubyonrails.org/active_record_migrations.html',  target: '_blank'%></li>
+  <li><%= link_to 'Migration methods', 'http://apidock.com/rails/ActiveRecord/ConnectionAdapters/SchemaStatements/',  target: '_blank'%></li>
+</ul>
+
+

@@ -11,8 +11,14 @@
     <a href=<%=root_path%>>JSS Notes</a>
   </div>
   <div class="container">
-  <%= render 'shared/flash_messages' %>
-  <%= yield %>
+    <%= render 'shared/flash_messages' %>
+    <div class="row">
+      <div class = "span10">
+        <%= yield %>
+      </div>
+      <div class = "span2">
+      </div>
+    </div>
   </div>
 </body>
 </html>
