@@ -1,6 +1,15 @@
 <h1>Rails</h1>
+<div class='ruler'></div>
 <ul>
+  <li><%= link_to 'Rails Magic', 'rails_magic'%></li>
   <li><%= link_to 'General Guides', 'rails_guides'%></li>
+  <li>
+    <%=
+        link_to 'ActionController',
+                'http://guides.rubyonrails.org/action_controller_overview.html',
+                target: '_blank'
+    %>
+  </li>
   <li><%= link_to 'ActiveRecord', 'active_record'%></li>
   <li><%= link_to 'RVM', 'rvm'%></li>
   <li><%= link_to 'Infrastructure', 'rails_infrastructure'%></li>
@@ -9,4 +18,11 @@
   <li><%= link_to 'Rails Command Line', 'rails_command_line'%></li>
   <li><%= link_to 'Upload a file to server', 'http://guides.rubyonrails.org/form_helpers.html#what-gets-uploaded', target: '_blank'%></li>
   <li><%= link_to 'Migrations', 'rails_migrations'%></li>
+  <li>
+    <%=
+        link_to 'Security',
+                'rails_security'
+    %>
+  </li>
 </ul>
+

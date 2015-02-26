@@ -1,0 +1,28 @@
+<h2>Rails Controller Params</h2>
+<div class='rule'></div>
+<article>
+  <p>
+    When the client makes a request to the server, it can encode parameters in the URL in two
+    different ways: as key/value pairs after a question mark, and as wildcard-matched values.
+  Consider the example below:
+    <pre>
+      http://example.com/actions/1/edit?foo=red&bar=blue
+    </pre>
+  This URL encodes the parameters <code>foo='red'</code> and <code>bar='blue'</code> as
+  key/value pairs in the URL. These are available
+  to the controller that responds to the request via the controller's params() method, which
+  returns a hash of key/value pairs. So, in this case, the hash would contain a :foo key with
+  value "red" and a :bar key with value "blue".
+  </p>
+  <p>
+    Additionally, if the pathname above is mapped to a controller in the <code>routes.rb</code> as
+    <code>match 'actions/:id/edit', via: :get, to: 'actions#edit'</code>, then the params() hash
+    will also contain an :id key, whose value in this case would be the number 1.
+  </p>
+  <p>
+    Finally, it is also possible to send key/value params to the controller via POST data. All
+    of the POST variables will be available in the params() hash as key/value pairs, along with
+    any URL-encoded parameters.
+  </p>
+</article>
+

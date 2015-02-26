@@ -1,0 +1,53 @@
+<p>
+  Consider the case in which a class A declares a belongs_to association with class B.
+  Suppose an instance of A is then sent a <code>save()</code> message, and suppose that
+  A contains a pointer to an unsaved instance of of B. In this case, the instance of B
+  is also saved. If B fails to save due to validation problems,
+  this does not abort the saving of the instance of A.
+</p><p>
+  However, if the saving of B results in an error being thrown, for example, because it
+  engenders a duplicate-record error in the db, then this will abort the saving of the instance A.
+</p><p>
+  The sequence of events for saving A with a belongs_to association to B seems to me to be
+  as follows:
+  <ul>
+    <li>Check for existence of associations on A and save them first. In this case, an
+    association instance B is found, so we attempt to validate and save B before we
+    attempt to save A.</li>
+    <li>
+      Assuming no error is raised in the attempt to save B, then, regardless of whether B
+      was actually saved or not, we attempt to save A.
+    </li>
+    <li>In attempting to save A, we first run any validations on A. If any of these
+    fail, then A is not saved. A validation method signals failure by adding
+      to A's errors. The return value of the validation method does not matter.
+      <pre>
+        class Validator < ActiveModel::Validator
+          def validate (session)
+            validate_user(session)
+          end
+
+          # It is an error if the session does not specify a valid user.
+          def validate_user (session)
+            # Session does not have an associated user object. This is a programmer error.
+            if !session.user
+              return session.errors.add(:user, 'Session must have an associated user object')
+            end
+
+            # Session does not specify a recognized user.
+            unless session.resolved_user
+              session.errors.add(:user, "Session must specify a valid user name")
+            else
+              session.user = session.resolved_user
+            end
+          end
+        end
+      </pre>
+    </li>
+    <li>
+      If all of the validations pass, then we first run any before_save methods on A,
+      then we save A, then we run any after_save methods on A. The before_save methods must
+      all return non-false; otherwise, the save will be abandoned.
+    </li>
+  </ul>
+</p>

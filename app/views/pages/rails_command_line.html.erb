@@ -11,30 +11,43 @@
 </article>
 
 <article>
-  <h2>To start the rails server:</h2>
+  <h2>Start the rails server:</h2>
   <pre>
   rails server
   </pre>
 </article>
 
 <article>
-  <h2>To start the rails server on a different port:</h2>
+  <h2>Start the rails server on a different port:</h2>
   <pre>
   rails server --port=3001
   </pre>
 </article>
 
 <article>
-  <h2>How to generate a scaffold</h2>
-  <li><%= link_to 'rubyyonrails.org/command_line.html', 'http://guides.rubyonrails.org/command_line.html'%></li>
+  <h2>Generate a scaffold</h2>
+  <li>
+    <%=
+      link_to 'rubyyonrails.org/command_line.html',
+              'http://guides.rubyonrails.org/command_line.html',
+              target: '_blank'
+    %>
+  </li>
   <pre>
   rails generate scaffold User name:string:index address:string
   </pre>
 </article>
 
+
 <article>
-  <h2>How to generate a migration</h2>
-  <li><%= link_to 'Rails Guides Documentation', 'http://guides.rubyonrails.org/active_record_migrations.html#creating-a-standalone-migration', target: '_blank'%></li>
+  <h2>Generate a migration</h2>
+  <li>
+    <%=
+      link_to 'Rails Guides Documentation',
+              'http://guides.rubyonrails.org/active_record_migrations.html#creating-a-standalone-migration',
+              target: '_blank'
+     %>
+  </li>
   <pre>
     rails generate migration AddPartNumberToProducts
   </pre>
