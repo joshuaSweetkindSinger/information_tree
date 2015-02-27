@@ -1,0 +1,68 @@
+<h1>Control Flow For Page Rendering</h1>
+<div class='rule'></div>
+<h2>Routing</h2>
+<p>When the rails server receives a request for a new url, the first thing it does is look
+  to see whether the url has a route in the file <code>routes.rb</code>. This file maps
+  urls to <em>(action, controller)</em> pairs. For example, by entering this line into the <code>routes.rb</code>file:
+
+  <pre>
+    match '/sessions/login', via: :get, to: 'sessions#do_login', as: :login
+  </pre>
+
+  we tell rails to that whenever it sees a request for the url <code>http://diet_track.com/sessions/login</code>
+  with the http GET verb, then it should handle it by calling the method
+  <code>do_login</code> on the controller named <code>SessionsController</code>, and
+  to automatically define a helper method called <code>login_path()</code> that returns the
+  url path associated with this action, which, in this example, is <code>/sessions/login</code>
+</p>
+
+<h2>Controller Action Dispatch</h2>
+<p>
+  After the request has been routed to a <em>(controller, action)</em> pair, an instance of the
+  relevant controller is instantiated and it is sent the relevant message. Continuing the
+  example above, the rails server will create an instance of <code>SessionsController</code> and call its
+  <code>do_login</code> method. Available to that method will be the
+  <code>params()</code>method. This returns a hash table consisting of all
+  the relevant parameters specified in the request. These include GET params, specified after the
+  question mark in the URL, POST params, and routing params that may have been wildcard matched
+  in the process of matching the URL to a route. See <%= link_to 'rails_controller_params'%>
+  for more detail.
+</p>
+<p>
+  This controller method is responsible for preparing any data that is necessary to render the page,
+  and then handing off control to a <em>view</em> to do the actual page rendering. The principle
+  way in which the controller hands control to a view is by invoking the <code>render</code> method and passing it a short URL.
+  For example, <code>render 'users/index'</code> would look for a file called 'index.html.erb'
+  in the directory '.../views/users'.
+</p>
+<p>
+
+  If the controller does not call <code>render</code> (or <code>redirect</code>), then by default
+  the rails server will still try to render a page. It will look for the page with the same
+  name as the action, under a directory whose named is based on the controller. Continuing our
+  example above, if the method <code>do_login</code> did not explicitly call <code>render</code>
+  (or <code>redirect</code>), then the rails framework would try to serve the page
+  <code>.../views/sessions/do_login.html.erb</code>
+</p>
+<p>
+  It is illegal to call <code>render</code> (or <code>redirect</code>) twice in the process
+  of handling a single request. Therefore, usually it correct to return after invoking one of these
+  two methods.
+</p>
+<p>
+  Note that calling <code>render</code> (or <code>redirect</code>) does not implicitly invoke a <code>return</code>
+  from the current method or in any way alter control flow. You have to issue an explicit
+  <code>return</code> yourself if that is what is required.
+</p>
+<p>
+  However, do note that if the controller's method invokes render explicitly within its body,
+  then the rails framework notices this and does not attempt to render the default view.
+</p>
+<h2>Views</h2>
+<p>A view is an <code>.html.erb</code> file living under <code>.../views</code>
+  in the rails directory structure. The <code>.erb</code> file gets invoked when a controller calls
+  <code>render</code> with the view as the target. In that case, the <code>.erb</code> file
+  is processed, resulting in a sequence of (hopefully valid) html text to be sent back
+  to the client.
+</p>
+
