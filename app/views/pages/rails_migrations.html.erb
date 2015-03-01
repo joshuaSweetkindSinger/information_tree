@@ -26,26 +26,34 @@
   </pre>
   would update the db to conform to the current set of migrations.
 </p>
-
+<%= render "rails_generate_a_migration" %>
+<% content_for :side_nav do %>
 <ul>
-  <li><%= link_to 'Rails Guides Documentation', 'http://guides.rubyonrails.org/active_record_migrations.html',  target: '_blank'%></li>
-  <li>
-    <%=
-        link_to 'Available methods for migration objects',
-                'http://apidock.com/rails/ActiveRecord/ConnectionAdapters/SchemaStatements/',
-                target:
-                  '_blank'
+  <li class='side-nav'>
+    <%= link_to 'Rails Guides Documentation',
+                'http://guides.rubyonrails.org/active_record_migrations.html',
+                class:'side-nav',
+                target: '_blank'
     %>
   </li>
-  <li>
+  <li class='side-nav'>
+    <%=
+        link_to 'Methods for migration objects',
+                'http://apidock.com/rails/ActiveRecord/ConnectionAdapters/SchemaStatements/',
+                class:'side-nav',
+                target:'_blank'
+    %>
+  </li>
+  <li class='side-nav'>
     <%=
         link_to 'Add an index to a table',
                 'http://apidock.com/rails/ActiveRecord/ConnectionAdapters/SchemaStatements/add_index',
-                target:
-                  '_blank'
+                class: 'side-nav',
+                target: '_blank'
     %>
   </li>
 </ul>
+<% end %>
 
 
 

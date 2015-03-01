@@ -4,6 +4,16 @@
   background:blue;
   border:1px solid black;
   padding:10px;
+  color:white;
+}
+
+a.app-header {
+  border:none;
+
+  &:visited {
+    color:white;
+    hover:white;
+  }
 }
 
 body, p, ul, li {
@@ -22,6 +32,27 @@ h2 {
 
 h1 {
   margin-top:.5em;
+}
+
+.main {
+  border-right: 1px solid black;
+  box-sizing: border-box;
+}
+
+.side-nav {
+  background:white;
+  color:blue;
+  font-size:10pt;
+  line-height:2em;
+}
+
+a.side-nav {
+  &:visited {
+    color:blue;
+  }
+}
+
+li.side-nav {
 }
 
 

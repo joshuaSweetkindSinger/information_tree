@@ -8,15 +8,16 @@
 </head>
 <body>
   <div class="app-header">
-    <a href=<%=root_path%>>JSS Notes</a>
+    <a class="app-header" href=<%=root_path%>>JSS Notes</a>
   </div>
   <div class="container">
     <%= render 'shared/flash_messages' %>
     <div class="row">
-      <div class = "span10">
+      <div class = "span9 main">
         <%= yield %>
       </div>
-      <div class = "span2">
+      <div class = "span3 side-nav">
+        <%= yield :side_nav %>
       </div>
     </div>
   </div>
