@@ -1,7 +1,7 @@
 JssNotes::Application.routes.draw do
 
-  root to: 'pages#page'
-  match 'page/:name', via: :get, to: 'pages#page'
+  root to: 'pages#index'
+  match '/page(/:area(/:topic))', via: :get, to: 'pages#page', defaults: {topic: 'index'}
 
 
   # The priority is based upon order of creation:

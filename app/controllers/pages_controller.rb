@@ -1,6 +1,8 @@
 class PagesController < ApplicationController
+  def index
+    render "pages/index"
+  end
   def page
-    name = params[:name] || 'home'
-    render "pages/#{name}"
+    render "pages/#{params[:area]}/#{params[:topic]}"
   end
 end

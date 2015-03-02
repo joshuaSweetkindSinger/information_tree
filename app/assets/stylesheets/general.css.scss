@@ -17,6 +17,7 @@ a.app-header {
 }
 
 body, p, ul, li {
+  cursor:default;
   font-size:14pt;
   line-height:1.5em;
 }
@@ -37,6 +38,7 @@ h1 {
 .main {
   border-right: 1px solid black;
   box-sizing: border-box;
+  padding-right:20px;
 }
 
 .side-nav {
@@ -53,6 +55,23 @@ a.side-nav {
 }
 
 li.side-nav {
+}
+
+.collapsed {
+  &:hover {
+    cursor:pointer;
+  }
+  &::after {
+   content:" ...";
+  }
+  font-style:italic;
+}
+
+.expanded {
+  &:hover {
+    cursor:crosshair;
+  }
+  font-style:default;
 }
 
 

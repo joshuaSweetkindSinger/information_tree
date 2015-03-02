@@ -1,0 +1,117 @@
+<% content_for :side_nav do %>
+
+<% end %>
+
+
+<h1>Managing A Software Team</h1>
+<div class="rule"></div>
+<h2>Overview</h2>
+<p>
+  This page contains notes about how to manage a software team.
+</p>
+<ul>
+  <li>Teams</li>
+  <ul>
+    <li>Scrum Teams (4)</li>
+    <ul>
+      <li>Maintenance of Fuel and Apollo</li>
+      <li>Bug Fixing</li>
+      <li>Product Refactorization</li>
+      <li>Development of new products and features</li>
+      <ul>
+        <li>FUEL for partner cci, including handling of yen-to-dollar conversions</li>
+        <li>Self-serve version with more rigorous security for client Booyah</li>
+        <li>Expansion of geo-location functionality</li>
+        <li>Private Ad Marketplaces</li>
+      </ul>
+      <li>Consolidation of legacy products (admin and Apollo)</li>
+      <li>Tech Talks and general engineer knowledge enhancement</li>
+    </ul>
+    <li>UX Team</li>
+    <ul>
+      <li>UX Design of new features</li>
+      <li>Solicit User-feedback</li>
+    </ul>
+    <li>QA and Automation Team</li>
+    <ul>
+      <li>Manual Testing on staging and beta</li>
+      <li>Deployments</li>
+      <li>Automated testing and other jenkins automation</li>
+    </ul>
+  </ul>
+  <li>Individual Contribution</li>
+  <ul>
+    <li>Project Management and Jira Admin</li>
+    <li>Meta Analysis of bug root cause analysis</li>
+    <li>Velocity and Bug-rate tracking</li>
+    <li>Fostering Connective Processes among groups</li>
+    <li>Feedback on Design and UX</li>
+    <li>Expert User</li>
+    <li>Product Refactorization</li>
+    <li>Mentoring</li>
+    <li>Velocity and Bug-rate tracking</li>
+  </ul>
+  <li>Software Tools</li>
+  <ul>
+    <li>git</li>
+    <li>jenkins</li>
+    <li>cucumber</li>
+    <li>RubyMine</li>
+  </ul>
+  <li>Meetings</li>
+  <ul>
+    <li>Iteration planning</li>
+    <li>Sprint planning</li>
+    <li>Daily scrum meeting</li>
+    <li>PRD Review</li>
+    <li>Design Review</li>
+    <li>Senior Staff Meeting</li>
+  </ul>
+  <li>Bugs</li>
+  <ul>
+    <li>Process for reporting bugs</li>
+    <li>root cause analysis for bugs</li>
+    <li>blocker bug handling</li>
+    <li>Bug Testing</li>
+    <ul>
+      <li>test complicated permissions scenarios</li>
+      <li>be robust against bad user data</li>
+      <li>test for degenerate cases</li>
+      <li>test for direct url access, not through UI</li>
+      <li>QA: automated and manual</li>
+    </ul>
+  </ul>
+  <li>Peer Group Interactions</li>
+  <ul>
+    <li>Interact with Ops and Analytics</li>
+    <li>Interact with Product and Sales</li>
+    <li>Interact with Back-end Engineering</li>
+    <li>Interact with Recruiting</li>
+    <ul>
+      <li>Job ads</li>
+      <li>Online coding exam and code iterations</li>
+      <li>Onsite interviews</li>
+      <li>Hiring of contractors, interns, and full-timers</li>
+    </ul>
+    <li>Interact with Human Resources</li>
+  </ul>
+  <li>Deployment</li>
+  <ul>
+    <li>staging</li>
+    <li>beta</li>
+    <li>production</li>
+    <li>client-production</li>
+  </ul>
+  <p>
+      When software is first checked in, a suite of automated tests runs and must pass before it can actually be checked in to master.
+      When checked into master, it automatically gets deployed to staging. If beta is unlocked, then this gets deployed to beta as well.
+      If beta is locked, then this means that beta-testing is going on. This typically happens Monday through Wednesday inclusive.
+      If the beta version passes beta, then on Thursday morning it gets deployed to production and beta is then unlocked to receive
+      successive versions of staging.
+  </p>
+  <p>
+      So, assuming a successful deployment to production, once that happens Thursday morning, then it gets unlocked and, as each
+      developer checks in good code, that code is simultaneously deployed to staging and beta, which means that beta testers get
+      the raw untested code to bang on.
+  </p>
+</ul>

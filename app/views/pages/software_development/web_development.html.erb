@@ -1,0 +1,30 @@
+<% content_for :side_nav do %>
+  <ul>
+    <li class="side-nav">
+      <%=
+          link_to 'Web Development Overview',
+                  'http://typicalprogrammer.com/the-things-you-need-to-know-to-do-web-development/',
+                  class:'side-nav',
+                  target: '_blank'
+      %>
+    </li>
+    <li class="side-nav">
+      <%=
+          link_to 'JQuery',
+                  'http://learn.jquery.com/',
+                  class:'side-nav',
+                  target:'_blank'
+      %>
+    </li>
+    <li class="side-nav"><%= link_to 'Rails', 'rails', class:'side-nav'%></li>
+    <li class="side-nav"><%= link_to 'HTML', 'html_info', class:'side-nav'%></li>
+    <li class="side-nav"><%= link_to 'Style Sheets And Layout', 'style_sheets_and_layout', class:'side-nav'%></li>
+    <li class="side-nav"><%= link_to 'Web App Security', 'web_app_security', class:'side-nav'%></li>
+  </ul>
+<% end %>
+
+
+<h1>Web Development</h1>
+<div class='rule'></div>
+<h2>Overview</h2>
+This area covers the broad subject of web development.
