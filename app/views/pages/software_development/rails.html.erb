@@ -1,25 +1,27 @@
 <h1>Rails</h1>
 <div class='ruler'></div>
 <ul>
+  <li>Core Guides</li>
+  <ul>
+    <li>
+      <%=
+          link_to 'ActionController',
+                  'http://guides.rubyonrails.org/action_controller_overview.html',
+                  target: '_blank'
+      %>
+    </li>
+    <li>
+      <%=
+          link_to 'ActionView',
+                  'http://guides.rubyonrails.org/action_view_overview.html',
+                  target: '_blank'
+      %>
+    </li>
+    <li><%= link_to 'ActiveRecord', 'active_record'%></li>
+  </ul>
   <li><%= link_to 'Rails Magic', 'rails_magic'%></li>
   <li><%= link_to 'General Guides', 'rails_guides'%></li>
-  <li>
-    <%=
-        link_to 'ActionController',
-                'http://guides.rubyonrails.org/action_controller_overview.html',
-                target: '_blank'
-    %>
-  </li>
-  <li>
-    <%=
-        link_to 'ActionView',
-                'http://guides.rubyonrails.org/action_view_overview.html',
-                target: '_blank'
-    %>
-  </li>
-
   <li><%= link_to 'api.rubyonrails.org', 'http://api.rubyonrails.org/',  target: '_blank'%></li>
-  <li><%= link_to 'ActiveRecord', 'active_record'%></li>
   <li><%= link_to 'RVM', 'rvm'%></li>
   <li><%= link_to 'Infrastructure', 'rails_infrastructure'%></li>
   <li><%= link_to 'Debugging', 'rails_debugging'%></li>
