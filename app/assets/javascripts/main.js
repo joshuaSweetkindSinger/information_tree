@@ -1,15 +1,17 @@
+/*
+Functions supporting the expand/collapse interactivity of the outline formed
+by <ul> and <li> items.
+ */
 
-
-
+// Toplevel click function, assigned to <li> items in the ready() function at bottom.
 function toggleExpandCollapse(e) {
   e = $(this)
   if (e.hasClass("collapsed")) {
-    expandOneLevel(e)
+    expandLiOneLevel(e)
   } else {
-    collapseRecursive(e)
+    collapseLi(e)
   }
 }
-
 
 
 // Mark the specified <li> jquery element as having been expanded.
@@ -20,34 +22,21 @@ function markLiExpanded(li) {
   }
 }
 
-/*
-Reveal all the jquery items in content, which is a jquery result set.
-The reveal is done using show('slow') to make it animate nicely.
 
-Implementation note: if the content contains a <ul>, then all the items one level underneath
-the <ul> need to be revealed. We "show" them prematurely, keeping the <ul> itself hidden, so
-that the items don't actualy appear. This sets the stage
-so that when the <ul> is revealed, all its content underneath will already have been
-revealed. Perhaps this helps the animation to go more smoothly--not sure.
- */
-function reveal (content) {
-  // Expand ul items in content, but don't reveal ul itself yet. This is just prep.
-  content.filter('ul').each(function(index, ul) {
-    $(ul).children('li').show() // Restrict to <li> items. Don't show sub-<ul> items!
-  })
-
-  content.show('slow')
+// Mark the specified <li> jquery element as having been collapsed.
+function markLiCollapsed(li) {
+  li.removeClass('expanded')
+  if (listItemHasSubcontent(li)) {
+    li.addClass('collapsed')
+  }
 }
 
-
-function expandOneLevel (e) {
-  if (e.is('li')) {
-    reveal(listItemSubcontent(e))
-    markLiExpanded(e)
-
-  } else if (e.is('ul')) {
-    reveal(e)
-  }
+// This is a UI-level function. When a collapsed <li> is clicked on,
+// this function is called to animate its expansion, revealing the
+// content underneath it.
+function expandLiOneLevel (e) {
+  markLiExpanded(e)
+  listItemSubcontent(e).show('slow')
 }
 
 
@@ -55,50 +44,67 @@ function expandOneLevel (e) {
 function listItemHasSubcontent (li) {
   return listItemSubcontent(li).length != 0
 }
-// Returns true if this li has sub-content.
+
+
+// Return a jquery result set of all the subcontent of the specified list item.
 function listItemSubcontent (li) {
   return li.nextUntil('li')
 }
 
 
 /*
-Collapse the logical content level represented by e,
-and collapse all the sub-content as well.
+Recursively collapse all the content beneath e.
 
 If e is a <ul> item, then collapsing it simply means
-hiding it and collapsing all its children.
+collapsing all its children. This is a recursive pass-through that
+does nothing but propagate the collapse down to the children.
 
-If e is a list-item, then collapsing it means
-collapsing all of its subcontent and, if its subcontent is non-empty,
-marking it as collapsed by attaching the attribute class="collapsed"
-(and removing class="expanded"). Note that the list-item itself
+If e is an <li>, then collapsing it means
+collapsing and hiding all of its subcontent, and
+marking the list-item as collapsed if it has non-empty content.
+
+Note that the list-item itself
 is not hidden: it remains visible as a stand-in for
 the collapsed content beneath it.
 */
-function collapseRecursive (e) {
-  if (e.is('ul')) {
+function collapseTree (e) {
+  // Not an <li> -- just propagate the collapse to the next level.
+  if (!e.is('li')) {
     e.children().each(function (index, c) {
-      collapseRecursive($(c))
+      collapseTree($(c))
     })
-    e.hide()
-  } else if (e.is('li') && listItemHasSubcontent(e)) {
-    e.addClass('collapsed')
-    e.removeClass('expanded')
-    listItemSubcontent(e).each(function (index, c) {
-      $(c).hide('slow')
-      collapseRecursive($(c))
+    return
+  }
+
+  var content = listItemSubcontent(e)
+
+  if (content.length != 0) {
+    content.hide()
+    content.each(function (index, c) {
+      collapseTree($(c))
     })
+    markLiCollapsed(e)
   }
 }
 
 
-function initializeExpandCollapse () {
-  var topUl = $('ul').first()
-  collapseRecursive(topUl)
-  expandOneLevel(topUl)
+/*
+This is a ui-level function. When an expanded <li> item is clicked on,
+it slowly hides all the content beneath it.
+It also makes sure that all the content beneath the item is recursively collapsed.
+ */
+function collapseLi (li) {
+  listItemSubcontent(li).hide('slow', function () {collapseTree(li)})
 }
 
+// This performs a one-time initialization of the outline tree that
+// puts everything in a collapsed state with only the top-level revealed.
+function initializeExpandCollapse () {
+  var topUl = $('ul').first()
+  collapseTree(topUl)
+}
 
+// Initialize the page after the DOM is ready.
 $(document).ready(function() {
   console.log("Running document ready function")
   $("li").click(toggleExpandCollapse)
