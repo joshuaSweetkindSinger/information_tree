@@ -7,7 +7,7 @@
 <div class="rule"></div>
 <h2>Overview</h2>
 <p>
-  This page contains notes about how to manage a software team.
+  This page contains notes about how I managed the RF Web Applications Group.
 </p>
 <ul>
   <li>Teams</li>
@@ -18,6 +18,8 @@
       <li>Bug Fixing</li>
       <li>Product Refactorization</li>
       <li>Development of new products and features</li>
+      <li>Hackathons</li>
+      <li>Agile processes</li>
       <ul>
         <li>FUEL for partner cci, including handling of yen-to-dollar conversions</li>
         <li>Self-serve version with more rigorous security for client Booyah</li>
@@ -49,7 +51,6 @@
     <li>Expert User</li>
     <li>Product Refactorization</li>
     <li>Mentoring</li>
-    <li>Velocity and Bug-rate tracking</li>
   </ul>
   <li>Software Tools</li>
   <ul>
@@ -63,10 +64,24 @@
     <li>Iteration planning</li>
     <li>Sprint planning</li>
     <li>Daily scrum meeting</li>
+    <li>Group Meeting twice a month</li>
     <li>PRD Review</li>
     <li>Design Review</li>
     <li>Senior Staff Meeting</li>
-    <li>Weekly One on Ones with direct reports, and with CTO</li>
+    <li>Weekly One on Ones with direct reports, with CTO, and with peers</li>
+    <ul>
+      <li>With direct reports, discuss what went well or poorly that week.
+        Give praise, criticism,  and general feedback.
+      </li>
+      <li>
+        With CTO, discuss most critical projects, and prioritize possible new work. Examples
+      </li>
+      <ul>
+        <li>cci japanese partner, project</li>
+        <li>Relative priority of transitioning to Fuel from Apollo for ops and analytics, versus new feature development work on Fuel asked for by Product.</li>
+      </ul>
+      <li>With peers, discuss syncing issues for joint development.</li>
+    </ul>
   </ul>
   <li>Bugs</li>
   <ul>
@@ -115,4 +130,102 @@
       developer checks in good code, that code is simultaneously deployed to staging and beta, which means that beta testers get
       the raw untested code to bang on.
   </p>
+  <li>Chronic Problems</li>
+  <ul>
+    <li>Product would never prioritize work for Ops and Analytics, leading to increases in mistakes that impacted campaign performance, and ultimately led to client flight.</li>
+    <li>Back-end teams continued developing infrastructure, even making breaking changes, without consulting UI group on how to accommodate UI concerns</li>
+    <li>Product forebade salespeople from talking with engineering, breaking some needed communication lines</li>
+    <li>Product would never give engineering heads up on promises being made to clients for software functionality and delivery dates,
+        always causing a giant rush once dates were announced.</li>
+    <li>CTO and VP Engineering had toxic relationship</li>
+    <li>Product people gave short-shrift to agile process, failing to show up for daily standups,
+      substantially changing stories mid-sprint, or under-specifying the work to be done.</li>
+    <li>Developers did not do sufficient testing of their own work prior to check-in.</li>
+    <li>Product begrudged time spent on tech debt, leading to fragile code and an increase in bugs and development times.</li>
+  </ul>
+  <li>Overriding Goal</li>
+  <p>
+    The overriding goal of a software development team is to deliver quality software on time. The job of a team manager
+    is to configure the team so that it can do so optimally. There are some things that directly impact this goal, and still others
+    that support it.
+  </p>
+  <ul>
+    <li>Mission: what are we building, for whom, and why?</li>
+    <ul>
+      <li>Allow ops people to create and configure campaigns</li>
+      <li>Allow analytics people to analyze, monitor, and re-configure campaigns</li>
+      <li>Allow clients to do all of the above in a self-serve ui</li>
+    </ul>
+    <li>Quality Software</li>
+      <ul>
+        <li>Tech Talks On Craft</li>
+        <li>Automated Tests</li>
+        <li>Manual QA by developers and QA people</li>
+        <li>Time for paying down tech-debt</li>
+        <li>Design reconfiguration</li>
+        <li>Snappy UI</li>
+        <li>Happy Developers</li>
+        <ul>
+          <li>Developer ownership</li>
+          <li>Hackathons</li>
+          <li>One on Ones</li>
+        </ul>
+      </ul>
+    <li>Delivered On Time</li>
+    <ul>
+      <li>Hiring</li>
+      <p>I grew the team from 6 to 36 in two years.</p>
+      <ul>
+        <li>Laser maze code exam and iterations</li>
+      </ul>
+      <li>Agile development process</li>
+      <li>Bug-rate and velocity tracking</li>
+    </ul>
+  </ul>
+  <li>Things That Went Well</li>
+  <ul>
+    <li>Biggest contribution: organization within the group, creation of process touch-points between peer groups,
+      creation of shared data that could be used to communicate and monitor progress, resulting in
+      streamlined operations so that the trains could run on time.</li>
+    <ul>
+      <li>Deployment process</li>
+      <li>Bug-reporting, bug-handling</li>
+      <li>Deployment and QA</li>
+      <li>Velocity and bug-rate calculation</li>
+      <li>Feature process flow, from inception to release</li>
+      <ul>
+        <li>PRD Review, which also assigns story points</li>
+        <li>Design Review</li>
+        <li>Sprint Planning, which breaks down into tasks and assigns story points to each task</li>
+        <li>Sprint Starts</li>
+        <li>PM Reviews feature in staging</li>
+      </ul>
+      <li>Use of JIRA scrumboards for sprint- and iteration-planning, and to communicate status and estimate completion dates</li>
+    </ul>
+    <li>cci project required serious estimation and prioritization to deliver</li>
+    <li>Implementation of Agile</li>
+    <li>Promoting people into areas where their native abilities could shine</li>
+    <ul>
+      <li>Randy liked core infrastructure, paying down techdebt, refactoring, mentoring. Placed him in a position to lead a "craft guild" promoting best practices.
+        But he was too picky on code reviews and it impacted velocity, so allowed him to select others who were
+        good but not as bothered by code flaws.
+      </li>
+      <li>Rick was a great mentor, good a people management, and strong with coding skills. Made him senior manager.</li>
+      <li>Anna was also good with people and great at Emergency-Room operations. She was always best to handle an on-the-spot situation. Made her a manager.</li>
+    </ul>
+    <li>JIRA scrumboards for communicating and managing iteration status</li>
+    <li>Weekly one on ones with reports and peers</li>
+    <li>Bug root cause analysis.</li>
+  </ul>
+  <li>Contributions that might have been made but were not</li>
+  <ul>
+    <li>Significant redesigns of Fuel</li>
+    <ul>
+      <li>Navigation</li>
+      <li>Bird's-eye view</li>
+      <li>DRY-ness of UI from a user-standpoint. One clear way to do things,
+        not multiple, custom-built ways depending on entry-point into the UI
+      <li>Reduction of nested modal pop-ups and giant wizards. Allow incremental building of objects and their relationships.</li>
+    </ul>
+  </ul>
 </ul>
