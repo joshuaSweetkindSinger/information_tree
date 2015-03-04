@@ -13,6 +13,12 @@ function toggleExpandCollapse(e) {
 
 
 // Expand to one level only, beneath the specified li element.
+function markLiExpanded(e) {
+  e.removeClass('collapsed')
+  if (listItemHasSubcontent(e)) {
+    e.addClass('expanded')
+  }
+}
 function expandOneLevel (e) {
   if (e.is('li')) {
     var subcontent = listItemSubcontent(e)
@@ -21,11 +27,9 @@ function expandOneLevel (e) {
     subcontent.filter('ul').each(function(index, ul) {
       $(ul).children('li').show('slow')
     })
+    
+    markLiExpanded(e)
 
-    e.removeClass('collapsed')
-    if (listItemHasSubcontent(e)) {
-      e.addClass('expanded')
-    }
     subcontent.show('slow')
   } else if (e.is('ul')) {
     e.children('li').show()
