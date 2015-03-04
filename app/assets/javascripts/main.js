@@ -28,8 +28,8 @@ function expandOneLevel (e) {
     }
     subcontent.show('slow')
   } else if (e.is('ul')) {
-    e.show()
-    e.children('li').show('slow')
+    e.children('li').show()
+    e.show('slow')
   }
 }
 
