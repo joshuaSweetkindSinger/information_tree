@@ -12,41 +12,42 @@ function toggleExpandCollapse(e) {
 
 
 
-// Expand to one level only, beneath the specified li element.
-function markLiExpanded(e) {
-  e.removeClass('collapsed')
-  if (listItemHasSubcontent(e)) {
-    e.addClass('expanded')
+// Mark the specified <li> jquery element as having been expanded.
+function markLiExpanded(li) {
+  li.removeClass('collapsed')
+  if (listItemHasSubcontent(li)) {
+    li.addClass('expanded')
   }
 }
+
+/*
+Reveal all the jquery items in content, which is a jquery result set.
+The reveal is done using show('slow') to make it animate nicely.
+
+Implementation note: if the content contains a <ul>, then all the items one level underneath
+the <ul> need to be revealed. We "show" them prematurely, keeping the <ul> itself hidden, so
+that the items don't actualy appear. This sets the stage
+so that when the <ul> is revealed, all its content underneath will already have been
+revealed. Perhaps this helps the animation to go more smoothly--not sure.
+ */
+function reveal (content) {
+  // Expand ul items in content, but don't reveal ul itself yet. This is just prep.
+  content.filter('ul').each(function(index, ul) {
+    $(ul).children('li').show() // Restrict to <li> items. Don't show sub-<ul> items!
+  })
+
+  content.show('slow')
+}
+
+
 function expandOneLevel (e) {
   if (e.is('li')) {
-    var subcontent = listItemSubcontent(e)
-
-    // Expand ul items in subcontent
-    subcontent.filter('ul').each(function(index, ul) {
-      $(ul).children('li').show('slow')
-    })
-    
+    reveal(listItemSubcontent(e))
     markLiExpanded(e)
 
-    subcontent.show('slow')
   } else if (e.is('ul')) {
-    e.children('li').show()
-    e.show('slow')
+    reveal(e)
   }
-}
-
-function collapseLi (e) {
-  var siblings = e.nextUntil('li')
-
-  // Child has internal content. Reflect the collapsed state.
-  if (siblings.length != 0) {
-    e.addClass('collapsed')
-    e.removeClass('expanded')
-  }
-
-  siblings.hide('slow') // Hide all siblings
 }
 
 
