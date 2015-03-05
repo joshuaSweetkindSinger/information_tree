@@ -1,23 +1,107 @@
-<h1>Rails</h1>
-<div class='ruler'></div>
+<li>Rails</li>
 <ul>
   <li>Core Guides</li>
   <ul>
-    <li>
-      <%=
-          link_to 'ActionController',
-                  'http://guides.rubyonrails.org/action_controller_overview.html',
-                  target: '_blank'
-      %>
-    </li>
-    <li>
-      <%=
-          link_to 'ActionView',
-                  'http://guides.rubyonrails.org/action_view_overview.html',
-                  target: '_blank'
-      %>
-    </li>
-    <li><%= link_to 'ActiveRecord', 'active_record'%></li>
+    <li>Model</li>
+    <ul>
+      <li><%= link_to 'ActiveRecord', 'active_record'%></li>
+      <li>
+        <%= link_to 'Basics',
+                    'http://guides.rubyonrails.org/active_record_basics.html',
+                    target: '_blank'
+        %>
+      </li>
+      <li>
+        <%= link_to 'Associations',
+                    'http://edgeguides.rubyonrails.org/association_basics.html',
+                    target: '_blank'%>
+      </li>
+      <li>
+        <%= link_to 'Validations',
+                    'http://guides.rubyonrails.org/active_record_validations.html',
+                    target: '_blank'
+        %>
+        <ul>
+          <li>
+            <%=
+                link_to 'Custom Validators',
+                        'http://www.rails-dev.com/custom-validators-in-ruby-on-rails-4',
+                        target: '_blank'
+            %>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <%= link_to 'Callbacks',
+                    'http://guides.rubyonrails.org/active_record_callbacks.html',
+                    target: '_blank'
+        %>
+      </li>
+      <li>
+        <%= link_to 'Migrations',
+                    'rails_migrations'
+        %>
+      </li>
+      <li>
+        <%= link_to 'Query Interface',
+                    'http://guides.rubyonrails.org/active_record_querying.html',
+                    target: '_blank'
+        %>
+      </li>
+      <li>
+        <%= link_to 'Nested Attributes',
+                    'http://api.rubyonrails.org/classes/ActiveRecord/NestedAttributes/ClassMethods.html',
+                    target: '_blank'%>
+      </li>
+    </ul>
+
+    <li>View</li>
+    <ul>
+      <li>
+        <%=
+            link_to 'ActionView',
+                    'http://guides.rubyonrails.org/action_view_overview.html',
+                    target: '_blank'
+        %>
+      </li>
+
+      <li>
+        <%=
+            link_to 'Layouts and Rendering',
+                    'http://guides.rubyonrails.org/layouts_and_rendering.html',
+                    target: '_blank'
+        %>
+      </li>
+      <li>Helpers</li>
+      <ul>
+        <%=
+            link_to 'link_to',
+                    'http://api.rubyonrails.org/classes/ActionView/Helpers/UrlHelper.html#method-i-link_to',
+                    target: '_blank'
+        %>
+
+      </ul>
+
+    </ul>
+
+    <li>Controller</li>
+    <ul>
+      <li>
+        <%=
+            link_to 'ActionController',
+                    'http://guides.rubyonrails.org/action_controller_overview.html',
+                    target: '_blank'
+        %>
+      </li>
+
+      <li>
+        <%=
+            link_to 'Routing',
+                    'http://guides.rubyonrails.org/routing.html  ',
+                    target: '_blank'
+        %>
+      </li>
+    </ul>
   </ul>
   <li><%= link_to 'Rails Magic', 'rails_magic'%></li>
   <li><%= link_to 'General Guides', 'rails_guides'%></li>
@@ -42,12 +126,6 @@
                 'rails_security'
     %>
   </li>
-  <li>
-    <%=
-        link_to 'Custom Validators',
-                'http://www.rails-dev.com/custom-validators-in-ruby-on-rails-4',
-                target: '_blank'
-    %>
-  </li>
+
 </ul>
 

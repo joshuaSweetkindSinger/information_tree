@@ -100,8 +100,9 @@ function collapseLi (li) {
 // This performs a one-time initialization of the outline tree that
 // puts everything in a collapsed state with only the top-level revealed.
 function initializeExpandCollapse () {
-  var topUl = $('ul').first()
-  collapseTree(topUl)
+  var topLi = $('li').first()
+  collapseTree(topLi)
+  expandLiOneLevel(topLi)
 }
 
 // Initialize the page after the DOM is ready.

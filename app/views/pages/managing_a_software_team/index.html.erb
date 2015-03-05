@@ -5,7 +5,7 @@
 
 <h1>Managing A Software Team</h1>
 <div class="rule"></div>
-<h2>Overview</h2>
+<li>Overview</li>
 <p>
   This page contains notes about how I managed the RF Web Applications Group.
 </p>
@@ -44,12 +44,17 @@
   <li>Individual Contribution</li>
   <ul>
     <li>Project Management and Jira Admin</li>
-    <li>Meta Analysis of bug root cause analysis</li>
+    <li>Bug root cause analysis</li>
     <li>Velocity and Bug-rate tracking</li>
-    <li>Fostering Connective Processes among groups</li>
-    <li>Feedback on Design and UX</li>
+    <li>Fostering Connective Communication with Peer Groups</li>
+      <ul>
+        <li>With Product: Feature life cycle, from inception to release</li>
+        <li>With Product: sprint and iteration planning and tracking</li>
+        <li>weekly meetings  with back-end, operations, AI and Optimization, to sync.</li>
+    </ul>
+    <li>Feedback on UX Design Features</li>
     <li>Expert User</li>
-    <li>Product Refactorization</li>
+    <li>Product Design Refactorization</li>
     <li>Mentoring</li>
   </ul>
   <li>Software Tools</li>
@@ -57,6 +62,7 @@
     <li>git</li>
     <li>jenkins</li>
     <li>cucumber</li>
+    <li>NewRelic</li>
     <li>RubyMine</li>
   </ul>
   <li>Meetings</li>
@@ -88,6 +94,19 @@
     <li>Process for reporting bugs</li>
     <li>root cause analysis for bugs</li>
     <li>blocker bug handling</li>
+    <ul>
+      <li>Person who encounters the blocker reports it to Tara, as described by group wiki page.</li>
+      <li>Tara verifies, fleshes out bug report, which appears on jira list of blockers, and passes to Anna</li>
+      <li>Anna assigns an engineer to fix, with status posted daily.</li>
+    </ul>
+    <li>Non-blocker bug handling</li>
+    <ul>
+      <li>Non blocker bugs are scheduled into upcoming sprints.</li>
+      <li>The bug rate and outstanding bug story points are tracked.</li>
+      <li>We like to keep outstanding bugs at around 50 story points, or 25 person days
+        of effort, which, for a group of 20 developers is a couple of days worth of full time work.
+      <li>If the outstanding bugs get too large, we have a bug sprint to beat them down.</li>
+    </ul>
     <li>Bug Testing</li>
     <ul>
       <li>test complicated permissions scenarios</li>
@@ -130,6 +149,30 @@
       developer checks in good code, that code is simultaneously deployed to staging and beta, which means that beta testers get
       the raw untested code to bang on.
   </p>
+  <li>Weaknesses In My Management</li>
+  <ul>
+    <li>I like to experiment a lot. Sometimes that comes across as indecisiveness if the experiment
+      <em>du jour</em> is seen as flip-flopping or wishy-washiness.
+    </li>
+    <li>People reach a point of "it's good enough, let's move on" faster than I do.
+        I often find myself wanting to improve something a bit more before leaving it, which
+        can leave people with the feeling that I haven't appreciated the work they've done.
+        (On the flip side, I'm very generous with compliments, but I need to cut back
+    on the criticism sometimes.)
+    </li>
+    <li>I sometimes launch in to a problem situation by telling the other person what
+        I think the problem is and what needs to happen. That's almost always a mistake.
+        Better first to listen to their side of things and sympathize with the problem as they
+        are experiencing it.
+    </li>
+  </ul>
+  <li>Strengths in my management</li>
+  <ul>
+    <li>I treat people openly, with integrity. I'm a straight shooter and I don't play games.</li>
+    <li>People know that I listen to them, care about their success, and will fight for them.</li>
+    <li>People know that I take seriously my role to nurture their careers.</li>
+    <li>I have excellent organizational skills.</li>
+  </ul>
   <li>Chronic Problems</li>
   <ul>
     <li>Product would never prioritize work for Ops and Analytics, leading to increases in mistakes that impacted campaign performance, and ultimately led to client flight.</li>
@@ -160,6 +203,8 @@
       <ul>
         <li>Tech Talks On Craft</li>
         <li>Automated Tests</li>
+        <li>Test Driven Development</li>
+        <li>Pairing Programmers</li>
         <li>Manual QA by developers and QA people</li>
         <li>Time for paying down tech-debt</li>
         <li>Design reconfiguration</li>
