@@ -1,6 +1,16 @@
 <h1>Style Sheets And Layout</h1>
 <ul>
-  <li><%= link_to 'Bootstrap', 'http://getbootstrap.com/',  target: '_blank'%></li>
+  <li>Bootstrap</li>
+  <ul>
+    <li><%= link_to 'Newest Bootstrap', 'http://getbootstrap.com/',  target: '_blank'%></li>
+    <li>
+      <%=
+          link_to 'Bootstrap 2.3.2 (for rails)',
+                  'http://getbootstrap.com/2.3.2/index.html',
+                  target: '_blank'
+      %>
+    </li>
+  </ul>
   <li><%= link_to 'css-tricks.com', 'http://css-tricks.com',  target: '_blank'%></li>
   <li><%= link_to 'lesscss.org/', 'http://lesscss.org/',  target: '_blank'%></li>
 </ul>
