@@ -1,12 +1,10 @@
-<h1>Rails Magic</h1>
-<div class='rule'></div>
-<h2>Overview</h2>
+<li>Rails Magic</li>
 <p>The rails framework institutes many conventions behind-the-scenes.
   For those developers who understand the conventions, their existence
-enables fast development of web applications. For those who do not understand them,
-looking at parts of a rails app can yield confusion. The connecting dots are not
-explicitly on the page, so things seem to happen as if by magic.
-This document describes many of the components of rails magic.
+  enables fast development of web applications. For those who do not understand them,
+  looking at parts of a rails app can yield confusion. The connecting dots are not
+  explicitly on the page, so things seem to happen as if by magic.
+  This document describes many of the components of rails magic.
 </p>
 
 <ul>
@@ -20,4 +18,15 @@ This document describes many of the components of rails magic.
                 'rails_control_flow_for_page_rendering'
     %>
   </li>
+
+  <li>Underscores for partials</li>
+  <p>When asking a view to render a partial, as in<p>
+  <pre>
+    render "my_partial"
+  </pre>
+  <p>, the file that rails searches for is actually going to be <code>_my_partial</code>.
+  In rails, the names of all partial files begin with an underscore, but that underscore
+  is never specified when naming the partial. The rails code tacks it on automatically.
+  If you fail to name your partial with an underscore, it won't be found when rails searches for it.
+  </p>
 </ul>
