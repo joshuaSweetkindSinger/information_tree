@@ -1,5 +1,12 @@
 JssNotes::Application.routes.draw do
 
+  resources :nodes do
+    collection do
+      get :interactive
+    end
+  end
+
+
   root to: 'pages#index'
   match '/page(/:area(/:topic))', via: :get, to: 'pages#page', defaults: {topic: 'index'}
 

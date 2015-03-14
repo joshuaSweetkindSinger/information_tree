@@ -1,0 +1,9 @@
+<h1>Interactive Layout Creation</h1>
+<%= link_to 'Create Node', new_node_path %>
+<% @objects.each do |obj| %>
+  <% if obj.type == BULLET_TYPE %>
+    <li>
+      <%= obj.content %>
+    </li>
+  <% end %>
+<% end %>

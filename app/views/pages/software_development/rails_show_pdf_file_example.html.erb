@@ -1,0 +1,38 @@
+<h1>How to show a pdf file in rails</h1>
+<div class='rule'></div>
+<pre>
+  <embed src="/assets/personalis_vp_eng.pdf"
+         width="650"
+         height="1000"
+  >
+  </embed>
+</pre>
+<p>In the example above, we embed a pdf file inside an html page using the <code>embed</code> tag.
+  The actual location of the file in our rails directory
+  hierarchy is <code>app/assets/images/personalis_vp_eng.pdf</code>.
+</p>
+<p>
+  Examples I have seen online indicate that we might need to call
+  <code>asset_path</code> on the isolated filename 'personalis_vp_eng.df', which would in theory return a fingerprinted filename.
+  The finger-printed filename is based on the content of the file and is used to allow the system to
+  determine whether or not the content has changed, by comparison against a previously compiled filename.
+</p>
+<p>
+It does not seem to be necessary to use <code>asset_path</code> in development at least. The above example
+works for me just fine. However, for future reference, an example using asset_path would look like this:
+</p>
+<pre>
+  <embed src="<%= asset_path 'personalis_vp_eng.pdf'%>"
+         width="650"
+         height="1000"
+  >
+</pre>
+<p>
+  The example above will also work just fine, and <code>asset_path</code> will simply return the
+  hard-coded pathname of the first example.
+</p>
+<p>
+  Note that the asset path is specified as <code>src="/assets/personalis_vp_eng.pdf"</code>, even though
+  the actual path is <code>"/assets/images/personalis_vp_eng.pdf"</code>. Rails seems to do some magic
+  to elide the <code>images</code> subdirectory, which it takes to be a standard part of the framework.
+</p>

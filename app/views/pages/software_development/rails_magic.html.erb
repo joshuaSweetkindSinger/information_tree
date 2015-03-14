@@ -29,4 +29,13 @@
   is never specified when naming the partial. The rails code tacks it on automatically.
   If you fail to name your partial with an underscore, it won't be found when rails searches for it.
   </p>
+  <li>Elision of asset subdirectories</li>
+  <p>
+    Note that an asset path specified as <code>src="/assets/personalis_vp_eng.pdf"</code> finds
+    a file actually located in <code>"/assets/images/personalis_vp_eng.pdf"</code>. Rails seems to do some magic
+    to elide the <code>images</code> subdirectory, which it takes to be a standard part of the framework. There
+    are other subdirectories too, of assets, and I believe reails will find the file no matter which subdir
+    it is in, so long as it is a "standard" subdir. The list of subdirs that rails searches is probably controllable
+    as a config parameter.
+  </p>
 </ul>
