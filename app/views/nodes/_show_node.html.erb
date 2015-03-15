@@ -1,0 +1,7 @@
+<% if node.type_id == Node::BULLET %>
+  <li data-rank="<%= node.rank%>"><%= node.content %></li>
+  <%= render partial: 'show_descendants', locals: {node: node} %>
+<% else %>
+  <p data-rank="<%= node.rank%>"><%= node.content %></p>
+<% end %>
+
