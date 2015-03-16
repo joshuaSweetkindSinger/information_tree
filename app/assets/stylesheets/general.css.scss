@@ -25,6 +25,7 @@ body, p, ul, li {
 .rule {
   border-bottom:1px solid gray;
   height:10px;
+  margin-bottom:10px;
 }
 
 h2 {
@@ -74,4 +75,15 @@ li.side-nav {
   font-style:default;
 }
 
-
+expand-collapse, add-child, add-sibling {
+  display:inline-block;
+  border:1px solid black;
+  margin-left:10px;
+  padding-top:10px;
+}
+ui-node, node-header, node-children {
+  display:block;
+  border:1px solid black;
+  margin-left:10px;
+  padding-top:10px;
+}
