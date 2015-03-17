@@ -1,22 +1,29 @@
 <li>Rails Command Line</li>
 <ul>
-  <li><%= link_to 'rubyyonrails.org/command_line.html', 'http://guides.rubyonrails.org/command_line.html'%></li>
+  <li><%= link_to 'rubyyonrails.org/command_line.html',
+                  'http://guides.rubyonrails.org/command_line.html',
+                  target: '_blank'%></li>
 
-  <li>Get a mysqlite console:</li>
+  <li>Create a new rails app</li>
+  <pre>
+  rails new [app_name]
+  </pre>
+
+  <li>Get a mysqlite console</li>
   <pre>
   rails dbconsole
   </pre>
 
 
 
-  <li>Start the rails server:</li>
+  <li>Start the rails server</li>
   <pre>
   rails server
   </pre>
 
 
 
-  <li>Start the rails server on a different port:</li>
+  <li>Start the rails server on a different port</li>
   <pre>
   rails server --port=3001
   </pre>

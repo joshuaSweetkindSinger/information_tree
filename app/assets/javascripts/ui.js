@@ -37,14 +37,17 @@ ExpandCollapse.prototype.onCreate = function() {
 var AddChild = defCustomTag('add-child', HTMLElement)
 AddChild.prototype.onCreate = function() {
   var $this = $(this)
+  $this.html('Add Child')
   $this.click(function() {
     $(this).parent().siblings('node-children').append(new UiNode('New Node'))
   })
-  $this.html('Add Child')
 }
 
 var AddSibling = defCustomTag('add-sibling', HTMLElement)
 AddSibling.prototype.onCreate = function() {
   var $this = $(this)
   $this.html('Add Sibling')
+  $this.click(function() {
+    $(this).parent().siblings('node-children').append(new UiNode('New Node'))
+  })
 }
