@@ -293,11 +293,22 @@
     <ul>
       <li>Basic Upload-A-File Form</li>
     <pre>
-      < %= form_tag(path, multipart: true) do %>
+      < %= form_tag('/page/process_file', multipart: true) do %>
   < %= file_field_tag :file_to_upload %>
         < %= button_tag 'Done'%>
 < % end %>
     </pre>
+      <p> The above will allow the controller at '/page/process_file'
+        to access the uploaded file via:
+        <pre>
+  def insert_to_model_from_file
+    uploaded_io = params[:file_to_upload] # An object representing the uploaded file
+    model = params[:model].to_s.constantize # Convert string name of model to actual model object.
+    model.insert_to_db_from_file uploaded_io.tempfile.path
+    flash[:notice] = "Uploaded values to model #{model.name} from file #{uploaded_io.original_filename}"
+    render
+        </pre>
+      </p>
       <li><%= link_to 'Upload a file to server', 'http://guides.rubyonrails.org/form_helpers.html#what-gets-uploaded', target: '_blank'%></li>
     </ul>
     <li><%= link_to 'Show a pdf file: example', 'rails_show_pdf_file_example'%></li>
