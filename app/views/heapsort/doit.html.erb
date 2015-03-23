@@ -1,5 +1,6 @@
 <h1>Sorted Numbers</h1>
 <div class="rule"></div>
+<%= link_to "Play Again", new_heapsort_path(input: @input) %>
 <ul>
   <% @sorted.each do |x| %>
   <li><%= x %></li>

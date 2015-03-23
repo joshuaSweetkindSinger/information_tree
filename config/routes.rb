@@ -11,7 +11,7 @@ JssNotes::Application.routes.draw do
   match '/page(/:area(/:topic))', via: :get, to: 'pages#page', defaults: {topic: 'index'}
   match '/ui', via: :get, to: 'ui#ui'
   match 'heapsort/new', via: :get, to: 'heapsort#new', as: :new_heapsort
-  match 'heapsort/doit', via: :post, to: 'heapsort#doit', as: :do_heapsort
+  match 'heapsort/doit', via: :get, to: 'heapsort#doit', as: :do_heapsort
 
 
   # The priority is based upon order of creation:

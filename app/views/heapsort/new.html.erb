@@ -1,6 +1,18 @@
 <h1>Heap Sort</h1>
-<%= form_tag do_heapsort_path do %>
-  <%= label_tag 'Enter comma-separated liset of numbers to sort' %>
-  <%= text_area_tag 'number_list' %>
+
+<% if @errors %>
+  <h2>There were errors in your input:</h2>
+  <ul>
+    <% @errors.each do |e| %>
+      <li><%= e %></li>
+    <% end %>
+  </ul>
+<% end %>
+
+<%= form_tag do_heapsort_path, method: :get do %>
+  <%= label_tag 'Enter comma-separated list of numbers to sort' %>
+  <%= text_area_tag 'input', @input, id: 'my-input' %>
   <%= submit_tag 'Submit' %>
+  <clear-input data-target="my-input">Clear</clear-input>
+  <doit-locally data-target="my-input">Do it Locally</doit-locally>
 <% end %>

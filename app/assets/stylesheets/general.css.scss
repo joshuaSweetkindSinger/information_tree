@@ -75,34 +75,44 @@ li.side-nav {
   font-style:default;
 }
 
-
-node-label {
+.node-label {
   display:inline-block;
-  border:1px solid green;
   box-sizing:border-box;
+  margin:3px;
+  vertical-align:middle;
+  padding:10px;
 }
+
 expand-collapse {
   display:inline-block;
-  border:1px solid blue;
+  border:1px solid black;
+  background:green;
   box-sizing:border-box;
+  margin-left:10px;
+  vertical-align:middle;
 }
 add-child {
   display:inline-block;
-  border:1px solid yellow;
+  border:1px solid black;
+  background:yellow;
   box-sizing:border-box;
+  margin-left:10px;
+  vertical-align:middle;
 }
 
 add-sibling {
   display:inline-block;
-  border:1px solid orange;
+  border:1px solid black;
+  background:orange;
   box-sizing:border-box;
+  margin-left:10px;
+  vertical-align:middle;
 }
 
 node-children {
   display:block;
   box-sizing:border-box;
   margin-left:10px;
-  margin-top:10px;
 }
 node-header {
   display:block;
