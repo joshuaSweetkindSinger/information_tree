@@ -3,13 +3,14 @@ JssNotes::Application.routes.draw do
   resources :nodes do
     collection do
       get :interactive
+      get :top
     end
   end
 
 
   root to: 'pages#index'
   match '/page(/:area(/:topic))', via: :get, to: 'pages#page', defaults: {topic: 'index'}
-  match '/ui', via: :get, to: 'ui#ui'
+  match '/text_tree', via: :get, to: 'text_tree#text_tree'
   match 'heapsort/new', via: :get, to: 'heapsort#new', as: :new_heapsort
   match 'heapsort/doit', via: :get, to: 'heapsort#doit', as: :do_heapsort
 

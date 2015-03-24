@@ -2,24 +2,24 @@
 
 <p>
   <b>Type:</b>
-  <%= @node.type_id %>
+  <%= @obj.type_id %>
 </p>
 
 <p>
   <b>Parent:</b>
-  <%= @node.parent_id %>
+  <%= @obj.parent_id %>
 </p>
 
 <p>
   <b>Rank:</b>
-  <%= @node.rank %>
+  <%= @obj.rank %>
 </p>
 
 <p>
   <b>Content:</b>
-  <%= @node.content %>
+  <%= @obj.content %>
 </p>
 
 
-<%= link_to 'Edit', edit_node_path(@node) %> |
+<%= link_to 'Edit', edit_node_path(@obj) %> |
 <%= link_to 'Back', nodes_path %>

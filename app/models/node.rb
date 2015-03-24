@@ -8,7 +8,7 @@ class Node < ActiveRecord::Base
   has_many :children, class_name: 'Node', foreign_key: :parent_id
 
   def self.top
-    where('id = 1').first
+    where('parent_id is null').order(:id).first
   end
 
 

@@ -13,11 +13,11 @@ class NodesController < ApplicationController
   # GET /nodes/1
   # GET /nodes/1.json
   def show
-    @node = Node.find(params[:id])
+    @obj = Node.find(params[:id])
 
     respond_to do |format|
       format.html # show.html.erb
-      format.json { render json: @node }
+      format.json { render json: @obj }
     end
   end
 
@@ -85,5 +85,14 @@ class NodesController < ApplicationController
 
   def interactive
     @obj = Node.find(params[:id] || 1) # Get specified node, or top node if none specified.
+  end
+
+  # /nodes/top
+  def top
+    @obj = Node.top
+    respond_to do |format|
+      format.html {render 'show'}
+      format.json {render json: @obj}
+    end
   end
 end
