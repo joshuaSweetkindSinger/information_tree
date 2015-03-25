@@ -83,30 +83,23 @@ li.side-nav {
   padding:10px;
 }
 
-expand-collapse {
+.node-button {
   display:inline-block;
   border:1px solid black;
-  background:green;
   box-sizing:border-box;
   margin-left:10px;
   vertical-align:middle;
-}
-add-child {
-  display:inline-block;
-  border:1px solid black;
-  background:yellow;
-  box-sizing:border-box;
-  margin-left:10px;
-  vertical-align:middle;
+  padding:5px;
 }
 
-add-sibling {
-  display:inline-block;
-  border:1px solid black;
-  background:orange;
-  box-sizing:border-box;
-  margin-left:10px;
-  vertical-align:middle;
+.node-button-active {
+  background:blue;
+  color:white;
+}
+
+.node-button-inactive {
+  background:lightcyan;
+  color:lightgray;
 }
 
 node-children {

@@ -1,10 +1,10 @@
-<%= form_for(@node) do |f| %>
-  <% if @node.errors.any? %>
+<%= form_for(obj) do |f| %>
+  <% if obj.errors.any? %>
     <div id="error_explanation">
-      <h2><%= pluralize(@node.errors.count, "error") %> prohibited this node from being saved:</h2>
+      <h2><%= pluralize(@obj.errors.count, "error") %> prohibited this node from being saved:</h2>
 
       <ul>
-      <% @node.errors.full_messages.each do |msg| %>
+      <% obj.errors.full_messages.each do |msg| %>
         <li><%= msg %></li>
       <% end %>
       </ul>

@@ -1,0 +1,5 @@
+<h1> Child Nodes</h1>
+<h2>Parent</h2>
+<%= render partial: 'form', locals: {obj: @obj} %>
+<h2>Children</h2>
+<%= render partial: 'form', collection: @children, as: :obj %>

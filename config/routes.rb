@@ -5,6 +5,10 @@ JssNotes::Application.routes.draw do
       get :interactive
       get :top
     end
+
+    member do
+      get :children
+    end
   end
 
 

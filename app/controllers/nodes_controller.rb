@@ -1,4 +1,6 @@
 class NodesController < ApplicationController
+
+  # ============================= Standard Crud
   # GET /nodes
   # GET /nodes.json
   def index
@@ -83,6 +85,7 @@ class NodesController < ApplicationController
     end
   end
 
+  # ======================================== Controller Actions beyond basic crud
   def interactive
     @obj = Node.find(params[:id] || 1) # Get specified node, or top node if none specified.
   end
@@ -93,6 +96,16 @@ class NodesController < ApplicationController
     respond_to do |format|
       format.html {render 'show'}
       format.json {render json: @obj}
+    end
+  end
+
+  def children
+    @obj      = Node.find(params[:id])
+    @children = @obj.children.order(:rank)
+
+    respond_to do |format|
+      format.html
+      format.json {render json: @children}
     end
   end
 end
