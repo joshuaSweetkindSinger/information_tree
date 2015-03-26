@@ -8,6 +8,7 @@ JssNotes::Application.routes.draw do
 
     member do
       get :children
+      post :create_child
     end
   end
 

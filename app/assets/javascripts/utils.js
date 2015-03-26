@@ -1,4 +1,22 @@
-HTTP_SUCCESS = 200
+HTTP = {
+  is_success_code: function(code) {
+    return code >= 200 && code < 300
+  }
+}
+
+// Ping the server at url with a request of type verb, augmented by query params.
+// If the response is successful, parse it into json and call the callback.
+// If not successful, pass null to the callback.
+function getJsonFromServer (verb, url, callback, params) {
+  sendServer(
+    verb,
+    url,
+    function(request) {
+      callback(HTTP.is_success_code(request.status) ? JSON.parse(request.responseText) : null)
+    },
+  params)
+}
+
 
 /*
  Send a request to <url> using <verb> (one of "GET", "POST", "PUT", "DELETE").
@@ -13,28 +31,28 @@ HTTP_SUCCESS = 200
  (query string or request body), and setting things up so that the callback is called when
  the server response is complete.
 
- Note that this is handled asynchronously, which means that send_server() returns immediately.
+ Note that this is handled asynchronously, which means that sendServer() returns immediately.
  It does not block waiting for the server's response.
  */
-function send_server (verb, url, callback, params) {
+function sendServer (verb, url, callback, params) {
   var request = new XMLHttpRequest()
+  request.open(verb, url) // Specify verb and url for request.
 
   // Handle params
   var body = null
   if (verb == "GET") {
-    if (params) url = url + "?" +  make_form_string_from_hash(params)
+    if (params) url = url + "?" +  makeFormStringFromHash(params)
   } else {
     body = params ? JSON.stringify(params) : null
     request.setRequestHeader("Content-Type", "application/json")
   }
 
-  request.open(verb, url) // Specify verb and url for request.
 
   // Set up the callback to be called when the server response is ready.
   if (callback
     ) {
     request.onreadystatechange = function() {
-      if (request.readyState == XMLHttpRequest.DONE && request.status == HTTP_SUCCESS) {
+      if (request.readyState == XMLHttpRequest.DONE) {
         callback(request)
       }
     }
@@ -43,7 +61,7 @@ function send_server (verb, url, callback, params) {
   request.send(body)  // The meat.
 }
 
-function make_form_string_from_hash (params) {
+function makeFormStringFromHash (params) {
   if (!params) return ""
 
   var pairs = []

@@ -8,6 +8,11 @@ TextNode: has two child elements, called NodeHeader and NodeChildren.
 NodeHeader: represents a label for the node, as well as clickable buttons to take action on the node. It
             contains elements NodeLabel, ExpandCollapse, AddChild, AddSibling.
 NodeChildren: represents a container for sub-nodes. Its only children are of type UiNode.
+
+Text Nodes are stored in the db in the nodes table. When the client-side expands a node, it asks the db for its children,
+which get sent as json, and then the client builds the nodes on the browser.
+
+New nodes are created by sending an async request to the server to create the new node.
  */
 
 
@@ -16,19 +21,19 @@ var TextTree = defCustomTag('text-tree', HTMLElement)
 
 // Find the top node of the tree and add it to the dom.
 TextTree.prototype.onCreate = function() {
-  var $this = $(this)
-  send_server(
-    "GET",
-    this.top_node_path(),
-    function (request) {
-      var topNode = new TextNode(JSON.parse(request.responseText))
-      $this.append(topNode)
-    }
-  )
+  var $me = $(this)
+  this.getTopNodeFromServer(function(nodeJson) {
+    if (nodeJson) {
+      $me.append(new TextNode(nodeJson))
+    }})
 }
 
-TextTree.prototype.top_node_path = function() {
+TextTree.prototype.topNodePath = function() {
   return '/nodes/top.json'
+}
+
+TextTree.prototype.getTopNodeFromServer = function(continuation) {
+  getJsonFromServer("GET", this.topNodePath(), continuation)
 }
 
 // ============================ Text Node
@@ -39,7 +44,7 @@ TextNode.prototype.onCreate = function() {
   $this.append(new NodeHeader)
   $this.append(new NodeChildren)
   this.collapse()
-  this.children_fetched = false // True when we have received child node information from the server. See expand()
+  this.childrenFetched = false // True when we have received child node information from the server. See fetch_and_expand()
 }
 
 TextNode.prototype.afterCreate = function(options) {
@@ -59,11 +64,31 @@ Object.defineProperties(TextNode.prototype, {
   }
 )
 
-
+// Expand this node, first fetching its children from the server if necessary.
 TextNode.prototype.expand = function() {
-  if (!this.children_fetched) {
-    this.fetch_children()
-  }
+  if (this.childrenFetched) return this.expandInternal() // Children are already fetched--just expand on browser side.
+
+  // Fetch and Expand
+  var me = this
+  this.getChildrenFromServer(function(childrenJson) {
+    if (!childrenJson) return
+
+    childrenJson.forEach(function(nodeJson) {
+      me.addChildOnClient(nodeJson) // TODO: Figure out how to not incur browser redraw cost for each added child.
+    })
+    me.childrenFetched = true;
+    me.expandInternal()
+  })
+}
+
+
+// Get our child nodes from the server, in json format, and pass this json structure
+// to continuation for further processing.
+TextNode.prototype.getChildrenFromServer = function(continuation) {
+  getJsonFromServer("GET", this.childrenPath(this.id), continuation)
+}
+
+TextNode.prototype.expandInternal = function() {
   this.state = 'expanded'
   $(this).children('node-children').show('slow')
 }
@@ -84,32 +109,34 @@ TextNode.prototype.toggle = function() {
   }
 }
 
-
+// Ask the server to create a child text node with the content in options hash.
+// When the server replies, create the text node on the client side as well.
 TextNode.prototype.addChild = function(options) {
-  console.log("******* TextNode.addChild", options)
+  var me = this
+  getJsonFromServer(
+    "POST",
+    this.addChildPath(this.id),
+    function(jsonChild) {
+      if (!jsonChild) return
+      me.addChildOnClient(jsonChild)
+    },
+    {node: {content: 'New Child'}}
+  )
+}
+
+TextNode.prototype.addChildPath = function(parentId) {
+  return '/nodes/' + parentId + '/create_child.json'
+}
+
+
+// Create a node child node, with data specified in the options hash.
+// Relevant keywords are id: and content:.
+TextNode.prototype.addChildOnClient = function(options) {
   $(this).children('node-children').append(new TextNode(options))
 }
 
 
-// Ask the server for all of our children, which it will return as a json structure,
-// then create Text Node objects on client side to represent each of these children.
-TextNode.prototype.fetch_children = function() {
-  var me    = this
-  var $me   = $(me)
-  send_server(
-    "GET",
-    this.children_path(this.id),
-    function (request) {
-      var childrenJson = JSON.parse(request.responseText)
-      childrenJson.forEach(function(nodeJson) {
-        me.addChild(nodeJson) // TODO: Figure out how to not incur browser redraw cost for each added child.
-      })
-      me.children_fetched = true;
-    }
-  )
-}
-
-TextNode.prototype.children_path = function(parentId) {
+TextNode.prototype.childrenPath = function(parentId) {
   return '/nodes/' + parentId + '/children.json'
 }
 // ============================ Node Header
@@ -220,7 +247,7 @@ AddChild.prototype.onCreate = function() {
   $this.click(function() {
     var $this = $(this)
     if (this.is_active()) {
-      $this.parent().parent()[0].addChild({id:-1, content:'New Child'})
+      $this.parent().parent()[0].addChild({content:'New Child'})
     }
   })
 }

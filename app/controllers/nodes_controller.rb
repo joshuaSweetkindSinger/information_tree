@@ -108,4 +108,22 @@ class NodesController < ApplicationController
       format.json {render json: @children}
     end
   end
+
+  def create_child
+    node = params[:node]
+    node[:parent_id] = params[:id]
+    @obj = Node.new(node)
+
+    puts "***** create_child: Created child from this json: #{node}"
+
+    respond_to do |format|
+      if @obj.save
+        format.html { redirect_to interactive_nodes_path, notice: 'Node was successfully created.' }
+        format.json { render json: @obj, status: :created, location: @obj }
+      else
+        format.html { render action: "new" }
+        format.json { render json: @obj.errors, status: :unprocessable_entity }
+      end
+    end
+  end
 end
