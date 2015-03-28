@@ -15,8 +15,9 @@ which get sent as json, and then the client builds the nodes on the browser.
 New nodes are created by sending an async request to the server to create the new node.
  */
 
-
-// ============================ Text Tree
+// =========================================================================
+//                   Text Tree
+// =========================================================================
 var TextTree = defCustomTag('text-tree', HTMLElement)
 
 // Find the top node of the tree and add it to the dom.
@@ -36,26 +37,49 @@ TextTree.prototype.getTopNodeFromServer = function(continuation) {
   getJsonFromServer("GET", this.topNodePath(), continuation)
 }
 
-// ============================ Text Node
+// =========================================================================
+//                   Text Node
+// =========================================================================
 var TextNode = defCustomTag('text-node', HTMLElement)
 
+// ======= Construction and Initialization
 TextNode.prototype.onCreate = function() {
   var $this = $(this)
-  $this.append(new NodeHeader)
-  $this.append(new NodeChildren)
+
+  this.header = new NodeHeader
+  console.log("TextNode.onCreate:this.header:", this.header)
+  $this.append(this.header)
+
+  this.kids = new NodeChildren
+  $this.append(this.kids)
+
   this.collapse()
   this.childrenFetched = false // True when we have received child node information from the server. See fetch_and_expand()
 }
 
 TextNode.prototype.afterCreate = function(options) {
-  this.id      = options.id
+  console.log("TextNode.afterCreate")
+  this.myId    = options.id
   this.content = options.content
+  this.type_id = options.type_id
 }
 
 Object.defineProperties(TextNode.prototype, {
+    myId: {
+      get: function() {
+        return this.id
+      },
+
+      set: function(id) {
+        this.id = id
+        this.header.myId = id
+        this.kids.myId = id
+      }
+    },
+
     content: {
       get: function() {
-        $(this).children('node-header').children('textarea').val()
+        return $(this).children('node-header').children('textarea').val()
       },
       set: function(content) {
         $(this).children('node-header').children('textarea').val(content)
@@ -64,6 +88,7 @@ Object.defineProperties(TextNode.prototype, {
   }
 )
 
+// =================== Expand / Collapse
 // Expand this node, first fetching its children from the server if necessary.
 TextNode.prototype.expand = function() {
   if (this.childrenFetched) return this.expandInternal() // Children are already fetched--just expand on browser side.
@@ -88,16 +113,22 @@ TextNode.prototype.getChildrenFromServer = function(continuation) {
   getJsonFromServer("GET", this.childrenPath(this.id), continuation)
 }
 
+TextNode.prototype.childrenPath = function(id) {
+  return '/nodes/' + id + '/children.json'
+}
+
+
 TextNode.prototype.expandInternal = function() {
   this.state = 'expanded'
   $(this).children('node-children').show('slow')
+  this.header.expandCollapseButton.expand()
 }
 
 
 TextNode.prototype.collapse = function() {
   this.state = 'collapsed'
   $(this).children('node-children').hide('slow')
-
+  this.header.expandCollapseButton.collapse()
 }
 
 
@@ -109,18 +140,20 @@ TextNode.prototype.toggle = function() {
   }
 }
 
-// Ask the server to create a child text node with the content in options hash.
+
+// =========================== Add Child
+// Ask the server to create a child text node with the content in childSpec hash.
 // When the server replies, create the text node on the client side as well.
-TextNode.prototype.addChild = function(options) {
+TextNode.prototype.addChild = function(childSpec) {
   var me = this
   getJsonFromServer(
     "POST",
     this.addChildPath(this.id),
-    function(jsonChild) {
-      if (!jsonChild) return
-      me.addChildOnClient(jsonChild)
+    function(childRep) {
+      if (childRep.error) return
+      me.addChildOnClient(childRep)
     },
-    {node: {content: 'New Child'}}
+    {node: childSpec}
   )
 }
 
@@ -129,41 +162,181 @@ TextNode.prototype.addChildPath = function(parentId) {
 }
 
 
-// Create a node child node, with data specified in the options hash.
-// Relevant keywords are id: and content:.
-TextNode.prototype.addChildOnClient = function(options) {
-  $(this).children('node-children').append(new TextNode(options))
+// Create a new child node on client side, with data specified in the childRep hash.
+// See TextNode.afterCreate() for relevant keys in childRep
+TextNode.prototype.addChildOnClient = function(childRep) {
+  if (childRep.parent_id != this.id) {
+    throw("Mismatching ids: parent_id from server (" + childRep.parent_id + ") does not match id of parent on client (" + this.id + ").")
+  }
+  $(this).children('node-children').append(new TextNode(childRep))
+}
+
+// =========================== Add Sibling
+// Ask the server to create a sibling text node with the content in options hash.
+// When the server replies, create the text node on the client side as well.
+TextNode.prototype.addSibling = function(options) {
+  var me = this
+  getJsonFromServer(
+    "POST",
+    this.addSiblingPath(this.id),
+    function(json) {
+      if (json.error) return
+      me.addSiblingOnClient(json)
+    },
+    {node: options}
+  )
+}
+
+TextNode.prototype.addSiblingPath = function(id) {
+  return '/nodes/' + id + '/create_sibling.json'
 }
 
 
-TextNode.prototype.childrenPath = function(parentId) {
-  return '/nodes/' + parentId + '/children.json'
+// Create a new sibling node on the client side, with data specified in the nodeRep hash.
+// See TextNode.afterCreate() for relevant keys in nodeRep
+TextNode.prototype.addSiblingOnClient = function(nodeRep) {
+  $(this).after(new TextNode(nodeRep))
 }
-// ============================ Node Header
+
+
+// =========================== Remove
+// Ask the server to remove this node from the hierarchy.
+// When the server replies, remove the node from the browser.
+TextNode.prototype.remove = function(options) {
+  var me = this
+  sendServer(
+    "DELETE",
+    this.removePath(this.id),
+    function(request) {
+      if (HTTP.is_success_code(request.status)) {
+      me.removeOnClient()
+      }
+    })
+}
+
+TextNode.prototype.removePath = function(id) {
+  return '/nodes/' + id + '/remove.json'
+}
+
+
+// Create a new sibling node on the client side, with data specified in the nodeRep hash.
+// See TextNode.afterCreate() for relevant keys in nodeRep
+TextNode.prototype.removeOnClient = function() {
+  $(this).remove()
+}
+
+// ======================== Set Attributes
+
+// Set attributes for this node. The attributes to change, and their values,
+// are in options, which is a hash. The hash is sent to the server, to change the values
+// on the server first, and then the server replies with a json that represents the changed node.
+// Note: This does not allow you to set attributes affecting topology, e.g.: parent_id, rank.
+TextNode.prototype.setAttributes = function(options) {
+  var me = this
+  getJsonFromServer(
+    "PUT",
+    this.setAttributesPath(this.id),
+    function(jsonNode) {
+      // We got an error back from the server--punt
+      if (jsonNode.error) {
+        return console.log("***** Set Attributes: server responded with this error:", jsonNode.error)
+      }
+
+      me.setAttributesOnClient(jsonNode)
+    },
+    {node: options}
+  )
+}
+
+TextNode.prototype.setAttributesPath = function(id) {
+  return '/nodes/' + id + '/set_attributes.json'
+}
+
+
+TextNode.prototype.setAttributesOnClient = function(jsonNode) {
+  if (jsonNode.id != this.id) {
+    throw("Mismatching ids: id from server (" + options.id + ") does not match id on client (" + this.id + ").")
+  }
+
+  for(key in jsonNode) {
+    if (['content', 'type_id'].indexOf(key) > -1) {
+      this[key] = jsonNode[key]
+    }
+  }
+}
+
+// =========================================================================
+//                   Node Header
+// =========================================================================
 var NodeHeader = defCustomTag('node-header', HTMLElement)
 NodeHeader.prototype.onCreate = function() {
   var $this = $(this)
-  $this.append(new NodeLabel)
-  $this.append(new ExpandCollapse)
-  $this.append(new AddChild)
-  $this.append(new AddSibling)
+
+  this.content = new NodeContent
+  $this.append(this.content)
+
+  this.addChildButton = new AddChild
+  $this.append(this.addChildButton)
+
+  this.addSiblingButton = new AddSibling
+  $this.append(this.addSiblingButton)
+
+  this.removeNodeButton = new RemoveNode
+  $this.append(this.removeNodeButton)
+
+  this.expandCollapseButton = new ExpandCollapse
+  console.log("NodeHeader.onCreate:this.expandCollapseButton:", this.expandCollapseButton)
+  $this.append(this.expandCollapseButton)
 }
 
-// ============================ Node Label
-var NodeLabel = defCustomTag('node-label', HTMLTextAreaElement, 'textarea')
-NodeLabel.prototype.onCreate = function() {
+Object.defineProperties(NodeHeader.prototype, {
+    myId: {
+      get: function() {
+        return this.id
+      },
+
+      set: function(id) {
+        console.log("NodeHeader.myId.set:this.expandCollapseButton", this.expandCollapseButton)
+        this.id = id
+        this.content.id = id
+        this.expandCollapseButton.id = id
+        this.addChildButton.id = id
+        this.addSiblingButton.id = id
+        this.removeNodeButton.id = id
+      }
+    }
+  })
+
+// =========================================================================
+//                   Node Content
+// =========================================================================
+var NodeContent = defCustomTag('node-content', HTMLTextAreaElement, 'textarea')
+NodeContent.prototype.onCreate = function() {
   var $this = $(this)
   $this.val("New Node")
-  $this.addClass('node-label')
+  $this.addClass('node-content')
   this.rows = 1
+  $this.on("blur", this.onBlur)
 }
 
-// ============================ Node Children
+// This event-handler is bound to the object's blur event.
+// It causes the content of the node to change on the server.
+NodeContent.prototype.onBlur = function(event) {
+  var node = $(this).parent().parent()[0]
+  node.setAttributes({content: node.content})
+}
+
+
+// =========================================================================
+//                   Node Children
+// =========================================================================
 var NodeChildren = defCustomTag('node-children', HTMLElement)
 NodeChildren.prototype.onCreate = function() {
 }
 
-// ================================ Node Buttons
+// =========================================================================
+//                   Node Button
+// =========================================================================
 // Base class for text node buttons. It provides functionality to activate or deactivate
 // a button.
 var NodeButton = defCustomTag('node-button', HTMLElement)
@@ -199,39 +372,43 @@ NodeButton.prototype.activate = function() {
 }
 
 
-
-// ============== Expand / Collapse Button
+// =========================================================================
+//                   Expand / Collapse Button
+// =========================================================================
 var ExpandCollapse = defCustomTag('expand-collapse', NodeButton)
 
 ExpandCollapse.prototype.onCreate = function() {
+  console.log("ExpandCollapse.onCreate")
   NodeButton.prototype.onCreate.call(this)
 
-  var $this = $(this)
-
-  $this.html("O")
-  $this.click(function() {
-    this.toggle()
-  })
-
-  this.state = 'collapsed'
+  $(this).click(function() {this.toggle()})
 }
 
-ExpandCollapse.prototype.toggle = function() {
-  var $this = $(this)
 
-  if (this.state === 'expanded') {
-    this.state = 'collapsed'
-    $this.html("O")
-    $this.siblings('add-child')[0].deactivate()
-  } else {
-    this.state = 'expanded'
-    $this.html("C")
-    $this.siblings('add-child')[0].activate()
-  }
+ExpandCollapse.prototype.toggle = function() {
   this.parentNode.parentNode.toggle()
 }
 
-// ============== Add Child Button
+ExpandCollapse.prototype.collapse = function() {
+  var $this = $(this)
+  $this.html("O")
+
+  console.log("$this: ", $this)
+  console.log("$('expand-collapse')", $('expand-collapse'))
+  console.log("$this.parent()", $this.parent())
+  console.log("$this.parent().children('add-child')", $this.parent().children('add-child'))
+  $this.siblings('add-child')[0].deactivate()
+}
+
+ExpandCollapse.prototype.expand = function() {
+  var $this = $(this)
+  $this.html("C")
+  $this.siblings('add-child')[0].activate()
+}
+
+// =========================================================================
+//                   Add Child Button
+// =========================================================================
 var AddChild = defCustomTag('add-child', NodeButton)
 
 AddChild.prototype.onCreate = function() {
@@ -252,7 +429,9 @@ AddChild.prototype.onCreate = function() {
   })
 }
 
-// ============== Add Sibling Button
+// =========================================================================
+//                   Add Sibling Button
+// =========================================================================
 var AddSibling = defCustomTag('add-sibling', NodeButton)
 AddSibling.prototype.onCreate = function() {
   NodeButton.prototype.onCreate.call(this)
@@ -262,6 +441,23 @@ AddSibling.prototype.onCreate = function() {
 
   // Click function adds a new TextNode after the TextNode associated with this button.
   $this.click(function() {
-    $(this).parent().parent().after(new TextNode('New Sibling'))
+    $(this).parent().parent()[0].addSibling({content: 'New Sibling'})
+  })
+}
+
+
+// =========================================================================
+//                   Remove Node Button
+// =========================================================================
+var RemoveNode = defCustomTag('remove-node', NodeButton)
+RemoveNode.prototype.onCreate = function() {
+  NodeButton.prototype.onCreate.call(this)
+
+  var $this = $(this)
+  $this.html('x')
+
+  // Click function removes the TextNode associated with this button.
+  $this.click(function() {
+    $(this).parent().parent()[0].remove()
   })
 }

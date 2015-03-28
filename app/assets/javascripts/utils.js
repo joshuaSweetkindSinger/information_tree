@@ -6,13 +6,19 @@ HTTP = {
 
 // Ping the server at url with a request of type verb, augmented by query params.
 // If the response is successful, parse it into json and call the callback.
-// If not successful, pass null to the callback.
+// If not successful, pass back a json that contains the error status.
 function getJsonFromServer (verb, url, callback, params) {
   sendServer(
     verb,
     url,
     function(request) {
-      callback(HTTP.is_success_code(request.status) ? JSON.parse(request.responseText) : null)
+      var json = null
+      if (HTTP.is_success_code(request.status)) {
+        json = JSON.parse(request.responseText)
+      } else {
+        json = {error: {status: request.status}}
+      }
+      callback(json)
     },
   params)
 }

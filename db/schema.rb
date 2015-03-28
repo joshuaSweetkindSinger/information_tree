@@ -11,15 +11,20 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20150313041621) do
+ActiveRecord::Schema.define(:version => 20150328011658) do
 
   create_table "nodes", :force => true do |t|
     t.integer  "type_id"
     t.integer  "parent_id"
-    t.integer  "rank"
+    t.float    "rank"
     t.text     "content"
-    t.datetime "created_at", :null => false
-    t.datetime "updated_at", :null => false
+    t.datetime "created_at",     :null => false
+    t.datetime "updated_at",     :null => false
+    t.integer  "predecessor_id"
+    t.integer  "successor_id"
   end
+
+  add_index "nodes", ["predecessor_id"], :name => "index_nodes_on_predecessor_id", :unique => true
+  add_index "nodes", ["successor_id"], :name => "index_nodes_on_successor_id", :unique => true
 
 end
