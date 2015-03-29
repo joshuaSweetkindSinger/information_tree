@@ -89,7 +89,7 @@ Object.defineProperties(TextNode.prototype, {
 // =================== Expand / Collapse
 // Expand this node, first fetching its children from the server if necessary.
 TextNode.prototype.expand = function() {
-  if (this.childrenFetched) return this.expandInternal() // Children are already fetched--just expand on browser side.
+  if (this.childrenFetched) return // Children are already fetched--just expand on browser side.
 
   // Fetch and Expand
   var me = this
@@ -200,7 +200,7 @@ TextNode.prototype.addSiblingOnClient = function(nodeRep) {
 // =========================== Remove
 // Ask the server to remove this node from the hierarchy.
 // When the server replies, remove the node from the browser.
-TextNode.prototype.remove = function(options) {
+TextNode.prototype.remove = function() {
   var me = this
   sendServer(
     "DELETE",
@@ -237,7 +237,8 @@ TextNode.prototype.setAttributes = function(options) {
     function(jsonNode) {
       // We got an error back from the server--punt
       if (jsonNode.error) {
-        return console.log("***** Set Attributes: server responded with this error:", jsonNode.error)
+        console.log("***** Set Attributes: server responded with this error:", jsonNode.error)
+        return
       }
 
       me.setAttributesOnClient(jsonNode)
@@ -256,9 +257,9 @@ TextNode.prototype.setAttributesOnClient = function(jsonNode) {
     throw("Mismatching ids: id from server (" + options.id + ") does not match id on client (" + this.id + ").")
   }
 
-  for(key in jsonNode) {
-    if (['content', 'type_id'].indexOf(key) > -1) {
-      this[key] = jsonNode[key]
+  for(var key in jsonNode) {
+    if (jsonNode.hasOwnProperty(key) && (['content', 'type_id'].indexOf(key) > -1)) {
+        this[key] = jsonNode[key]
     }
   }
 }
@@ -311,13 +312,14 @@ NodeContent.prototype.onCreate = function() {
   var $this = $(this)
   $this.val("New Node")
   $this.addClass('node-content')
+  //noinspection JSUnusedGlobalSymbols
   this.rows = 1
   $this.on("blur", this.onBlur)
 }
 
 // This event-handler is bound to the object's blur event.
 // It causes the content of the node to change on the server.
-NodeContent.prototype.onBlur = function(event) {
+NodeContent.prototype.onBlur = function() {
   var node = $(this).parent().parent()[0]
   node.setAttributes({content: node.content})
 }
@@ -352,7 +354,7 @@ NodeButton.prototype.is_active = function() {
 // its associated node is collapsed, to prevent creation of children that would immediately
 // be hidden from view.
 NodeButton.prototype.deactivate = function() {
-  $this = $(this)
+  var $this = $(this)
   $this.removeClass('node-button-active')
   $this.addClass('node-button-inactive')
 }
@@ -362,7 +364,7 @@ NodeButton.prototype.deactivate = function() {
 // its associated node is expanded, to allow creation of child nodes.
 // TODO: This should be a method on a base class from which AddChild inherits.
 NodeButton.prototype.activate = function() {
-  $this = $(this)
+  var $this = $(this)
   $this.removeClass('node-button-inactive')
   $this.addClass('node-button-active')
 }
