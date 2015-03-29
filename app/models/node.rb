@@ -14,7 +14,15 @@ class Node < ActiveRecord::Base
   end
 
   def self.top
-    where('parent_id is null').order(:id).first
+    result = where('parent_id = -1').first
+    result || make_top_node
+  end
+
+  def self.make_top_node
+    result = Node.new(content:'Top', rank:0)
+    result.parent_id = -1
+    result.save!
+    result
   end
 
 
@@ -96,18 +104,26 @@ class Node < ActiveRecord::Base
   end
 
 
-  # Remove self from the node hierarchy, patching up predecessor/successor links.
+  # Remove self and children from the node hierarchy, patching up predecessor/successor links.
   def remove
     predecessor_node = self.predecessor
     successor_node   = self.successor
     predecessor_node.successor_id = (successor_node   ? successor_node.id   : nil) if predecessor_node
     successor_node.predecessor_id = (predecessor_node ? predecessor_node.id : nil) if successor_node
 
-    self.destroy
+    remove_self_and_children # Need to remove self before the siblings, with their new (unique!) links, can be saved.
+
     predecessor_node.save! if predecessor_node
     successor_node.save! if successor_node
   end
 
+  # Remove all your children from the hierarchy, and their children, recursively.
+  def remove_self_and_children
+    children.each do |node|
+      node.destroy
+    end
+    destroy
+  end
 
   def last_child
     children.order('rank desc').first

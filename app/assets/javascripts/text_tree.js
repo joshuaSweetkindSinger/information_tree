@@ -23,9 +23,9 @@ var TextTree = defCustomTag('text-tree', HTMLElement)
 // Find the top node of the tree and add it to the dom.
 TextTree.prototype.onCreate = function() {
   var $me = $(this)
-  this.getTopNodeFromServer(function(nodeJson) {
-    if (nodeJson) {
-      $me.append(new TextNode(nodeJson))
+  this.getTopNodeFromServer(function(node) {
+    if (node) {
+      $me.append(new TextNode(node))
     }})
 }
 
@@ -47,7 +47,6 @@ TextNode.prototype.onCreate = function() {
   var $this = $(this)
 
   this.header = new NodeHeader
-  console.log("TextNode.onCreate:this.header:", this.header)
   $this.append(this.header)
 
   this.kids = new NodeChildren
@@ -58,7 +57,6 @@ TextNode.prototype.onCreate = function() {
 }
 
 TextNode.prototype.afterCreate = function(options) {
-  console.log("TextNode.afterCreate")
   this.myId    = options.id
   this.content = options.content
   this.type_id = options.type_id
@@ -285,7 +283,6 @@ NodeHeader.prototype.onCreate = function() {
   $this.append(this.removeNodeButton)
 
   this.expandCollapseButton = new ExpandCollapse
-  console.log("NodeHeader.onCreate:this.expandCollapseButton:", this.expandCollapseButton)
   $this.append(this.expandCollapseButton)
 }
 
@@ -296,7 +293,6 @@ Object.defineProperties(NodeHeader.prototype, {
       },
 
       set: function(id) {
-        console.log("NodeHeader.myId.set:this.expandCollapseButton", this.expandCollapseButton)
         this.id = id
         this.content.id = id
         this.expandCollapseButton.id = id
@@ -378,7 +374,6 @@ NodeButton.prototype.activate = function() {
 var ExpandCollapse = defCustomTag('expand-collapse', NodeButton)
 
 ExpandCollapse.prototype.onCreate = function() {
-  console.log("ExpandCollapse.onCreate")
   NodeButton.prototype.onCreate.call(this)
 
   $(this).click(function() {this.toggle()})
@@ -392,11 +387,6 @@ ExpandCollapse.prototype.toggle = function() {
 ExpandCollapse.prototype.collapse = function() {
   var $this = $(this)
   $this.html("O")
-
-  console.log("$this: ", $this)
-  console.log("$('expand-collapse')", $('expand-collapse'))
-  console.log("$this.parent()", $this.parent())
-  console.log("$this.parent().children('add-child')", $this.parent().children('add-child'))
   $this.siblings('add-child')[0].deactivate()
 }
 
