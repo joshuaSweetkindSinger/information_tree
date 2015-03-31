@@ -58,7 +58,7 @@ console.log("Loading aa_custom_class.js")
  then you need to us the "is=" syntax instead, which shows extension of a non-basic element.) The first
  line above creates the class object's constructor.
 
- The second clause defines an onCreate() method for the custom tag class. The is a framework enhancement: the method is always called,
+ The second clause defines an onCreate() method for the custom tag class. This is a framework enhancement: the method is always called,
  with 0 args, whenever a new tag object is created either statically or dynamically.
 
  The third clause defines an afterCreate() method for the custom tag class. This is a framework enhancement: the method is used to

@@ -140,7 +140,7 @@ class NodesController < ApplicationController
 
   # Set one or more attributes of the object whose id is params[:id].
   # The attributes and their values are passed in as a sub-hash on params[:node], e.g.
-  # params = {id: 123, node: {content: "Beautiful Sky", rank: 2}}
+  # params = {id: 123, node: {content: "Beautiful Sky", width:200, height:100, type_id: 1}}
   # NOTE: This does not allow you to set attributes that affect the hierarchy, e.g., parent_id, rank.
   # TODO: This is really just the update method. Should merge this with update() once tested.
   def set_attributes
@@ -153,7 +153,7 @@ class NodesController < ApplicationController
 
     # Set all settable attribute values on node from those specified in params.
     attribute_params = params[:node].select do |k, v|
-      %w(content type_id).include?(k)
+      %w(content type_id width height).include?(k)
     end
 
     respond_to do |format|

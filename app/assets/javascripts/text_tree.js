@@ -41,9 +41,15 @@ TextTree.prototype.getTopNodeFromServer = function(continuation) {
 //                   Text Node
 // =========================================================================
 var TextNode = defCustomTag('text-node', HTMLElement)
+TextNode.defaultSpec = {content:'New Node', width:100, height:50} // Default json spec for a new node
 
 // ======= Construction and Initialization
-TextNode.prototype.onCreate = function() {
+/*
+NOTE: afterCreate() is only called via programmatic creation of new objects, as opposed to static creation.
+We put all the logic in our afterCreate() method, because we know we are not doing static creation, and we
+need to pass args, which can only be passed via afterCreate().
+ */
+TextNode.prototype.afterCreate = function(options) {
   var $this = $(this)
 
   this.header = new NodeHeader
@@ -54,11 +60,10 @@ TextNode.prototype.onCreate = function() {
 
   this.collapse()
   this.childrenFetched = false // True when we have received child node information from the server. See fetch_and_expand()
-}
-
-TextNode.prototype.afterCreate = function(options) {
   this.myId    = options.id
   this.content = options.content
+  this.width   = options.width
+  this.height  = options.height
   this.type_id = options.type_id
 }
 
@@ -82,14 +87,41 @@ Object.defineProperties(TextNode.prototype, {
       set: function(content) {
         $(this).children('node-header').children('textarea').val(content)
       }
+    },
+
+    width: {
+      get: function() {
+        return $(this).children('node-header').children('textarea').width()
+      },
+      set: function(v) {
+        $(this).children('node-header').children('textarea').width(v)
+      }
+    },
+
+    height: {
+      get: function() {
+        return $(this).children('node-header').children('textarea').height()
+      },
+      set: function(v) {
+        $(this).children('node-header').children('textarea').height(v)
+      }
     }
   }
 )
 
 // =================== Expand / Collapse
 // Expand this node, first fetching its children from the server if necessary.
-TextNode.prototype.expand = function() {
-  if (this.childrenFetched) return // Children are already fetched--just expand on browser side.
+TextNode.prototype.expand = function(doRecursive) {
+  // Children are already fetched--just expand on browser side.
+  if (this.childrenFetched) {
+    if (doRecursive) {
+      $(this).children('node-children').children().each(function(index) {
+        this.expand(doRecursive)
+      })
+    }
+    this.expandInternal()
+    return
+  }
 
   // Fetch and Expand
   var me = this
@@ -97,7 +129,8 @@ TextNode.prototype.expand = function() {
     if (!childrenJson) return
 
     childrenJson.forEach(function(nodeJson) {
-      me.addChildOnClient(nodeJson) // TODO: Figure out how to not incur browser redraw cost for each added child.
+      var node = me.addChildOnClient(nodeJson) // TODO: Figure out how to not incur browser redraw cost for each added child.
+      if (doRecursive) node.expand(doRecursive)
     })
     me.childrenFetched = true;
     me.expandInternal()
@@ -120,21 +153,29 @@ TextNode.prototype.expandInternal = function() {
   this.state = 'expanded'
   $(this).children('node-children').show('slow')
   this.header.expandCollapseButton.expand()
+  this.header.expandCollapseRecursiveButton.expand()
 }
 
 
-TextNode.prototype.collapse = function() {
+TextNode.prototype.collapse = function(doRecursive) {
   this.state = 'collapsed'
-  $(this).children('node-children').hide('slow')
+  var nodeChildren = $(this).children('node-children')
+  nodeChildren.hide('slow')
   this.header.expandCollapseButton.collapse()
+  this.header.expandCollapseRecursiveButton.collapse()
+  if (doRecursive) {
+    nodeChildren.children().each(function(index) {
+      this.collapse(doRecursive)
+    })
+  }
 }
 
 
-TextNode.prototype.toggle = function() {
+TextNode.prototype.toggle = function(doRecursive) {
   if (this.state == 'expanded') {
-    this.collapse()
+    this.collapse(doRecursive)
   } else {
-    this.expand()
+    this.expand(doRecursive)
   }
 }
 
@@ -166,7 +207,9 @@ TextNode.prototype.addChildOnClient = function(childRep) {
   if (childRep.parent_id != this.id) {
     throw("Mismatching ids: parent_id from server (" + childRep.parent_id + ") does not match id of parent on client (" + this.id + ").")
   }
-  $(this).children('node-children').append(new TextNode(childRep))
+  var result = new TextNode(childRep)
+  $(this).children('node-children').append(result)
+  return result
 }
 
 // =========================== Add Sibling
@@ -257,11 +300,10 @@ TextNode.prototype.setAttributesOnClient = function(jsonNode) {
     throw("Mismatching ids: id from server (" + options.id + ") does not match id on client (" + this.id + ").")
   }
 
-  for(var key in jsonNode) {
-    if (jsonNode.hasOwnProperty(key) && (['content', 'type_id'].indexOf(key) > -1)) {
-        this[key] = jsonNode[key]
-    }
-  }
+  var $this = $(this)
+  if (jsonNode.content) this.content = jsonNode.content
+  if (jsonNode.width) this.width     = jsonNode.width
+  if (jsonNode.height)this.height    = jsonNode.height
 }
 
 // =========================================================================
@@ -270,9 +312,6 @@ TextNode.prototype.setAttributesOnClient = function(jsonNode) {
 var NodeHeader = defCustomTag('node-header', HTMLElement)
 NodeHeader.prototype.onCreate = function() {
   var $this = $(this)
-
-  this.content = new NodeContent
-  $this.append(this.content)
 
   this.addChildButton = new AddChild
   $this.append(this.addChildButton)
@@ -285,6 +324,13 @@ NodeHeader.prototype.onCreate = function() {
 
   this.expandCollapseButton = new ExpandCollapse
   $this.append(this.expandCollapseButton)
+
+  this.expandCollapseRecursiveButton = new ExpandCollapseRecursive
+  $this.append(this.expandCollapseRecursiveButton)
+
+  this.content = new NodeContent
+  $this.append(this.content)
+
 }
 
 Object.defineProperties(NodeHeader.prototype, {
@@ -308,20 +354,32 @@ Object.defineProperties(NodeHeader.prototype, {
 //                   Node Content
 // =========================================================================
 var NodeContent = defCustomTag('node-content', HTMLTextAreaElement, 'textarea')
-NodeContent.prototype.onCreate = function() {
+
+NodeContent.prototype.afterCreate = function() {
   var $this = $(this)
-  $this.val("New Node")
   $this.addClass('node-content')
-  //noinspection JSUnusedGlobalSymbols
-  this.rows = 1
   $this.on("blur", this.onBlur)
+  $this.on("mouseup", this.onResize)
 }
 
 // This event-handler is bound to the object's blur event.
 // It causes the content of the node to change on the server.
 NodeContent.prototype.onBlur = function() {
-  var node = $(this).parent().parent()[0]
-  node.setAttributes({content: node.content})
+  var $this = $(this)
+  var node = $this.parent().parent()[0]
+  node.setAttributes({
+    content: node.content})
+}
+
+// This event-handler is bound to the object's resize event.
+// It causes the width and height of the node's text area to change on the server.
+NodeContent.prototype.onResize = function(e) {
+  console.log("***** onResize")
+  var $this = $(this)
+  var node = $this.parent().parent()[0]
+  node.setAttributes({
+    width: $this.width(),
+    height: $this.height()})
 }
 
 
@@ -331,6 +389,7 @@ NodeContent.prototype.onBlur = function() {
 var NodeChildren = defCustomTag('node-children', HTMLElement)
 NodeChildren.prototype.onCreate = function() {
 }
+
 
 // =========================================================================
 //                   Node Button
@@ -378,21 +437,49 @@ var ExpandCollapse = defCustomTag('expand-collapse', NodeButton)
 ExpandCollapse.prototype.onCreate = function() {
   NodeButton.prototype.onCreate.call(this)
 
-  $(this).click(function() {this.toggle()})
+  $(this).click(function(event) {this.toggle()})
 }
 
 
 ExpandCollapse.prototype.toggle = function() {
-  this.parentNode.parentNode.toggle()
+  this.parentNode.parentNode.toggle(false)
 }
 
 ExpandCollapse.prototype.collapse = function() {
+  var $this = $(this)
+  $this.html("o")
+  $this.siblings('add-child')[0].deactivate()
+}
+
+ExpandCollapse.prototype.expand = function() {
+  var $this = $(this)
+  $this.html("c")
+  $this.siblings('add-child')[0].activate()
+}
+
+// =========================================================================
+//                   Expand / Collapse Recursive Button
+// =========================================================================
+var ExpandCollapseRecursive = defCustomTag('expand-collapse-recursive', NodeButton)
+
+ExpandCollapseRecursive.prototype.onCreate = function() {
+  NodeButton.prototype.onCreate.call(this)
+  $(this).click(function(event) {
+    this.toggle()})
+}
+
+
+ExpandCollapseRecursive.prototype.toggle = function() {
+  this.parentNode.parentNode.toggle(true)
+}
+
+ExpandCollapseRecursive.prototype.collapse = function() {
   var $this = $(this)
   $this.html("O")
   $this.siblings('add-child')[0].deactivate()
 }
 
-ExpandCollapse.prototype.expand = function() {
+ExpandCollapseRecursive.prototype.expand = function() {
   var $this = $(this)
   $this.html("C")
   $this.siblings('add-child')[0].activate()
@@ -416,7 +503,7 @@ AddChild.prototype.onCreate = function() {
   $this.click(function() {
     var $this = $(this)
     if (this.is_active()) {
-      $this.parent().parent()[0].addChild({content:'New Child'})
+      $this.parent().parent()[0].addChild(TextNode.defaultSpec)
     }
   })
 }
@@ -433,7 +520,7 @@ AddSibling.prototype.onCreate = function() {
 
   // Click function adds a new TextNode after the TextNode associated with this button.
   $this.click(function() {
-    $(this).parent().parent()[0].addSibling({content: 'New Sibling'})
+    $(this).parent().parent()[0].addSibling(TextNode.defaultSpec)
   })
 }
 

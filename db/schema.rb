@@ -11,7 +11,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20150328011658) do
+ActiveRecord::Schema.define(:version => 20150331212445) do
 
   create_table "nodes", :force => true do |t|
     t.integer  "type_id"
@@ -22,6 +22,8 @@ ActiveRecord::Schema.define(:version => 20150328011658) do
     t.datetime "updated_at",     :null => false
     t.integer  "predecessor_id"
     t.integer  "successor_id"
+    t.float    "width"
+    t.float    "height"
   end
 
   add_index "nodes", ["predecessor_id"], :name => "index_nodes_on_predecessor_id", :unique => true

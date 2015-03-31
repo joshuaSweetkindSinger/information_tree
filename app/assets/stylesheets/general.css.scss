@@ -116,3 +116,9 @@ ui-node {
   box-sizing:border-box;
 }
 
+textarea {
+  min-width: 10px;
+  min-height:10px;
+  max-width:300px;
+}
+

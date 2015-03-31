@@ -3,7 +3,7 @@ class Node < ActiveRecord::Base
   BULLET = 1 # type_id of this value indicates a bullet item.
   PARAGRAPH = 2 # type_id of this value indicates a paragraph item.
 
-  attr_accessible :content, :parent_id, :rank, :type_id, :predecessor_id, :successor_id
+  attr_accessible :content, :parent_id, :rank, :type_id, :predecessor_id, :successor_id, :width, :height
   belongs_to :parent, class_name: 'Node'
   belongs_to :predecessor, class_name: 'Node'
   belongs_to :successor, class_name: 'Node'
@@ -19,7 +19,7 @@ class Node < ActiveRecord::Base
   end
 
   def self.make_top_node
-    result = Node.new(content:'Top', rank:0)
+    result = Node.new(content:'Top', rank:0, width:100, height:50)
     result.parent_id = -1
     result.save!
     result
