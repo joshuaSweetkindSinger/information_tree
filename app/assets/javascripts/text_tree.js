@@ -67,6 +67,17 @@ TextNode.prototype.afterCreate = function(options) {
   this.type_id = options.type_id
 }
 
+// Clean up the width and height after we are attached.
+// The problem here is that width and height are set at create time, which is the only time
+// during which we can pass in args, such as width an height. But, because the node is not yet
+// attached to the DOM, the computed width and height are wrong somehow (not sure of details).
+// So, we cache the width and height at create time and then clean it up by resetting at attach time.
+TextNode.prototype.onAttach = function() {
+  this.width = this._width
+  this.height = this._height
+}
+
+
 Object.defineProperties(TextNode.prototype, {
     myId: {
       get: function() {
@@ -94,6 +105,7 @@ Object.defineProperties(TextNode.prototype, {
         return $(this).children('node-header').children('textarea').width()
       },
       set: function(v) {
+        this._width = v // Cache requested width. This is a kludge to fix incorrect width at create time. See onAttach() above.
         $(this).children('node-header').children('textarea').width(v)
       }
     },
@@ -103,12 +115,44 @@ Object.defineProperties(TextNode.prototype, {
         return $(this).children('node-header').children('textarea').height()
       },
       set: function(v) {
+        this._height = v // Cache requested height. This is a kludge to fix incorrect width at create time. See onAttach() above.
         $(this).children('node-header').children('textarea').height(v)
       }
     }
   }
 )
 
+// =================== Auto-Size
+// Calculate a pleasing size for the content textarea associated with this text node.
+TextNode.prototype.autoSize = function() {
+  this.setAttributes(this.calcAutoSize(this.content.length))
+}
+
+// Calculate a pleasing width and height for a textarea input box that contains n chars.
+// Return the calculated values as a hash.
+// TODO: Get rid of magic numbers, and make calculation take font size into account.
+// TODO: height is not set correctly for large amounts of text. Fix it.
+TextNode.prototype.calcAutoSize = function(n) {
+  var maxWidth = 600.0
+  var charWidth  = 8.0
+  var charHeight = 15.0
+  var margin     = 10.0
+  var width = 0
+  var height = 0
+  if (n < 60) {
+    width  = n * charWidth
+    height = 1 * charHeight + margin
+  } else {
+    var squareSideChars = Math.sqrt(n) // The number of chars on a side, assuming a square region with charWidth = charHeight
+    var distortedWidthChars = 1.5 * squareSideChars * charHeight / charWidth // square it up in char units by taking width/height pixels into account, and make width 1.5 longer for good measure.
+    width = Math.min(maxWidth, distortedWidthChars * charWidth) // Want the width to be 1.5 the height in pixels for smaller bits of text.
+    var widthInChars = width / charWidth
+    var heightInChars = n / widthInChars
+    height = heightInChars * charHeight + margin
+  }
+
+  return {width:width, height:height}
+}
 // =================== Expand / Collapse
 // Expand this node, first fetching its children from the server if necessary.
 TextNode.prototype.expand = function(doRecursive) {
@@ -313,6 +357,9 @@ var NodeHeader = defCustomTag('node-header', HTMLElement)
 NodeHeader.prototype.onCreate = function() {
   var $this = $(this)
 
+  this.autoSizeButton = new AutoSize
+  $this.append(this.autoSizeButton)
+
   this.addChildButton = new AddChild
   $this.append(this.addChildButton)
 
@@ -428,6 +475,25 @@ NodeButton.prototype.activate = function() {
   $this.addClass('node-button-active')
 }
 
+NodeButton.prototype.getTextNode = function() {
+  return $(this).parents('text-node')[0]
+}
+
+
+// =========================================================================
+//                   AutoSize Button
+// =========================================================================
+// Pressing this button automatically resizes the associated content textarea to be a pleasant size
+// for the text.
+var AutoSize = defCustomTag('auto-size', NodeButton)
+
+AutoSize.prototype.onCreate = function() {
+  NodeButton.prototype.onCreate.call(this)
+
+  var $this = $(this)
+  $this.html('s')
+  $this.click(function(event) {this.getTextNode().autoSize()})
+}
 
 // =========================================================================
 //                   Expand / Collapse Button
@@ -442,7 +508,7 @@ ExpandCollapse.prototype.onCreate = function() {
 
 
 ExpandCollapse.prototype.toggle = function() {
-  this.parentNode.parentNode.toggle(false)
+  this.getTextNode().toggle(false)
 }
 
 ExpandCollapse.prototype.collapse = function() {
@@ -470,7 +536,7 @@ ExpandCollapseRecursive.prototype.onCreate = function() {
 
 
 ExpandCollapseRecursive.prototype.toggle = function() {
-  this.parentNode.parentNode.toggle(true)
+  this.getTextNode().toggle(true)
 }
 
 ExpandCollapseRecursive.prototype.collapse = function() {
@@ -501,9 +567,8 @@ AddChild.prototype.onCreate = function() {
   // Note that $(this).parent() below refers to a NodeHeader, not a TextNode. The
   // TextNode is the NodeHeader's parent.
   $this.click(function() {
-    var $this = $(this)
     if (this.is_active()) {
-      $this.parent().parent()[0].addChild(TextNode.defaultSpec)
+      this.getTextNode().addChild(TextNode.defaultSpec)
     }
   })
 }
@@ -520,7 +585,7 @@ AddSibling.prototype.onCreate = function() {
 
   // Click function adds a new TextNode after the TextNode associated with this button.
   $this.click(function() {
-    $(this).parent().parent()[0].addSibling(TextNode.defaultSpec)
+    this.getTextNode().addSibling(TextNode.defaultSpec)
   })
 }
 
@@ -537,6 +602,6 @@ RemoveNode.prototype.onCreate = function() {
 
   // Click function removes the TextNode associated with this button.
   $this.click(function() {
-    $(this).parent().parent()[0].remove()
+    this.getTextNode().remove()
   })
 }
