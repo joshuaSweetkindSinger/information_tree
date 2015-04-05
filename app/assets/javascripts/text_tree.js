@@ -234,7 +234,15 @@ TextNode.prototype.addChild = function(childSpec) {
     this.addChildPath(this.id),
     function(childRep) {
       if (childRep.error) return
-      me.addChildOnClient(childRep)
+
+      // We are not expanded--expand so new child can be seen.
+      if (me.state != 'expanded') {
+        me.expand()
+
+      // We are already expanded--just add the new child to the DOM.
+      } else {
+        me.addChildOnClient(childRep)
+      }
     },
     {node: childSpec}
   )
@@ -253,6 +261,7 @@ TextNode.prototype.addChildOnClient = function(childRep) {
   }
   var result = new TextNode(childRep)
   $(this).children('node-children').append(result)
+
   return result
 }
 
@@ -421,7 +430,6 @@ NodeContent.prototype.onBlur = function() {
 // This event-handler is bound to the object's resize event.
 // It causes the width and height of the node's text area to change on the server.
 NodeContent.prototype.onResize = function(e) {
-  console.log("***** onResize")
   var $this = $(this)
   var node = $this.parent().parent()[0]
   node.setAttributes({
@@ -514,13 +522,13 @@ ExpandCollapse.prototype.toggle = function() {
 ExpandCollapse.prototype.collapse = function() {
   var $this = $(this)
   $this.html("o")
-  $this.siblings('add-child')[0].deactivate()
+  // $this.siblings('add-child')[0].deactivate() // commented this out--can always add a child, it will auto-expand the node.
 }
 
 ExpandCollapse.prototype.expand = function() {
   var $this = $(this)
   $this.html("c")
-  $this.siblings('add-child')[0].activate()
+  // $this.siblings('add-child')[0].activate()  // commented this out--can always add a child, it will auto-expand the node.
 }
 
 // =========================================================================
@@ -542,13 +550,13 @@ ExpandCollapseRecursive.prototype.toggle = function() {
 ExpandCollapseRecursive.prototype.collapse = function() {
   var $this = $(this)
   $this.html("O")
-  $this.siblings('add-child')[0].deactivate()
+  // $this.siblings('add-child')[0].deactivate() // Commented this out--can always add a child, and it will auto-expand the node.
 }
 
 ExpandCollapseRecursive.prototype.expand = function() {
   var $this = $(this)
   $this.html("C")
-  $this.siblings('add-child')[0].activate()
+  // $this.siblings('add-child')[0].activate() // Commented this out--can always add a child, and it will auto-expand the node.
 }
 
 // =========================================================================

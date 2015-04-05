@@ -38,13 +38,18 @@ class Node < ActiveRecord::Base
   # and causes node to be saved to the db, along with mods to the sibling nodes on either side of it.
   # Its return value is node.
   def self.splice_in_node (parent, predecessor_node, node, successor_node)
-    puts "***** splice_in_node: #{parent}, #{predecessor_node}, #{node}, #{successor_node}"
+    puts "***** Enter splice_in_node"
+    puts "parent: #{parent}"
+    puts "predecessor: #{predecessor_node}"
+    puts "new node: #{node}"
+    puts "successor: [#{successor_node}]"
+
 
     # Sanity checks
-    raise "successor node #{sucessor_node} is not the successor of predecessor node #{predecessor_node}" if predecessor_node && predecessor_node.successor != successor_node
-    raise "predecessor node #{predecessor_node }is not the predecessor of successor node #{successor_node}" if successor_node && successor_node.predecessor != predecessor_node
-    raise "parent #{parent} is not the parent of predecessor_node #{predecessor_node}" if predecessor_node && predecessor_node.parent != parent
-    raise "parent #{parent} is not the parent of successor_node #{successor_node}" if successor_node && successor_node.parent != parent
+    raise "successor node #{successor_node} is not the successor of predecessor node #{predecessor_node}" if predecessor_node && (predecessor_node.successor != successor_node)
+    raise "predecessor node #{predecessor_node }is not the predecessor of successor node #{successor_node}" if successor_node && (successor_node.predecessor != predecessor_node)
+    raise "parent #{parent} is not the parent of predecessor_node #{predecessor_node}" if predecessor_node && (predecessor_node.parent != parent)
+    raise "parent #{parent} is not the parent of successor_node #{successor_node}" if successor_node && (successor_node.parent != parent)
 
     # We need to get the node an id before we can patch up the predecessor/successor links
     # We do this by saving it to the db.
