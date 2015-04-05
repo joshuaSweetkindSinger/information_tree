@@ -366,6 +366,9 @@ var NodeHeader = defCustomTag('node-header', HTMLElement)
 NodeHeader.prototype.onCreate = function() {
   var $this = $(this)
 
+  this.content = new NodeContent
+  $this.append(this.content)
+
   this.debugButton = new NodeDebug
   $this.append(this.debugButton)
 
@@ -386,10 +389,6 @@ NodeHeader.prototype.onCreate = function() {
 
   this.expandCollapseRecursiveButton = new ExpandCollapseRecursive
   $this.append(this.expandCollapseRecursiveButton)
-
-  this.content = new NodeContent
-  $this.append(this.content)
-
 }
 
 Object.defineProperties(NodeHeader.prototype, {
