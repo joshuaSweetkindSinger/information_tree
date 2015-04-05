@@ -133,7 +133,7 @@ TextNode.prototype.autoSize = function() {
 // TODO: Get rid of magic numbers, and make calculation take font size into account.
 // TODO: height is not set correctly for large amounts of text. Fix it.
 TextNode.prototype.calcAutoSize = function(n) {
-  var maxWidth = 600.0
+  var maxWidth = 1000.0
   var charWidth  = 8.0
   var charHeight = 15.0
   var margin     = 10.0
@@ -366,6 +366,9 @@ var NodeHeader = defCustomTag('node-header', HTMLElement)
 NodeHeader.prototype.onCreate = function() {
   var $this = $(this)
 
+  this.debugButton = new NodeDebug
+  $this.append(this.debugButton)
+
   this.autoSizeButton = new AutoSize
   $this.append(this.autoSizeButton)
 
@@ -415,7 +418,7 @@ NodeContent.prototype.afterCreate = function() {
   var $this = $(this)
   $this.addClass('node-content')
   $this.on("blur", this.onBlur)
-  $this.on("mouseup", this.onResize)
+  $this.on("blur", this.onResize)
 }
 
 // This event-handler is bound to the object's blur event.
@@ -427,7 +430,7 @@ NodeContent.prototype.onBlur = function() {
     content: node.content})
 }
 
-// This event-handler is bound to the object's resize event.
+// This event-handler is bound to the object's blur event.
 // It causes the width and height of the node's text area to change on the server.
 NodeContent.prototype.onResize = function(e) {
   var $this = $(this)
@@ -487,6 +490,23 @@ NodeButton.prototype.getTextNode = function() {
   return $(this).parents('text-node')[0]
 }
 
+
+// =========================================================================
+//                   NodeDebug Button
+// =========================================================================
+// Pressing this button automatically resizes the associated content textarea to be a pleasant size
+// for the text.
+var NodeDebug = defCustomTag('node-debug', NodeButton)
+
+NodeDebug.prototype.onCreate = function() {
+  NodeButton.prototype.onCreate.call(this)
+
+  var $this = $(this)
+  $this.html('D')
+  $this.click(function(event) {
+    console.log("Debug: ", this.getTextNode())
+  })
+}
 
 // =========================================================================
 //                   AutoSize Button
