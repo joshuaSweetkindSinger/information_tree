@@ -196,8 +196,8 @@ TextNode.prototype.childrenPath = function(id) {
 TextNode.prototype.expandInternal = function() {
   this.state = 'expanded'
   $(this).children('node-children').show('slow')
-  this.header.expandCollapseButton.expand()
-  this.header.expandCollapseRecursiveButton.expand()
+  this.expandCollapseButton().expand()
+  this.expandCollapseRecursiveButton().expand()
 }
 
 
@@ -205,8 +205,8 @@ TextNode.prototype.collapse = function(doRecursive) {
   this.state = 'collapsed'
   var nodeChildren = $(this).children('node-children')
   nodeChildren.hide('slow')
-  this.header.expandCollapseButton.collapse()
-  this.header.expandCollapseRecursiveButton.collapse()
+  this.expandCollapseButton().collapse()
+  this.expandCollapseRecursiveButton().collapse()
   if (doRecursive) {
     nodeChildren.children().each(function(index) {
       this.collapse(doRecursive)
@@ -221,6 +221,13 @@ TextNode.prototype.toggle = function(doRecursive) {
   } else {
     this.expand(doRecursive)
   }
+}
+
+TextNode.prototype.expandCollapseButton = function() {
+  return this.header.buttonPanel.expandCollapseButton
+}
+TextNode.prototype.expandCollapseRecursiveButton = function() {
+  return this.header.buttonPanel.expandCollapseRecursiveButton
 }
 
 
@@ -369,6 +376,31 @@ NodeHeader.prototype.onCreate = function() {
   this.content = new NodeContent
   $this.append(this.content)
 
+  this.buttonPanel = new ButtonPanel
+  $this.append(this.buttonPanel)
+}
+
+Object.defineProperties(NodeHeader.prototype, {
+    myId: {
+      get: function() {
+        return this.id
+      },
+
+      set: function(id) {
+        this.id = id
+        this.content.id = id
+        this.buttonPanel.id = id
+      }
+    }
+  })
+
+// =========================================================================
+//                   Button Panel
+// =========================================================================
+var ButtonPanel = defCustomTag('button-panel', HTMLElement)
+ButtonPanel.prototype.onCreate = function() {
+  var $this = $(this)
+
   this.debugButton = new NodeDebug
   $this.append(this.debugButton)
 
@@ -391,22 +423,21 @@ NodeHeader.prototype.onCreate = function() {
   $this.append(this.expandCollapseRecursiveButton)
 }
 
-Object.defineProperties(NodeHeader.prototype, {
-    myId: {
-      get: function() {
-        return this.id
-      },
+Object.defineProperties(ButtonPanel.prototype, {
+  myId: {
+    get: function() {
+      return this.id
+    },
 
-      set: function(id) {
-        this.id = id
-        this.content.id = id
-        this.expandCollapseButton.id = id
-        this.addChildButton.id = id
-        this.addSiblingButton.id = id
-        this.removeNodeButton.id = id
-      }
+    set: function(id) {
+      this.id = id
+      this.expandCollapseButton.id = id
+      this.addChildButton.id = id
+      this.addSiblingButton.id = id
+      this.removeNodeButton.id = id
     }
-  })
+  }
+})
 
 // =========================================================================
 //                   Node Content
