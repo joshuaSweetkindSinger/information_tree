@@ -378,6 +378,7 @@ NodeHeader.prototype.onCreate = function() {
 
   this.buttonPanel = new ButtonPanel
   $this.append(this.buttonPanel)
+  $(this.buttonPanel).hide()
 }
 
 Object.defineProperties(NodeHeader.prototype, {
@@ -449,11 +450,26 @@ NodeContent.prototype.afterCreate = function() {
   $this.addClass('node-content')
   $this.on("blur", this.onBlur)
   $this.on("blur", this.onResize)
+  $this.on("focus", this.onFocus)
+}
+
+NodeContent.prototype.hideButtonPanel = function() {
+  var panel = $(this).parent()[0].buttonPanel
+  $(panel).hide()
+}
+
+NodeContent.prototype.onFocus = function() {
+  var panel = $(this).parent()[0].buttonPanel
+  $(panel).show()
+
+  var textNode = $(this).parent().parent()[0]
+  textNode.expand()
 }
 
 // This event-handler is bound to the object's blur event.
 // It causes the content of the node to change on the server.
-NodeContent.prototype.onBlur = function() {
+NodeContent.prototype.onBlur = function(e) {
+  console.log("blur event: ", e)
   var $this = $(this)
   var node = $this.parent().parent()[0]
   node.setAttributes({
