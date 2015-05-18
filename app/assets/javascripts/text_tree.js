@@ -5,9 +5,9 @@ TextTree: a single node of this type is put in a static html file, which initiat
           creation of a text tree when the html file is loaded into the browser, via its custom tag constructor.
           A text tree is made up of TextNodes.
 TextNode: has two child elements, called NodeHeader and NodeChildren.
-NodeHeader: represents a label for the node, as well as clickable buttons to take action on the node. It
-            contains elements NodeLabel, ExpandCollapse, AddChild, AddSibling.
-NodeChildren: represents a container for sub-nodes. Its only children are of type UiNode.
+NodeHeader: represents content for the node, as well as clickable buttons to take action on the node. It
+            contains an element NodeContent, as well as button elements like ExpandCollapse, AddChild, AddSibling.
+NodeChildren: represents a container for sub-nodes. Its only children are of type TextNode.
 
 Text Nodes are stored in the db in the nodes table. When the client-side expands a node, it asks the db for its children,
 which get sent as json, and then the client builds the nodes on the browser.
@@ -65,6 +65,12 @@ TextNode.prototype.afterCreate = function(options) {
   this.width   = options.width
   this.height  = options.height
   this.type_id = options.type_id
+
+
+  $this.draggable({
+    revert: true,
+    helper: "clone"
+  })
 }
 
 // Clean up the width and height after we are attached.
@@ -193,20 +199,24 @@ TextNode.prototype.childrenPath = function(id) {
 }
 
 
+// Expand this node, which means revealing its children and showing its button panel.
 TextNode.prototype.expandInternal = function() {
   this.state = 'expanded'
   $(this).children('node-children').show('slow')
   this.expandCollapseButton().expand()
   this.expandCollapseRecursiveButton().expand()
+  $(this.header.buttonPanel).show('slow')
 }
 
 
+// Collapse this node, which means hiding its children and hiding its button panel.
 TextNode.prototype.collapse = function(doRecursive) {
   this.state = 'collapsed'
   var nodeChildren = $(this).children('node-children')
   nodeChildren.hide('slow')
   this.expandCollapseButton().collapse()
   this.expandCollapseRecursiveButton().collapse()
+  $(this.header.buttonPanel).hide('slow')
   if (doRecursive) {
     nodeChildren.children().each(function(index) {
       this.collapse(doRecursive)
@@ -326,12 +336,20 @@ TextNode.prototype.removeOnClient = function() {
   $(this).remove()
 }
 
+// =========================== Follow Link
+// Open up in a new tab (or window) the URL represented by our node's content.
+TextNode.prototype.followLink = function() {
+  var url = this.content
+  if (url.slice(0,4) == 'http') open(url)
+}
+
 // ======================== Set Attributes
 
 // Set attributes for this node. The attributes to change, and their values,
 // are in options, which is a hash. The hash is sent to the server, to change the values
 // on the server first, and then the server replies with a json that represents the changed node.
 // Note: This does not allow you to set attributes affecting topology, e.g.: parent_id, rank.
+// Attributes which can be set are: content, width, height.
 TextNode.prototype.setAttributes = function(options) {
   var me = this
   getJsonFromServer(
@@ -369,6 +387,9 @@ TextNode.prototype.setAttributesOnClient = function(jsonNode) {
 // =========================================================================
 //                   Node Header
 // =========================================================================
+/*
+NodeHeader is a container for the node's content and buttons.
+*/
 var NodeHeader = defCustomTag('node-header', HTMLElement)
 NodeHeader.prototype.onCreate = function() {
   var $this = $(this)
@@ -398,12 +419,18 @@ Object.defineProperties(NodeHeader.prototype, {
 // =========================================================================
 //                   Button Panel
 // =========================================================================
+/*
+ButtonPanel is a container for the node's buttons.
+*/
 var ButtonPanel = defCustomTag('button-panel', HTMLElement)
 ButtonPanel.prototype.onCreate = function() {
   var $this = $(this)
 
   this.debugButton = new NodeDebug
   $this.append(this.debugButton)
+
+  this.followLinkButton = new FollowLink
+  $this.append(this.followLinkButton)
 
   this.autoSizeButton = new AutoSize
   $this.append(this.autoSizeButton)
@@ -430,12 +457,13 @@ Object.defineProperties(ButtonPanel.prototype, {
       return this.id
     },
 
+    // TODO: Are these necessary? Who uses them?
     set: function(id) {
-      this.id = id
+      this.id                      = id
       this.expandCollapseButton.id = id
-      this.addChildButton.id = id
-      this.addSiblingButton.id = id
-      this.removeNodeButton.id = id
+      this.addChildButton.id       = id
+      this.addSiblingButton.id     = id
+      this.removeNodeButton.id     = id
     }
   }
 })
@@ -443,6 +471,8 @@ Object.defineProperties(ButtonPanel.prototype, {
 // =========================================================================
 //                   Node Content
 // =========================================================================
+// NodeContent holds the text that represents the content of the node.
+
 var NodeContent = defCustomTag('node-content', HTMLTextAreaElement, 'textarea')
 
 NodeContent.prototype.afterCreate = function() {
@@ -450,26 +480,30 @@ NodeContent.prototype.afterCreate = function() {
   $this.addClass('node-content')
   $this.on("blur", this.onBlur)
   $this.on("blur", this.onResize)
-  $this.on("focus", this.onFocus)
+  $this.on("click", this.onClick)
+
+  $this.droppable({
+    tolerance: "pointer",
+    hoverClass: "drop-hover",
+    greedy: true,
+    drop: function(event, ui) {
+      console.log("event = ", event)
+      console.log("draggable = ", ui.draggable)
+    }
+  })
 }
 
-NodeContent.prototype.hideButtonPanel = function() {
-  var panel = $(this).parent()[0].buttonPanel
-  $(panel).hide()
-}
-
-NodeContent.prototype.onFocus = function() {
+NodeContent.prototype.onClick = function() {
   var panel = $(this).parent()[0].buttonPanel
   $(panel).show()
 
   var textNode = $(this).parent().parent()[0]
-  textNode.expand()
+  textNode.toggle()
 }
 
 // This event-handler is bound to the object's blur event.
 // It causes the content of the node to change on the server.
 NodeContent.prototype.onBlur = function(e) {
-  console.log("blur event: ", e)
   var $this = $(this)
   var node = $this.parent().parent()[0]
   node.setAttributes({
@@ -490,6 +524,7 @@ NodeContent.prototype.onResize = function(e) {
 // =========================================================================
 //                   Node Children
 // =========================================================================
+// NodeChildren is a container for the node's child nodes.
 var NodeChildren = defCustomTag('node-children', HTMLElement)
 NodeChildren.prototype.onCreate = function() {
 }
@@ -538,10 +573,25 @@ NodeButton.prototype.getTextNode = function() {
 
 
 // =========================================================================
-//                   NodeDebug Button
+//                   FollowLink Button
 // =========================================================================
 // Pressing this button automatically resizes the associated content textarea to be a pleasant size
 // for the text.
+var FollowLink = defCustomTag('follow-link', NodeButton)
+
+FollowLink.prototype.onCreate = function() {
+  NodeButton.prototype.onCreate.call(this)
+
+  var $this = $(this)
+  $this.html('->')
+  $this.click(function(event) {
+    this.getTextNode().followLink()
+  })
+}
+// =========================================================================
+//                   NodeDebug Button
+// =========================================================================
+// Pressing this button prints the associated node out to the console for debugging.
 var NodeDebug = defCustomTag('node-debug', NodeButton)
 
 NodeDebug.prototype.onCreate = function() {
@@ -638,8 +688,6 @@ AddChild.prototype.onCreate = function() {
 
   // Click function adds a new child TextNode to the TextNode associated with this button. This means
   // adding the new node to the TextNode's NodeChildren element.
-  // Note that $(this).parent() below refers to a NodeHeader, not a TextNode. The
-  // TextNode is the NodeHeader's parent.
   $this.click(function() {
     if (this.is_active()) {
       this.getTextNode().addChild(TextNode.defaultSpec)

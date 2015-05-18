@@ -1,8 +1,8 @@
-HTTP = {
+var HTTP = {
   is_success_code: function(code) {
     return code >= 200 && code < 300
   }
-}
+};
 
 // Ping the server at url with a request of type verb, augmented by query params.
 // If the response is successful, parse it into json and call the callback.

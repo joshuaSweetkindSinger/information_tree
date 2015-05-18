@@ -102,6 +102,15 @@ li.side-nav {
   color:lightgray;
 }
 
+text-node {
+  display:block;
+  box-sizing:border-box;
+}
+
+.drop-hover {
+  background:blue;
+}
+
 node-children {
   display:block;
   box-sizing:border-box;
