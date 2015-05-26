@@ -67,10 +67,10 @@ TextNode.prototype.afterCreate = function(options) {
   this.type_id = options.type_id
 
 
-  $this.draggable({
-    revert: true,
-    helper: "clone"
-  })
+  // $this.draggable({
+  //   revert: true,
+  //   helper: "clone"
+  // })
 }
 
 // Clean up the width and height after we are attached.
@@ -482,15 +482,15 @@ NodeContent.prototype.afterCreate = function() {
   $this.on("blur", this.onResize)
   $this.on("click", this.onClick)
 
-  $this.droppable({
-    tolerance: "pointer",
-    hoverClass: "drop-hover",
-    greedy: true,
-    drop: function(event, ui) {
-      console.log("event = ", event)
-      console.log("draggable = ", ui.draggable)
-    }
-  })
+  // $this.droppable({
+  //   tolerance: "pointer",
+  //   hoverClass: "drop-hover",
+  //   greedy: true,
+  //   drop: function(event, ui) {
+  //     console.log("event = ", event)
+  //     console.log("draggable = ", ui.draggable)
+  //   }
+  // })
 }
 
 NodeContent.prototype.onClick = function() {

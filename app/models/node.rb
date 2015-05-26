@@ -59,8 +59,8 @@ class Node < ActiveRecord::Base
     # Patch up parent and predecessor/successor links
     node.predecessor              = predecessor_node
     node.successor                = successor_node
-    node.predecessor.successor_id = node.id if node.predecessor
-    node.successor.predecessor_id = node.id if node.successor
+    predecessor_node.successor_id = node.id if predecessor_node
+    successor_node.predecessor_id = node.id if successor_node
 
     # Calculate our rank
     node.rank = node.calc_rank()

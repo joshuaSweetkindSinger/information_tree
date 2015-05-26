@@ -4,11 +4,11 @@ class NodesController < ApplicationController
   # GET /nodes
   # GET /nodes.json
   def index
-    @nodes = Node.all
+    @objects = Node.all
 
     respond_to do |format|
       format.html # index.html.erb
-      format.json { render json: @nodes }
+      format.json { render json: @objects }
     end
   end
 
@@ -26,33 +26,33 @@ class NodesController < ApplicationController
   # GET /nodes/new
   # GET /nodes/new.json
   def new
-    @node = Node.new
-    @node.parent_id = params[:parent]
-    @node.rank      = params[:rank]
+    @obj = Node.new
+    @obj.parent_id = params[:parent]
+    @obj.rank      = params[:rank]
 
     respond_to do |format|
       format.html # new.html.erb
-      format.json { render json: @node }
+      format.json { render json: @obj }
     end
   end
 
   # GET /nodes/1/edit
   def edit
-    @node = Node.find(params[:id])
+    @obj = Node.find(params[:id])
   end
 
   # POST /nodes
   # POST /nodes.json
   def create
-    @node = Node.new(params[:node])
+    @obj = Node.new(params[:node])
 
     respond_to do |format|
-      if @node.save
+      if @obj.save
         format.html { redirect_to interactive_nodes_path, notice: 'Node was successfully created.' }
-        format.json { render json: @node, status: :created, location: @node }
+        format.json { render json: @obj, status: :created, location: @obj }
       else
         format.html { render action: "new" }
-        format.json { render json: @node.errors, status: :unprocessable_entity }
+        format.json { render json: @obj.errors, status: :unprocessable_entity }
       end
     end
   end
@@ -60,15 +60,15 @@ class NodesController < ApplicationController
   # PUT /nodes/1
   # PUT /nodes/1.json
   def update
-    @node = Node.find(params[:id])
+    @obj = Node.find(params[:id])
 
     respond_to do |format|
-      if @node.update_attributes(params[:node])
-        format.html { redirect_to @node, notice: 'Node was successfully updated.' }
+      if @obj.update_attributes(params[:node])
+        format.html { redirect_to @obj, notice: 'Node was successfully updated.' }
         format.json { head :no_content }
       else
         format.html { render action: "edit" }
-        format.json { render json: @node.errors, status: :unprocessable_entity }
+        format.json { render json: @obj.errors, status: :unprocessable_entity }
       end
     end
   end
@@ -76,8 +76,8 @@ class NodesController < ApplicationController
   # DELETE /nodes/1
   # DELETE /nodes/1.json
   def destroy
-    @node = Node.find(params[:id])
-    @node.destroy
+    @obj = Node.find(params[:id])
+    @obj.destroy
 
     respond_to do |format|
       format.html { redirect_to nodes_url }

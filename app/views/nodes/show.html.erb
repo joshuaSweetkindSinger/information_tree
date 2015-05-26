@@ -1,13 +1,19 @@
 <p id="notice"><%= notice %></p>
 
+
 <p>
-  <b>Type:</b>
-  <%= @obj.type_id %>
+  <b>Content:</b>
+  <%= @obj.content %>
 </p>
 
 <p>
-  <b>Parent:</b>
-  <%= @obj.parent_id %>
+  <b>Id:</b>
+  <%= @obj.id %>
+</p>
+
+<p>
+  <b>Type:</b>
+  <%= @obj.type_id %>
 </p>
 
 <p>
@@ -15,10 +21,32 @@
   <%= @obj.rank %>
 </p>
 
+
 <p>
-  <b>Content:</b>
-  <%= @obj.content %>
+  <b>Parent:</b>
+  <%= link_to(@obj.parent.content, @obj.parent) if @obj.parent %>
 </p>
+
+<p>
+  <b>Predecessor:</b>
+  <%= link_to(@obj.predecessor.content, @obj.predecessor) if @obj.predecessor %>
+</p>
+
+<p>
+  <b>Successor:</b>
+  <%= link_to(@obj.successor.content, @obj.successor) if @obj.successor %>
+</p>
+
+
+<p>
+  <b>Children:</b>
+  <ul>
+    <% @obj.children.each do |child| %>
+    <li><%= link_to(child.content, child) if child %></li>
+    <% end %>
+  </ul>
+</p>
+
 
 
 <%= link_to 'Edit', edit_node_path(@obj) %> |

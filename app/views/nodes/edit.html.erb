@@ -1,6 +1,6 @@
 <h1>Editing node</h1>
 
-<%= render 'form' %>
+<%= render partial: 'form', locals: {obj: @obj} %>
 
-<%= link_to 'Show', @node %> |
+<%= link_to 'Show', @obj %> |
 <%= link_to 'Back', nodes_path %>
