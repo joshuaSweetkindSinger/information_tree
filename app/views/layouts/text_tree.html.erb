@@ -8,16 +8,14 @@
   <%= csrf_meta_tags %>
 </head>
 <body>
-<div class="app-header">
-  <a class="app-header" href=<%=root_path%>>JSS Notes</a>
-</div>
-<div class="container">
-  <%= render 'shared/flash_messages' %>
-  <div class="row">
-    <div class = "span12 main">
-      <%= yield %>
+  <%= render partial: 'layouts/app_header' %>
+  <div class="container">
+    <%= render 'shared/flash_messages' %>
+    <div class="row">
+      <div class = "span12 main">
+        <%= yield %>
+      </div>
     </div>
   </div>
-</div>
 </body>
 </html>

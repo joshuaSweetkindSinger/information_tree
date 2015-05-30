@@ -38,7 +38,6 @@ class Node < ActiveRecord::Base
   # and causes node to be saved to the db, along with mods to the sibling nodes on either side of it.
   # Its return value is node.
   def self.splice_in_node (parent, predecessor_node, node, successor_node)
-    puts "***** Enter splice_in_node"
     puts "parent: #{parent}"
     puts "predecessor: #{predecessor_node}"
     puts "new node: #{node}"

@@ -87,7 +87,7 @@ class NodesController < ApplicationController
 
   # ======================================== Controller Actions beyond basic crud
   def interactive
-    @obj = Node.find(params[:id] || 1) # Get specified node, or top node if none specified.
+    @obj = Node.top # Get specified node, or top node if none specified.
   end
 
   # /nodes/top
