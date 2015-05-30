@@ -46,7 +46,7 @@ class Node < ActiveRecord::Base
 
     # Sanity checks
     raise "successor node #{successor_node} is not the successor of predecessor node #{predecessor_node}" if predecessor_node && (predecessor_node.successor != successor_node)
-    raise "predecessor node #{predecessor_node }is not the predecessor of successor node #{successor_node}" if successor_node && (successor_node.predecessor != predecessor_node)
+    raise "predecessor node #{predecessor_node} is not the predecessor of successor node #{successor_node}" if successor_node && (successor_node.predecessor != predecessor_node)
     raise "parent #{parent} is not the parent of predecessor_node #{predecessor_node}" if predecessor_node && (predecessor_node.parent != parent)
     raise "parent #{parent} is not the parent of successor_node #{successor_node}" if successor_node && (successor_node.parent != parent)
 
@@ -94,8 +94,16 @@ class Node < ActiveRecord::Base
   # Add node, which should be unsaved, to the node hierarchy, to be a new child
   # of self. It's added onto the end of self's set of children and given
   # a rank that reflects its being on the end.
-  def add_child (node)
+  def add_child_as_last_sibling (node)
     Node.splice_in_node(self, last_child, node, nil)
+  end
+
+
+  # Add node, which should be unsaved, to the node hierarchy, to be a new child
+  # of self. It's added onto the beginning of self's set of children and given
+  # a rank that reflects its being at the beginning.
+  def add_child_as_first_sibling (node)
+    Node.splice_in_node(self, nil, node, first_child)
   end
 
 
@@ -120,6 +128,7 @@ class Node < ActiveRecord::Base
     predecessor_node.save! if predecessor_node
     successor_node.save! if successor_node
   end
+  
 
   # Remove all your children from the hierarchy, and their children, recursively.
   def remove_self_and_children
@@ -131,5 +140,9 @@ class Node < ActiveRecord::Base
 
   def last_child
     children.order('rank desc').first
+  end
+
+  def first_child
+    children.order('rank asc').first
   end
 end
