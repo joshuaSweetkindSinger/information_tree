@@ -59,8 +59,6 @@ We put all the logic in our afterCreate() method, because we know we are not doi
 need to pass args, which can only be passed via afterCreate().
  */
 TextNode.prototype.afterCreate = function(nodeRef) {
-  console.log("TextNode new:", nodeRef);
-
   var $this = $(this)
 
   // Create dom-substructures
@@ -150,7 +148,7 @@ Object.defineProperties(TextNode.prototype, {
   }
 )
 
-// ============================ Mismatching
+// ============================ Misc
 /*
 Attach ourselves to the Text tree. This is done just after a new
 TextNode is created from a rep sent by the server to the client.
@@ -158,13 +156,24 @@ TextNode is created from a rep sent by the server to the client.
 TextNode.prototype.glom = function() {
   var relative;
   if (relative = this.predecessor()) {
-    relative.after(this);
+    relative[0].attachSuccessor(this);
     return this;
   } else if (relative = this.parent()) {
-    relative.append(this);
+    relative[0].attachChild(this);
+  } else {
+    console.log("could not glom:", this);
   }
-}
+};
 
+TextNode.prototype.attachSuccessor = function(successor) {
+  $(this).after(successor);
+  return this;
+};
+
+TextNode.prototype.attachChild = function(child) {
+  $(this.kids).append(child);
+  return this;
+};
 
 /*
 Search the dom for a TextNode whose id matches the predecessor id of this
@@ -178,7 +187,7 @@ TextNode.prototype.predecessor = function() {
       return relative;
     }
   }
-}
+};
 
 
 /*
@@ -187,7 +196,7 @@ and return it in a jquery-wrapped object if found.
 */
 TextNode.prototype.parent = function() {
   var relative;
-  if (this.predecessor_id) {
+  if (this.parent_id) {
     relative = $('#' + this.parent_id)
     if (relative.length > 0) {
       return relative;
