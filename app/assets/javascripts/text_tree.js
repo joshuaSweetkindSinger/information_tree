@@ -13,6 +13,13 @@ Text Nodes are stored in the db in the nodes table. When the client-side expands
 which get sent as json, and then the client builds the nodes on the browser.
 
 New nodes are created by sending an async request to the server to create the new node.
+
+Some terminology, and the relationship between server and client:
+The server is the place where nodes get created. The client requests that the server create a node
+by sending it a nodeSpec to the proper endpoint. The server responds with a nodeRep. Both of these
+are identical-looking json objects. The name nodeSpec indicates a request to create an object with
+certain properties. The name nodeRep indicates that a representation of the now-existing object
+has been sent back to the client.
  */
 
 // =========================================================================
@@ -45,26 +52,41 @@ TextNode.defaultSpec = {content:'New Node', width:100, height:50} // Default jso
 
 // ======= Construction and Initialization
 /*
+Create a client-side representation of nodeRef, which exists on the server.
+
 NOTE: afterCreate() is only called via programmatic creation of new objects, as opposed to static creation.
 We put all the logic in our afterCreate() method, because we know we are not doing static creation, and we
 need to pass args, which can only be passed via afterCreate().
  */
-TextNode.prototype.afterCreate = function(options) {
+TextNode.prototype.afterCreate = function(nodeRef) {
+  console.log("TextNode new:", nodeRef);
+
   var $this = $(this)
 
+  // Create dom-substructures
+  // NOTE: These must be created before the properties below are assigned,
+  // because some of them get passed into the substructures.
   this.header = new NodeHeader
   $this.append(this.header)
-
   this.kids = new NodeChildren
   $this.append(this.kids)
 
-  this.collapse()
+  // Assign properties from ref
+  this.myId    = nodeRef.id
+  this.type_id = nodeRef.type_id
+  this.parent_id = nodeRef.parent_id;
+  this.predecessor_id = nodeRef.predecessor_id;
+  this.successor_id = nodeRef.successor_id;
+  this.rank = nodeRef.rank;
+  this.content = nodeRef.content
+  this.width   = nodeRef.width
+  this.height  = nodeRef.height
+
+
+
+  // Record client-side state info
   this.childrenFetched = false // True when we have received child node information from the server. See fetch_and_expand()
-  this.myId    = options.id
-  this.content = options.content
-  this.width   = options.width
-  this.height  = options.height
-  this.type_id = options.type_id
+  this.collapse()
 
 
   // $this.draggable({
@@ -128,6 +150,52 @@ Object.defineProperties(TextNode.prototype, {
   }
 )
 
+// ============================ Mismatching
+/*
+Attach ourselves to the Text tree. This is done just after a new
+TextNode is created from a rep sent by the server to the client.
+*/
+TextNode.prototype.glom = function() {
+  var relative;
+  if (relative = this.predecessor()) {
+    relative.after(this);
+    return this;
+  } else if (relative = this.parent()) {
+    relative.append(this);
+  }
+}
+
+
+/*
+Search the dom for a TextNode whose id matches the predecessor id of this
+and return it in a jquery-wrapped object if found.
+*/
+TextNode.prototype.predecessor = function() {
+  var relative;
+  if (this.predecessor_id) {
+    relative = $('#' + this.predecessor_id)
+    if (relative.length > 0) {
+      return relative;
+    }
+  }
+}
+
+
+/*
+Search the dom for a TextNode whose id matches the parent id of this
+and return it in a jquery-wrapped object if found.
+*/
+TextNode.prototype.parent = function() {
+  var relative;
+  if (this.predecessor_id) {
+    relative = $('#' + this.parent_id)
+    if (relative.length > 0) {
+      return relative;
+    }
+  }
+}
+
+
 // =================== Auto-Size
 // Calculate a pleasing size for the content textarea associated with this text node.
 TextNode.prototype.autoSize = function() {
@@ -174,12 +242,12 @@ TextNode.prototype.expand = function(doRecursive) {
   }
 
   // Fetch and Expand
-  var me = this
-  this.getChildrenFromServer(function(childrenJson) {
-    if (!childrenJson) return
+  var me = this;
+  this.getChildrenFromServer(function(childrenReps) {
+    if (!childrenReps) return
 
-    childrenJson.forEach(function(nodeJson) {
-      var node = me.addChildOnClient(nodeJson) // TODO: Figure out how to not incur browser redraw cost for each added child.
+    childrenReps.forEach(function(nodeRep) {
+      var node = (new TextNode(nodeRep)).glom() // TODO: Figure out how to not incur browser redraw cost for each added child.
       if (doRecursive) node.expand(doRecursive)
     })
     me.childrenFetched = true;
@@ -250,15 +318,16 @@ TextNode.prototype.addChild = function(childSpec) {
     "POST",
     this.addChildPath(this.id),
     function(childRep) {
-      if (childRep.error) return
+      if (childRep.error) return;
 
       // We are not expanded--expand so new child can be seen.
+      // TODO: Review: if we ar not expanded, we  throw away childRep?
       if (me.state != 'expanded') {
         me.expand()
 
       // We are already expanded--just add the new child to the DOM.
       } else {
-        me.addChildOnClient(childRep)
+        (new TextNode(childRep)).glom()
       }
     },
     {node: childSpec}
@@ -270,17 +339,7 @@ TextNode.prototype.addChildPath = function(parentId) {
 }
 
 
-// Create a new child node on client side, with data specified in the childRep hash.
-// See TextNode.afterCreate() for relevant keys in childRep
-TextNode.prototype.addChildOnClient = function(childRep) {
-  if (childRep.parent_id != this.id) {
-    throw("Mismatching ids: parent_id from server (" + childRep.parent_id + ") does not match id of parent on client (" + this.id + ").")
-  }
-  var result = new TextNode(childRep)
-  $(this).children('node-children').append(result)
 
-  return result
-}
 
 // =========================== Add Sibling
 // Ask the server to create a sibling text node with the content in options hash.
@@ -292,7 +351,7 @@ TextNode.prototype.addSibling = function(options) {
     this.addSiblingPath(this.id),
     function(json) {
       if (json.error) return
-      me.addSiblingOnClient(json)
+      me.addNodeOnClient(json)
     },
     {node: options}
   )
@@ -303,11 +362,6 @@ TextNode.prototype.addSiblingPath = function(id) {
 }
 
 
-// Create a new sibling node on the client side, with data specified in the nodeRep hash.
-// See TextNode.afterCreate() for relevant keys in nodeRep
-TextNode.prototype.addSiblingOnClient = function(nodeRep) {
-  $(this).after(new TextNode(nodeRep))
-}
 
 
 // =========================== Remove

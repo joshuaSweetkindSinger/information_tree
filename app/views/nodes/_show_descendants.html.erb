@@ -4,5 +4,4 @@
     <% rank = c.rank %>
     <%= render partial: 'show_node', locals: {node: c} %>
   <% end %>
-  <li><%= link_to 'Create Node', new_node_path(parent: node.id, rank: rank + 10) %></li>
 </ul>

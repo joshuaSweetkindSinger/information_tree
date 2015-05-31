@@ -15,9 +15,12 @@
         <%= yield %>
       </div>
       <div class = "span3 side-nav">
-        <%= yield :side_nav %>
-      </div>
+        <div id="side-nav">
+          <%= yield :side_nav %>
+        </div>
+        <div id="right-rail"></div>
     </div>
   </div>
+  <%= render partial: 'layouts/right_rail_template'%>
 </body>
 </html>

@@ -41,7 +41,7 @@ class Node < ActiveRecord::Base
     puts "parent: #{parent}"
     puts "predecessor: #{predecessor_node}"
     puts "new node: #{node}"
-    puts "successor: [#{successor_node}]"
+    puts "successor: #{successor_node}"
 
 
     # Sanity checks
@@ -128,7 +128,7 @@ class Node < ActiveRecord::Base
     predecessor_node.save! if predecessor_node
     successor_node.save! if successor_node
   end
-  
+
 
   # Remove all your children from the hierarchy, and their children, recursively.
   def remove_self_and_children
@@ -138,9 +138,11 @@ class Node < ActiveRecord::Base
     destroy
   end
 
+
   def last_child
     children.order('rank desc').first
   end
+
 
   def first_child
     children.order('rank asc').first

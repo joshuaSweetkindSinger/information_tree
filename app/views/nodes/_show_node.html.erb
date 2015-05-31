@@ -1,7 +1,10 @@
-<% if node.type_id == Node::BULLET %>
-  <li data-rank="<%= node.rank%>"><%= node.content %></li>
-  <%= render partial: 'show_descendants', locals: {node: node} %>
-<% else %>
-  <p data-rank="<%= node.rank%>"><%= node.content %></p>
-<% end %>
-
+<li
+  id="<%= node.id %>" 
+  data-parent-id="<%= node.parent_id %>"
+  data-predecessor-id="<%= node.predecessor_id %>"
+  data-successor-id="<%= node.successor_id %>"
+  data-rank="<%= node.rank %>"
+  >
+  <%= node.content %>
+</li>
+<%= render partial: 'show_descendants', locals: {node: node} %>
