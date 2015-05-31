@@ -14,7 +14,7 @@ which get sent as json, and then the client builds the nodes on the browser.
 
 New nodes are created by sending an async request to the server to create the new node.
 
-Some terminology, and the relationship between server and client:
+Some terminology, and discussion of the relationship between server and client:
 The server is the place where nodes get created. The client requests that the server create a node
 by sending it a nodeSpec to the proper endpoint. The server responds with a nodeRep. Both of these
 are identical-looking json objects. The name nodeSpec indicates a request to create an object with
@@ -66,8 +66,8 @@ TextNode.prototype.afterCreate = function(nodeRef) {
   // because some of them get passed into the substructures.
   this.header = new NodeHeader
   $this.append(this.header)
-  this.kids = new NodeChildren
-  $this.append(this.kids)
+  this.childrenContainer = new NodeChildren;
+  $this.append(this.childrenContainer)
 
   // Assign properties from ref
   this.myId    = nodeRef.id
@@ -113,7 +113,7 @@ Object.defineProperties(TextNode.prototype, {
       set: function(id) {
         this.id = id
         this.header.myId = id
-        this.kids.myId = id
+        this.childrenContainer.myId = id
       }
     },
 
@@ -148,45 +148,82 @@ Object.defineProperties(TextNode.prototype, {
   }
 )
 
-// ============================ Misc
+// ====================================== Class Methods
+/*
+If it currently exists in the dom, return the text node with the specified id.
+*/
+TextNode.find = function(id) {
+  if (!id) return;
+
+  var node = $('#' + id);
+  if (node.length > 0) {
+    return node;
+  }
+}
+
+// ============================ Glom and relative accessors
 /*
 Attach ourselves to the Text tree. This is done just after a new
 TextNode is created from a rep sent by the server to the client.
+
+We figure out where to attach ourselves by examining our predecessor, successor,
+and parent links. If we have one of the first two links, we know exactly where to attach
+ourselves. If we have neither, then we must be the only child of our parent.
 */
 TextNode.prototype.glom = function() {
   var relative;
   if (relative = this.predecessor()) {
     relative[0].attachSuccessor(this);
     return this;
-  } else if (relative = this.parent()) {
-    relative[0].attachChild(this);
-  } else {
-    console.log("could not glom:", this);
   }
+
+  if (relative = this.successor()) {
+    relative[0].attachPredecessor(this);
+    return this;
+  }
+
+  if (relative = this.parent()) {
+    relative[0].attachChild(this);
+    return this;
+  }
+
+  console.log("could not glom:", this);
 };
+
 
 TextNode.prototype.attachSuccessor = function(successor) {
   $(this).after(successor);
   return this;
 };
 
-TextNode.prototype.attachChild = function(child) {
-  $(this.kids).append(child);
+
+TextNode.prototype.attachPredecessor = function(predecessor) {
+  $(this).before(predecessor);
   return this;
 };
+
+
+TextNode.prototype.attachChild = function(child) {
+  $(this.childrenContainer).append(child);
+  return this;
+};
+
 
 /*
 Search the dom for a TextNode whose id matches the predecessor id of this
 and return it in a jquery-wrapped object if found.
 */
 TextNode.prototype.predecessor = function() {
-  var relative;
-  if (this.predecessor_id) {
-    relative = $('#' + this.predecessor_id)
-    if (relative.length > 0) {
-      return relative;
-    }
-  }
+  return TextNode.find(this.predecessor_id);
+};
+
+
+/*
+Search the dom for a TextNode whose id matches the predecessor id of this
+and return it in a jquery-wrapped object if found.
+*/
+TextNode.prototype.successor = function() {
+  return TextNode.find(this.successor_id);
 };
 
 
@@ -195,13 +232,11 @@ Search the dom for a TextNode whose id matches the parent id of this
 and return it in a jquery-wrapped object if found.
 */
 TextNode.prototype.parent = function() {
-  var relative;
-  if (this.parent_id) {
-    relative = $('#' + this.parent_id)
-    if (relative.length > 0) {
-      return relative;
-    }
-  }
+  return TextNode.find(this.parent_id);
+}
+
+TextNode.prototype.kids = function() {
+  return $(this.childrenContainer).children();
 }
 
 
@@ -242,7 +277,7 @@ TextNode.prototype.expand = function(doRecursive) {
   // Children are already fetched--just expand on browser side.
   if (this.childrenFetched) {
     if (doRecursive) {
-      $(this).children('node-children').children().each(function(index) {
+      this.kids().each(function(index) {
         this.expand(doRecursive)
       })
     }
@@ -319,51 +354,54 @@ TextNode.prototype.expandCollapseRecursiveButton = function() {
 
 
 // =========================== Add Child
-// Ask the server to create a child text node with the content in childSpec hash.
+// Ui-level method: Ask the server to create a child text node with the content in childSpec hash.
 // When the server replies, create the text node on the client side as well.
-TextNode.prototype.addChild = function(childSpec) {
-  var me = this
+TextNode.prototype.createChildUi = function() {
+  if (this.state != 'expanded') return; // Refuse to create a child unless its parent is expanded.
+
+  this.createChildOnServer(function(nodeRep) {
+    if (nodeRep.error) return;
+    (new TextNode(nodeRep)).glom();
+    });
+};
+
+/*
+Create a new child node on the server whose parent is the node represented
+by this TextNode instance. Then execute the function next() when done.
+*/
+TextNode.prototype.createChildOnServer = function(next) {
   getJsonFromServer(
     "POST",
     this.addChildPath(this.id),
-    function(childRep) {
-      if (childRep.error) return;
+    next,
+    {node: TextNode.defaultSpec}
+  );
+};
 
-      // We are not expanded--expand so new child can be seen.
-      // TODO: Review: if we ar not expanded, we  throw away childRep?
-      if (me.state != 'expanded') {
-        me.expand()
-
-      // We are already expanded--just add the new child to the DOM.
-      } else {
-        (new TextNode(childRep)).glom()
-      }
-    },
-    {node: childSpec}
-  )
-}
 
 TextNode.prototype.addChildPath = function(parentId) {
   return '/nodes/' + parentId + '/create_child.json'
 }
 
 
-
-
 // =========================== Add Sibling
 // Ask the server to create a sibling text node with the content in options hash.
 // When the server replies, create the text node on the client side as well.
-TextNode.prototype.addSibling = function(options) {
-  var me = this
+TextNode.prototype.createSiblingUi = function() {
+  this.createSiblingOnServer(function(nodeRep) {
+    if (nodeRep.error) return;
+    (new TextNode(nodeRep)).glom();
+  });
+};
+
+
+TextNode.prototype.createSiblingOnServer = function(next) {
   getJsonFromServer(
     "POST",
     this.addSiblingPath(this.id),
-    function(json) {
-      if (json.error) return
-      me.addNodeOnClient(json)
-    },
-    {node: options}
-  )
+    next,
+    {node: TextNode.defaultSpec}
+  );
 }
 
 TextNode.prototype.addSiblingPath = function(id) {
@@ -621,7 +659,7 @@ NodeButton.prototype.deactivate = function() {
 }
 
 // Render the button active, which means that
-// clicking on it does something. The button is rendered activate when
+// clicking on it does something. The button is rendered active when
 // its associated node is expanded, to allow creation of child nodes.
 // TODO: This should be a method on a base class from which AddChild inherits.
 NodeButton.prototype.activate = function() {
@@ -753,7 +791,7 @@ AddChild.prototype.onCreate = function() {
   // adding the new node to the TextNode's NodeChildren element.
   $this.click(function() {
     if (this.is_active()) {
-      this.getTextNode().addChild(TextNode.defaultSpec)
+      this.getTextNode().createChildUi()
     }
   })
 }
@@ -770,7 +808,7 @@ AddSibling.prototype.onCreate = function() {
 
   // Click function adds a new TextNode after the TextNode associated with this button.
   $this.click(function() {
-    this.getTextNode().addSibling(TextNode.defaultSpec)
+    this.getTextNode().createSiblingUi();
   })
 }
 
