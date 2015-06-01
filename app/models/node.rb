@@ -52,9 +52,7 @@ class Node < ActiveRecord::Base
   def splice (splice_position)
     _unhook!
     _rehook!(splice_position)
-
-    rank = calc_rank()
-
+    self.rank = calc_rank()
     save!
     self
   end
@@ -78,6 +76,8 @@ class Node < ActiveRecord::Base
     save!
   end
 
+  # Link ourselves into the position specified by splice_position,
+  # updating our links and those of our new siblings.
   def _rehook! (splice_position)
     self.parent = splice_position.parent
     _set_predecessor!(splice_position.predecessor)
@@ -192,6 +192,10 @@ class SplicePosition
     self.parent      = nil
     self.successor   = nil
     self.predecessor = nil
+  end
+
+  def to_s
+    "[SplicePosition: parent:(#{parent}), predecessor: (#{predecessor}), successor: (#{successor})]"
   end
 end
 
