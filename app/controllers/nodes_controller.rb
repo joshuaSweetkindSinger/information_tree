@@ -115,7 +115,7 @@ class NodesController < ApplicationController
     parent = Node.find(params[:id])
     return render(json: {error: "Parent with id #{id} not found"}) unless parent
 
-    @obj = parent.add_child_as_first_sibling(Node.new(params[:node]))
+    @obj = parent.add_child(Node.new(params[:node]))
 
     respond_to do |format|
       format.html { redirect_to interactive_nodes_path, notice: 'Node was successfully created.' }
@@ -130,7 +130,7 @@ class NodesController < ApplicationController
     node = Node.find(params[:id])
     return render(json: {error: "Node with id #{id} not found"}) unless node
 
-    @obj = node.add_sibling(Node.new(params[:node]))
+    @obj = node.add_successor(Node.new(params[:node]))
 
     respond_to do |format|
       format.html { redirect_to interactive_nodes_path, notice: 'Node was successfully created.' }

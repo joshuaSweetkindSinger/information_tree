@@ -91,28 +91,30 @@ class Node < ActiveRecord::Base
     (successor_rank + predecessor_rank) / 2.0
   end
 
-  # Add node, which should be unsaved, to the node hierarchy, to be a new child
-  # of self. It's added onto the end of self's set of children and given
-  # a rank that reflects its being on the end.
-  def add_child_as_last_sibling (node)
-    Node.splice_in_node(self, last_child, node, nil)
-  end
-
 
   # Add node, which should be unsaved, to the node hierarchy, to be a new child
-  # of self. It's added onto the beginning of self's set of children and given
-  # a rank that reflects its being at the beginning.
-  def add_child_as_first_sibling (node)
-    Node.splice_in_node(self, nil, node, first_child)
+  # of self. It's added onto the beginning of self's set of children, unless last_child
+  # is true, in which case it is added onto the end.
+  def add_child (node, last_child = false)
+    if !last_child
+      Node.splice_in_node(self, nil, node, first_child)
+    else
+      Node.splice_in_node(self, last_child, node, nil)
+    end
   end
 
-
-  # Add node, which should be unsaved, to the node hierarchy, to be a new sibling
-  # of self that directly follows self in rank.
-  # This entails patching up the predecessor / successor links, and
-  # calculating the rank for the new node.
-  def add_sibling (node)
+  # Add node to the node hierarchy to be the successor
+  # of self. If node is already in the hiearchy, then its existing parent- and sibling-links
+  # will be detached and re-hooked-up to fit with its new position.
+  def add_successor (node)
     Node.splice_in_node(self.parent, self, node, self.successor)
+  end
+
+  # Add node to the node hierarchy to be the predecessor
+  # of self. If node is already in the hiearchy, then its existing parent- and sibling-links
+  # will be detached and re-hooked-up to fit with its new position.
+  def add_predecessor (node)
+    Node.splice_in_node(self.parent, self.predecessor, node, self)
   end
 
 
