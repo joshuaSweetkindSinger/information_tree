@@ -61,11 +61,16 @@ class Node < ActiveRecord::Base
   # An internal method. Unhook ourselves from the hierarchy so that we have no parent, successor, or predecessor.
   # Patch the other ends of each of these links as necessary to maintain integrity of the hierarchy.
   def _unhook!
+
+    # Get siblings
+    old_successor   = self.successor
+    old_predecessor = self.predecessor
+
     # Wipe out sibling links
-    if self.successor
-      successor._set_predecessor!(self.predecessor)
-    elsif self.predecessor
-      predecessor._set_successor!(self.successor)
+    if old_successor
+      old_successor._set_predecessor!(old_predecessor)
+    elsif old_predecessor
+      old_predecessor._set_successor!(old_successor)
     end
 
     # Wipe out our links
@@ -73,8 +78,12 @@ class Node < ActiveRecord::Base
     self.predecessor = nil
     self.successor   = nil
 
+    # Save in correct order to avoid unique index errors.
     save!
+    old_successor.save!   if old_successor
+    old_predecessor.save! if old_predecessor
   end
+
 
   # Link ourselves into the position specified by splice_position,
   # updating our links and those of our new siblings.
@@ -82,24 +91,24 @@ class Node < ActiveRecord::Base
     self.parent = splice_position.parent
     _set_predecessor!(splice_position.predecessor)
     _set_successor!(splice_position.successor)
+
+    # Save in correct order to avoid unique index errors.
+    successor.save!   if successor
+    predecessor.save! if predecessor
+    save!
   end
+
 
   # An internal method: Patch up predecessor/successor links with the specified predecessor.
   def _set_predecessor! (predecessor)
     self.predecessor      = predecessor
     predecessor.successor = self if predecessor
-
-    predecessor.save! if predecessor
-    save!
   end
 
   # An internal method: Patch up predecessor/successor links with the specified successor.
   def _set_successor! (successor)
-    self.successor       = successor
-    sucessor.predecessor = self if successor
-
-    successor.save! if successor
-    save!
+    self.successor        = successor
+    successor.predecessor = self if successor
   end
 
 

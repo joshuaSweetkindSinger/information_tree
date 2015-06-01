@@ -427,7 +427,7 @@ TextNode.prototype.remove = function() {
 }
 
 TextNode.prototype.removePath = function(id) {
-  return '/nodes/' + id + '/remove.json'
+  return '/nodes/' + id + '/trash.json'
 }
 
 
