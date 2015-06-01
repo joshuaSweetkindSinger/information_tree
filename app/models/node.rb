@@ -50,50 +50,56 @@ class Node < ActiveRecord::Base
   #
   # The return value of this method is node.
   def splice (splice_position)
-    save_if_new_else_unhook
-
-    parent = splice_position.parent
-    set_predecessor(splice_position.predecessor)
-    set_successor(splice_position.successor)
+    _unhook!
+    _rehook!(splice_position)
 
     rank = calc_rank()
 
-    splice_position.predecessor.save!
-    splice_position.successor.save!
     save!
-    self # TODO: Check whether save! also returns self. Maybe this is unnecessary.
+    self
   end
 
 
-  # If node is new, save it so we can get an id for it.
-  # If it already exists, unhook it from its existing parent/predecessor/successor links.
-  def save_if_new_else_unhook
-    if !new_record?
-      save!          # Get an id for the new node.
-    else
-      unhook()       # unhook old relationship links
-    end
-  end
-
-
-  # Unhook ourselves from the hierarchy so that we have no parent, successor, or predecessor.
+  # An internal method. Unhook ourselves from the hierarchy so that we have no parent, successor, or predecessor.
   # Patch the other ends of each of these links as necessary to maintain integrity of the hierarchy.
-  def unhook
-    self.parent = nil
-    _set_predecessor(nil)
-    _set_successor(nil)
+  def _unhook!
+    # Wipe out sibling links
+    if self.successor
+      successor._set_predecessor!(self.predecessor)
+    elsif self.predecessor
+      predecessor._set_successor!(self.successor)
+    end
+
+    # Wipe out our links
+    self.parent      = nil
+    self.predecessor = nil
+    self.successor   = nil
+
+    save!
+  end
+
+  def _rehook! (splice_position)
+    self.parent = splice_position.parent
+    _set_predecessor!(splice_position.predecessor)
+    _set_successor!(splice_position.successor)
   end
 
   # An internal method: Patch up predecessor/successor links with the specified predecessor.
-  def _set_predecessor (_predecessor)
-    self.predecessor       = _predecessor
-    _predecessor.successor = self if _predecessor
+  def _set_predecessor! (predecessor)
+    self.predecessor      = predecessor
+    predecessor.successor = self if predecessor
+
+    predecessor.save! if predecessor
+    save!
   end
 
   # An internal method: Patch up predecessor/successor links with the specified successor.
-  def _set_successor (_successor)
-    self.successor        = _successor
-    _sucessor.predecessor = self if _successor
+  def _set_successor! (successor)
+    self.successor       = successor
+    sucessor.predecessor = self if successor
+
+    successor.save! if successor
+    save!
   end
 
 
@@ -187,6 +193,7 @@ class SplicePosition
     self.successor   = nil
     self.predecessor = nil
   end
+end
 
 
 class SplicePositionParent < SplicePosition
@@ -195,8 +202,8 @@ class SplicePositionParent < SplicePosition
   def initialize (node, last = false)
     super()
     self.parent      = node
-    self.predecessor = node.last_child if last
-    self.successor   = node.first_chid if !last
+    self.predecessor = node.last_child  if  last
+    self.successor   = node.first_child if !last
   end
 end
 
