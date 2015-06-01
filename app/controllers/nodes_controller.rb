@@ -168,12 +168,11 @@ class NodesController < ApplicationController
   end
 
   # Remove self from the node hierarchy, patching up predecessor/successor links.
-  # TODO: This is really just destroy(). Merge these two someday.
-  # /nodes/:id/remove
-  def remove
+  # This moves the node and its children under the "Trash" node. They're not really deleted.
+  # DELETE /nodes/:id/remove
+  def trash
     @obj = Node.find(params[:id])
-    # TODO: Should render an error here if the node was not found
-    @obj.remove() if @obj
+    @obj.trash() if @obj # TODO: Should render an error here if the node was not found
 
     respond_to do |format|
       format.html { redirect_to nodes_url }

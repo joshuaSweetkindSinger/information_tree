@@ -2,6 +2,8 @@ class Node < ActiveRecord::Base
   # TODO -- put these in the database instead
   BULLET = 1 # type_id of this value indicates a bullet item.
   PARAGRAPH = 2 # type_id of this value indicates a paragraph item.
+  TOP_ID = -1 # system-designated "parent" id for top node.
+  TRASH_ID = -2 # system-designated "parent" id for trash node.
 
   attr_accessible :content, :parent_id, :rank, :type_id, :predecessor_id, :successor_id, :width, :height
   belongs_to :parent, class_name: 'Node'
@@ -14,28 +16,32 @@ class Node < ActiveRecord::Base
   end
 
   def self.top
-    result = where('parent_id = -1').first
-    result || make_top_node
+    result = where("parent_id = #{TOP_ID}").first
+    result || _make_top_node
   end
 
-  def self.make_top_node
+  def self._make_top_node
     result = Node.new(content:'Top', rank:0, width:100, height:50)
-    result.parent_id = -1
+    result.parent_id = TOP_ID
     result.save!
     result
   end
 
+  # Return the trash node.
+  def self.trash
+    result = where("parent_id = #{TRASH_ID}").first
+    result || _make_trash_node
+  end
 
-  # Cause node to be inserted into the node hierarchy at the position
-  # specified by options. The options are considered in the following order,
-  # and the first one that applies is used to determine the position:
-  #    If option :predecessor is specified with value p,
-  #    then p will be the predecessor of node.
-  #
-  #    If option :successor is specified with value s, then s will be the successor of node.
-  #
-  #    If option :parent is specified with value p, then node will be the first child of p,
-  #    unless the option :last_child with value true is also specified.
+  # Make the trash node.
+  def self._make_trash_node
+    result = Node.new(content:'Trash', rank:0, width:100, height:50)
+    result.parent_id = TRASH_ID
+    result.save!
+    result
+  end
+
+  # Insert ourselves into the node hierarchy at position, which is a SplicePosition instance.
   #
   # This method fixes all the predecessor and successor links, calculates the rank of node,
   # and causes node to be saved to the db if it was not already in the db, along with mods
@@ -43,65 +49,19 @@ class Node < ActiveRecord::Base
   # relationship links are unhooked.
   #
   # The return value of this method is node.
-  def self.splice_in_node (node, options)
-    new_predecessor, new_successor, new_parent = self._get_splice_relations(options)
-    node.save_if_new_else_unhook
+  def splice (splice_position)
+    save_if_new_else_unhook
 
+    parent = splice_position.parent
+    set_predecessor(splice_position.predecessor)
+    set_successor(splice_position.successor)
 
+    rank = calc_rank()
 
-
-
-
-    node.parent = _parent
-    node.set_predecessor(_predecessor)
-    node.set_successor(_successor)
-    node.rank = node.calc_rank()
-    node.save!
-    node
-
-    # Patch up parent and predecessor/successor links
-    node.predecessor              = predecessor_node
-    node.successor                = successor_node
-    predecessor_node.successor_id = node.id if predecessor_node
-    successor_node.predecessor_id = node.id if successor_node
-
-
-
-    # Save the siblings on either side to the db first, to change their predecessor/successor links.
-    # We can't save node again until this is done, because the siblings are already pointing to
-    # the nodes that it wants to point to
-    predecessor_node.save! if predecessor_node
-    successor_node.save!   if successor_node
-    node.save! # Now that we've updated the links on the predecessor and successor, it's safe to save node.
-
-    node
-  end
-
-  # Internal function used to determine the new parent, predecessor, and successor of a node
-  # about to be spliced into the node hierarchy. See splice_in_node() above.
-  def self._get_splice_relations (options)
-    _predecessor = options[:predecessor]
-    _successor   = options[:successor]
-    _parent      = options[:parent]
-    _last_child  = options[:last_child]
-
-    if _predecessor
-      _parent = predecessor.parent
-      _successor = predecessor.successor
-    elsif _successor
-      _parent = successor.parent
-      _predecessor = successor.predecessor
-    elsif _parent && !_last_child
-      _predecessor = nil
-      _successor = first_child
-    elsif _parent && _last_child
-      _predecessor = last_child
-      _successor = nil
-    else
-      throw "One of the options :predecessor, :successor, :parent must point to an existing node"
-    end
-
-    return [_predecessor, _successor, _parent]
+    splice_position.predecessor.save!
+    splice_position.successor.save!
+    save!
+    self # TODO: Check whether save! also returns self. Maybe this is unnecessary.
   end
 
 
@@ -124,12 +84,13 @@ class Node < ActiveRecord::Base
     _set_successor(nil)
   end
 
+  # An internal method: Patch up predecessor/successor links with the specified predecessor.
   def _set_predecessor (_predecessor)
     self.predecessor       = _predecessor
     _predecessor.successor = self if _predecessor
   end
 
-
+  # An internal method: Patch up predecessor/successor links with the specified successor.
   def _set_successor (_successor)
     self.successor        = _successor
     _sucessor.predecessor = self if _successor
@@ -153,44 +114,48 @@ class Node < ActiveRecord::Base
   end
 
 
-  # Add node, which should be unsaved, to the node hierarchy, to be a new child
+  # Add node to the node hierarchy, to be a new child
   # of self. It's added onto the beginning of self's set of children, unless last
   # is true, in which case it is added onto the end.
   def add_child (node, last = false)
-    Node.splice_in_node(node, {parent:self, last_child:last})
+    node.splice(SplicePositionParent.new(self, last))
   end
 
   # Add node to the node hierarchy to be the successor
   # of self. If node is already in the hiearchy, then its existing parent- and sibling-links
   # will be detached and re-hooked-up to fit with its new position.
   def add_successor (node)
-    Node.splice_in_node(node, {predecessor:self})
+    node.splice(SplicePositionPredecessor.new(self))
   end
 
   # Add node to the node hierarchy to be the predecessor
   # of self. If node is already in the hiearchy, then its existing parent- and sibling-links
   # will be detached and re-hooked-up to fit with its new position.
   def add_predecessor (node)
-    Node.splice_in_node(node, {successor:self})
+    node.splice(SplicePositionSuccessor.new(self))
   end
 
 
   # Remove self and children from the node hierarchy, patching up predecessor/successor links.
-  def remove
-    predecessor_node = self.predecessor
-    successor_node   = self.successor
-    predecessor_node.successor_id = (successor_node   ? successor_node.id   : nil) if predecessor_node
-    successor_node.predecessor_id = (predecessor_node ? predecessor_node.id : nil) if successor_node
-
-    remove_self_and_children # Need to remove self before the siblings, with their new (unique!) links, can be saved.
-
-    predecessor_node.save! if predecessor_node
-    successor_node.save! if successor_node
+  # This moves the node and its children to the "trash" node. It doesn't really delete them.
+  def trash
+    Node.trash.add_child(self)
   end
 
 
-  # Remove all your children from the hierarchy, and their children, recursively.
-  def remove_self_and_children
+  # def trash
+  #   predecessor_node = self.predecessor
+  #   successor_node   = self.successor
+  #   predecessor_node.successor_id = (successor_node   ? successor_node.id   : nil) if predecessor_node
+  #   successor_node.predecessor_id = (predecessor_node ? predecessor_node.id : nil) if successor_node
+  #
+  #   predecessor_node.save! if predecessor_node
+  #   successor_node.save! if successor_node
+  # end
+
+
+  # Destroy yourself and all your children from the hierarchy, and their children, recursively.
+  def destroy_self_and_children!
     children.each do |node|
       node.destroy
     end
@@ -205,5 +170,52 @@ class Node < ActiveRecord::Base
 
   def first_child
     children.order('rank asc').first
+  end
+end
+
+# =============================================================================
+#                                   SplicePosition
+# =============================================================================
+# Instances of this class facilitate the splice operation, which causes a node
+# to be inserted into the hierarchy at the position designated by the SplicePosition instance.
+# This is a base class, not to be instantiated. See SplicePositionParent, etc., below.
+class SplicePosition
+  attr_accessor :parent, :successor, :predecessor
+
+  def initialize
+    self.parent      = nil
+    self.successor   = nil
+    self.predecessor = nil
+  end
+
+
+class SplicePositionParent < SplicePosition
+  attr_accessor :last
+
+  def initialize (node, last = false)
+    super()
+    self.parent      = node
+    self.predecessor = node.last_child if last
+    self.successor   = node.first_chid if !last
+  end
+end
+
+
+class SplicePositionPredecessor < SplicePosition
+  def initialize (node)
+    super()
+    self.parent      = node.parent
+    self.predecessor = node
+    self.successor   = node.successor
+  end
+end
+
+
+class SplicePositionSuccessor < SplicePosition
+  def initialize (node)
+    super()
+    self.parent      = node.parent
+    self.predecessor = node.predecessor
+    self.successor   = node
   end
 end

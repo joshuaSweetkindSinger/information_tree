@@ -11,7 +11,7 @@ JssNotes::Application.routes.draw do
       post :create_child   # route is /nodes/:id/create_child
       post :create_sibling   # route is /nodes/:id/create_sibling
       put :set_attributes  # route is /nodes/:id/set_attributes
-      delete :remove        # route is /nodes/:id/remove
+      delete :trash        # route is /nodes/:id/trash
     end
   end
 
