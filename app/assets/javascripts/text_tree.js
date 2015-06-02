@@ -161,6 +161,14 @@ TextNode.find = function(id) {
   }
 }
 
+TextNode.findOrCreate = function(node) {
+  if (node.id) {
+    return TextNode.find(node.id);
+  } else {
+    return new TextNode(node);
+  }
+}
+
 // ============================ Glom and relative accessors
 /*
 Attach ourselves to the Text tree. This is done just after a new
@@ -353,18 +361,46 @@ TextNode.prototype.expandCollapseRecursiveButton = function() {
 }
 
 
-// =========================== Create Child
-// Ui-level method: Ask the server to create a child text node with the content in childSpec hash.
-// When the server replies, create the text node on the client side as well.
-TextNode.prototype.createChildUi = function() {
-  if (this.state != 'expanded') return; // Refuse to create a child unless its parent is expanded.
+// =========================== Add Child
+/*
+Ask the server to add a child text node, specified by <node>,
+to the node represented by this text node.
 
-  this.addChildOnServer(TextNode.defaultSpec,
-    function(nodeRep) {
-    if (nodeRep.error) return;
-    (new TextNode(nodeRep)).glom();
+If node is null, create a new default node.
+
+If node is non-null and fully spec'd,
+but without an id, create a new node as specified.
+
+If node is non-null, but just contains an id, use the existing node
+with that id for the add operation and move it to the new location
+as a child of the node represented by <this>.
+*/
+TextNode.prototype.addChild = function(node) {
+  if (!node) {
+    node = TextNode.defaultSpec;
+  }
+
+  this.addChildOnServer(node,
+    function(node) {
+      if (node.error) return;
+      (TextNode.findOrCreate(node)).glom();
     });
 };
+
+// jjj: start here: use an Op object with an endpoint() method to switch between child and successor endpoints.
+// TODO: Review endpoints to see if they should be consolidated on server side.
+TextNode.prototype.addNode = function(node) {
+  if (!node) {
+    node = TextNode.defaultSpec;
+  }
+
+  this.addNodeOnServer(node,
+    function(node) {
+      if (node.error) return;
+      (TextNode.findOrCreate(node)).glom();
+    });
+};
+
 
 /*
 Create a new child node, or insert an existing one, on the server,
@@ -391,15 +427,30 @@ TextNode.prototype.addChildPath = function(parentId) {
 }
 
 
-// =========================== Create Sibling
-// Ask the server to create a successor text node with the content in options hash.
-// When the server replies, create the text node on the client side as well.
-TextNode.prototype.createSiblingUi = function() {
-  this.addSuccessorOnServer(TextNode.defaultSpec,
-    function(nodeRep) {
-    if (nodeRep.error) return;
-    (new TextNode(nodeRep)).glom();
-  });
+// =========================== Add Successor
+/*
+Ask the server to add a successor text node, specified by <node>,
+to the node represented by <this> text node.
+
+If node is null, create a new default node.
+
+If node is non-null and fully spec'd,
+but without an id, create a new node as specified.
+
+If node is non-null, but just contains an id, use the existing node
+with that id for the add operation and move it to the new location
+as a successor of the node represented by <this>.
+*/
+TextNode.prototype.addSuccessor = function(node) {
+  if (!node) {
+    node = TextNode.defaultSpec;
+  }
+
+  this.addSuccessorOnServer(node,
+    function(node) {
+      if (node.error) return;
+      (TextNode.findOrCreate(node)).glom();
+    });
 };
 
 /*
@@ -811,7 +862,7 @@ AddChild.prototype.onCreate = function() {
   // adding the new node to the TextNode's NodeChildren element.
   $this.click(function() {
     if (this.is_active()) {
-      this.getTextNode().createChildUi()
+      this.getTextNode().createChild()
     }
   })
 }
