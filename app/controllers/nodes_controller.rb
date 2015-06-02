@@ -109,9 +109,10 @@ class NodesController < ApplicationController
     end
   end
 
-  # Create a child text node whose parent is the one with id params[:id].
+  # Create a new child text node, or insert an existing one, and make its parent be the one with id params[:id].
+  # A new node is spec'd in params[:node]. If an node child, then params[:node][:id] references it.
   # For json format, return the newly created node as a json object.
-  def create_child
+  def add_child
     parent = Node.find(params[:id])
     return render(json: {error: "Parent with id #{id} not found"}) unless parent
 
@@ -124,9 +125,10 @@ class NodesController < ApplicationController
   end
 
 
-  # Create a sibling text node whose predecessor sibling is the one with id params[:id].
+  # Create a new sibling text node, or insert an existing one, and make its predecessor be the one with id params[:id].
+  # A new node is spec'd in params[:node]. If an existing node, then params[:node][:id] references it.
   # For json format, return the newly created node as a json object.
-  def create_sibling
+  def add_successor
     node = Node.find(params[:id])
     return render(json: {error: "Node with id #{id} not found"}) unless node
 

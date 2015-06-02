@@ -8,8 +8,8 @@ JssNotes::Application.routes.draw do
 
     member do
       get :children        # route is /nodes/:id/children
-      post :create_child   # route is /nodes/:id/add_child
-      post :create_sibling   # route is /nodes/:id/add_sibling
+      post :add_child      # route is /nodes/:id/add_child
+      post :add_successor  # route is /nodes/:id/add_successor
       put :set_attributes  # route is /nodes/:id/set_attributes
       delete :trash        # route is /nodes/:id/trash
     end

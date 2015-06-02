@@ -359,53 +359,70 @@ TextNode.prototype.expandCollapseRecursiveButton = function() {
 TextNode.prototype.createChildUi = function() {
   if (this.state != 'expanded') return; // Refuse to create a child unless its parent is expanded.
 
-  this.createChildOnServer(function(nodeRep) {
+  this.addChildOnServer(TextNode.defaultSpec,
+    function(nodeRep) {
     if (nodeRep.error) return;
     (new TextNode(nodeRep)).glom();
     });
 };
 
 /*
-Create a new child node on the server whose parent is the node represented
+Create a new child node, or insert an existing one, on the server,
+and make its parent be the node represented
 by this TextNode instance. Then execute the function next() when done.
+Inputs:
+  node: if creating a new node, this should be an object that specs out the desired new node.
+        If adding an existing node, then this should just be an object with an id key whose
+        value is the id of the existing node.
+  next: This is a continuation function that says what to do after the node is created or inserted.
 */
-TextNode.prototype.createChildOnServer = function(next) {
+TextNode.prototype.addChildOnServer = function(node, next) {
   getJsonFromServer(
     "POST",
-    this.createChildPath(this.id),
+    this.addChildPath(this.id),
     next,
-    {node: TextNode.defaultSpec}
+    {node: node}
   );
 };
 
 
-TextNode.prototype.createChildPath = function(parentId) {
-  return '/nodes/' + parentId + '/create_child.json'
+TextNode.prototype.addChildPath = function(parentId) {
+  return '/nodes/' + parentId + '/add_child.json'
 }
 
 
 // =========================== Create Sibling
-// Ask the server to create a sibling text node with the content in options hash.
+// Ask the server to create a successor text node with the content in options hash.
 // When the server replies, create the text node on the client side as well.
 TextNode.prototype.createSiblingUi = function() {
-  this.createSiblingOnServer(function(nodeRep) {
+  this.addSuccessorOnServer(TextNode.defaultSpec,
+    function(nodeRep) {
     if (nodeRep.error) return;
     (new TextNode(nodeRep)).glom();
   });
 };
 
-
-TextNode.prototype.createSiblingOnServer = function(next) {
+/*
+Create a new successor node, or insert an existing one, on the server,
+and make its predecessor be the node represented
+by this TextNode instance. Then execute the function next() when done.
+Inputs:
+  node: if creating a new node, this should be an object that specs out the desired new node.
+        If adding an existing node, then this should just be an object with an id key whose
+        value is the id of the existing node.
+  next: This is a continuation function that says what to do after the node is created or inserted.
+*/
+TextNode.prototype.addSuccessorOnServer = function(node, next) {
   getJsonFromServer(
     "POST",
-    this.createSiblingPath(this.id),
+    this.addSuccessorPath(this.id),
     next,
-    {node: TextNode.defaultSpec}
+    {node: node}
   );
 }
 
-TextNode.prototype.createSiblingPath = function(id) {
-  return '/nodes/' + id + '/create_sibling.json'
+TextNode.prototype.addSuccessorPath = function(id) {
+  return '/nodes/' + id + '/add_successor.json'
 }
 
 
