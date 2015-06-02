@@ -87,10 +87,10 @@ TextNode.prototype.afterCreate = function(nodeRef) {
   this.collapse()
 
 
-  // $this.draggable({
-  //   revert: true,
-  //   helper: "clone"
-  // })
+  $this.draggable({
+    revert: true,
+    helper: "clone"
+  })
 }
 
 // Clean up the width and height after we are attached.
@@ -353,7 +353,7 @@ TextNode.prototype.expandCollapseRecursiveButton = function() {
 }
 
 
-// =========================== Add Child
+// =========================== Create Child
 // Ui-level method: Ask the server to create a child text node with the content in childSpec hash.
 // When the server replies, create the text node on the client side as well.
 TextNode.prototype.createChildUi = function() {
@@ -372,19 +372,19 @@ by this TextNode instance. Then execute the function next() when done.
 TextNode.prototype.createChildOnServer = function(next) {
   getJsonFromServer(
     "POST",
-    this.addChildPath(this.id),
+    this.createChildPath(this.id),
     next,
     {node: TextNode.defaultSpec}
   );
 };
 
 
-TextNode.prototype.addChildPath = function(parentId) {
+TextNode.prototype.createChildPath = function(parentId) {
   return '/nodes/' + parentId + '/create_child.json'
 }
 
 
-// =========================== Add Sibling
+// =========================== Create Sibling
 // Ask the server to create a sibling text node with the content in options hash.
 // When the server replies, create the text node on the client side as well.
 TextNode.prototype.createSiblingUi = function() {
@@ -398,42 +398,40 @@ TextNode.prototype.createSiblingUi = function() {
 TextNode.prototype.createSiblingOnServer = function(next) {
   getJsonFromServer(
     "POST",
-    this.addSiblingPath(this.id),
+    this.createSiblingPath(this.id),
     next,
     {node: TextNode.defaultSpec}
   );
 }
 
-TextNode.prototype.addSiblingPath = function(id) {
+TextNode.prototype.createSiblingPath = function(id) {
   return '/nodes/' + id + '/create_sibling.json'
 }
 
 
-
-
-// =========================== Remove
-// Ask the server to remove this node from the hierarchy.
-// When the server replies, remove the node from the browser.
-TextNode.prototype.remove = function() {
+// =========================== trash
+// Ask the server to trash this node from the hierarchy.
+// When the server replies, trash the node from the browser.
+TextNode.prototype.trash = function() {
   var me = this
   sendServer(
     "DELETE",
-    this.removePath(this.id),
+    this.trashPath(this.id),
     function(request) {
       if (HTTP.is_success_code(request.status)) {
-      me.removeOnClient()
+      me.trashOnClient()
       }
     })
 }
 
-TextNode.prototype.removePath = function(id) {
+TextNode.prototype.trashPath = function(id) {
   return '/nodes/' + id + '/trash.json'
 }
 
 
 // Create a new sibling node on the client side, with data specified in the nodeRep hash.
 // See TextNode.afterCreate() for relevant keys in nodeRep
-TextNode.prototype.removeOnClient = function() {
+TextNode.prototype.trashOnClient = function() {
   $(this).remove()
 }
 
@@ -542,8 +540,8 @@ ButtonPanel.prototype.onCreate = function() {
   this.addSiblingButton = new AddSibling
   $this.append(this.addSiblingButton)
 
-  this.removeNodeButton = new RemoveNode
-  $this.append(this.removeNodeButton)
+  this.trashNodeButton = new TrashNode
+  $this.append(this.trashNodeButton)
 
   this.expandCollapseButton = new ExpandCollapse
   $this.append(this.expandCollapseButton)
@@ -564,7 +562,7 @@ Object.defineProperties(ButtonPanel.prototype, {
       this.expandCollapseButton.id = id
       this.addChildButton.id       = id
       this.addSiblingButton.id     = id
-      this.removeNodeButton.id     = id
+      this.trashNodeButton.id      = id
     }
   }
 })
@@ -583,23 +581,25 @@ NodeContent.prototype.afterCreate = function() {
   $this.on("blur", this.onResize)
   $this.on("click", this.onClick)
 
-  // $this.droppable({
-  //   tolerance: "pointer",
-  //   hoverClass: "drop-hover",
-  //   greedy: true,
-  //   drop: function(event, ui) {
-  //     console.log("event = ", event)
-  //     console.log("draggable = ", ui.draggable)
-  //   }
-  // })
+  $this.droppable({
+    tolerance: "pointer",
+    hoverClass: "drop-hover",
+    greedy: true,
+    drop: function(event, ui) {
+      var textNode = this.getTextNode();
+      if (textNode.children.length > 0) { // kludge to prevent acting on phantom drop. TODO: debug this someday.
+        this.addChild(); // jjj
+      }
+      console.log("dropping ", ui.draggable[0], " on ", this.getTextNode())
+    }
+  })
 }
 
 NodeContent.prototype.onClick = function() {
   var panel = $(this).parent()[0].buttonPanel
   $(panel).show()
 
-  var textNode = $(this).parent().parent()[0]
-  textNode.toggle()
+  this.getTextNode().toggle()
 }
 
 // This event-handler is bound to the object's blur event.
@@ -621,6 +621,9 @@ NodeContent.prototype.onResize = function(e) {
     height: $this.height()})
 }
 
+NodeContent.prototype.getTextNode = function() {
+  return $(this).parent().parent()[0]
+}
 
 // =========================================================================
 //                   Node Children
@@ -814,17 +817,17 @@ AddSibling.prototype.onCreate = function() {
 
 
 // =========================================================================
-//                   Remove Node Button
+//                   Trash Node Button
 // =========================================================================
-var RemoveNode = defCustomTag('remove-node', NodeButton)
-RemoveNode.prototype.onCreate = function() {
+var TrashNode = defCustomTag('trash-node', NodeButton)
+TrashNode.prototype.onCreate = function() {
   NodeButton.prototype.onCreate.call(this)
 
   var $this = $(this)
   $this.html('x')
 
-  // Click function removes the TextNode associated with this button.
+  // Click function trashs the TextNode associated with this button.
   $this.click(function() {
-    this.getTextNode().remove()
+    this.getTextNode().trash()
   })
 }
