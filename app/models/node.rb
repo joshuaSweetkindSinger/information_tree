@@ -49,9 +49,9 @@ class Node < ActiveRecord::Base
   # relationship links are unhooked.
   #
   # The return value of this method is node.
-  def splice (splice_position)
+  def insert (splice_position)
     _unhook!
-    _rehook!(splice_position)
+    _splice!(splice_position)
     self.rank = calc_rank()
     save!
     self
@@ -87,7 +87,7 @@ class Node < ActiveRecord::Base
 
   # Link ourselves into the position specified by splice_position,
   # updating our links and those of our new siblings.
-  def _rehook! (splice_position)
+  def _splice! (splice_position)
     self.parent = splice_position.parent
     _set_predecessor!(splice_position.predecessor)
     _set_successor!(splice_position.successor)
@@ -133,21 +133,21 @@ class Node < ActiveRecord::Base
   # of self. It's added onto the beginning of self's set of children, unless last
   # is true, in which case it is added onto the end.
   def add_child (node, last = false)
-    node.splice(SplicePositionParent.new(self, last))
+    node.insert(SplicePositionParent.new(self, last))
   end
 
   # Add node to the node hierarchy to be the successor
   # of self. If node is already in the hiearchy, then its existing parent- and sibling-links
   # will be detached and re-hooked-up to fit with its new position.
   def add_successor (node)
-    node.splice(SplicePositionPredecessor.new(self))
+    node.insert(SplicePositionPredecessor.new(self))
   end
 
   # Add node to the node hierarchy to be the predecessor
   # of self. If node is already in the hiearchy, then its existing parent- and sibling-links
   # will be detached and re-hooked-up to fit with its new position.
   def add_predecessor (node)
-    node.splice(SplicePositionSuccessor.new(self))
+    node.insert(SplicePositionSuccessor.new(self))
   end
 
 
@@ -156,17 +156,6 @@ class Node < ActiveRecord::Base
   def trash
     Node.trash.add_child(self)
   end
-
-
-  # def trash
-  #   predecessor_node = self.predecessor
-  #   successor_node   = self.successor
-  #   predecessor_node.successor_id = (successor_node   ? successor_node.id   : nil) if predecessor_node
-  #   successor_node.predecessor_id = (predecessor_node ? predecessor_node.id : nil) if successor_node
-  #
-  #   predecessor_node.save! if predecessor_node
-  #   successor_node.save! if successor_node
-  # end
 
 
   # Destroy yourself and all your children from the hierarchy, and their children, recursively.
@@ -191,7 +180,7 @@ end
 # =============================================================================
 #                                   SplicePosition
 # =============================================================================
-# Instances of this class facilitate the splice operation, which causes a node
+# Instances of this class facilitate the insert operation, which causes a node
 # to be inserted into the hierarchy at the position designated by the SplicePosition instance.
 # This is a base class, not to be instantiated. See SplicePositionParent, etc., below.
 class SplicePosition
