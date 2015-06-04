@@ -109,14 +109,32 @@ class NodesController < ApplicationController
     end
   end
 
-  # Create a new child text node, or insert an existing one, and make its parent be the one with id params[:id].
-  # A new node is spec'd in params[:node]. If an node child, then params[:node][:id] references it.
+  # Create a new text node, or use an existing one, and insert it into the node
+  # hierarchy as the child or sibling of the node with id params[:id].
+  # To create a new node, specify its contents with params[:node].
+  # To use an existing node, specify its id with params[:node][:id].
+  # To add the node as a child of params[:id], set params[:mode] = :add_child.
+  # To add the node as a successor of params[:id], set params[:mode] = :add_successor.
+  # To add the node as a predecessor of params[:id], set params[:mode] = :add_predecessor.
   # For json format, return the newly created node as a json object.
-  def add_child
-    parent = Node.find(params[:id])
-    return render(json: {error: "Parent with id #{id} not found"}) unless parent
+  def add_node
+    at_node = Node.find(params[:id])
+    return render(json: {error: "at_node with id #{id} not found"}) unless at_node
 
-    @obj = parent.add_child(Node.new(params[:node]))
+    @obj = if params[:node][:id]
+             Node.find(params[:node][:id])
+           else
+             Node.new(params[:node])
+           end
+
+    return render(json: {error: "@obj node with id #{params[:node][:id]} not found"}) unless @obj
+
+    mode = params[:mode].to_sym
+    if ![:add_successor, :add_predecessor, :add_child].include?(mode)
+      return render(json: {error: "mode must be one of :add_child, :add_successor, :add_predecessor"})
+    end
+
+    at_node.send(mode, @obj)
 
     respond_to do |format|
       format.html { redirect_to interactive_nodes_path, notice: 'Node was successfully created.' }
@@ -124,21 +142,36 @@ class NodesController < ApplicationController
     end
   end
 
-
-  # Create a new sibling text node, or insert an existing one, and make its predecessor be the one with id params[:id].
-  # A new node is spec'd in params[:node]. If an existing node, then params[:node][:id] references it.
-  # For json format, return the newly created node as a json object.
-  def add_successor
-    node = Node.find(params[:id])
-    return render(json: {error: "Node with id #{id} not found"}) unless node
-
-    @obj = node.add_successor(Node.new(params[:node]))
-
-    respond_to do |format|
-      format.html { redirect_to interactive_nodes_path, notice: 'Node was successfully created.' }
-      format.json { render json: @obj, status: :created, location: @obj }
-    end
-  end
+  # # Create a new child text node, or insert an existing one, and make its parent be the one with id params[:id].
+  # # A new node is spec'd in params[:node]. If an node child, then params[:node][:id] references it.
+  # # For json format, return the newly created node as a json object.
+  # def add_child
+  #   parent = Node.find(params[:id])
+  #   return render(json: {error: "Parent with id #{id} not found"}) unless parent
+  #
+  #   @obj = parent.add_child(Node.new(params[:node]))
+  #
+  #   respond_to do |format|
+  #     format.html { redirect_to interactive_nodes_path, notice: 'Node was successfully created.' }
+  #     format.json { render json: @obj, status: :created, location: @obj }
+  #   end
+  # end
+  #
+  #
+  # # Create a new sibling text node, or insert an existing one, and make its predecessor be the one with id params[:id].
+  # # A new node is spec'd in params[:node]. If an existing node, then params[:node][:id] references it.
+  # # For json format, return the newly created node as a json object.
+  # def add_successor
+  #   node = Node.find(params[:id])
+  #   return render(json: {error: "Node with id #{id} not found"}) unless node
+  #
+  #   @obj = node.add_successor(Node.new(params[:node]))
+  #
+  #   respond_to do |format|
+  #     format.html { redirect_to interactive_nodes_path, notice: 'Node was successfully created.' }
+  #     format.json { render json: @obj, status: :created, location: @obj }
+  #   end
+  # end
 
   # Set one or more attributes of the object whose id is params[:id].
   # The attributes and their values are passed in as a sub-hash on params[:node], e.g.

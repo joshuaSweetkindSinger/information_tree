@@ -70,17 +70,7 @@ TextNode.prototype.afterCreate = function(nodeRef) {
   $this.append(this.childrenContainer)
 
   // Assign properties from ref
-  this.myId    = nodeRef.id
-  this.type_id = nodeRef.type_id
-  this.parent_id = nodeRef.parent_id;
-  this.predecessor_id = nodeRef.predecessor_id;
-  this.successor_id = nodeRef.successor_id;
-  this.rank = nodeRef.rank;
-  this.content = nodeRef.content
-  this.width   = nodeRef.width
-  this.height  = nodeRef.height
-
-
+  this.update(nodeRef)
 
   // Record client-side state info
   this.childrenFetched = false // True when we have received child node information from the server. See fetch_and_expand()
@@ -89,7 +79,12 @@ TextNode.prototype.afterCreate = function(nodeRef) {
 
   $this.draggable({
     revert: true,
-    helper: "clone"
+    helper: "clone",
+    start: function(a, b, c) {
+      console.log("draggable started:", a, b, c);
+    },
+    stop: function(a, b, c) {
+      console.log("draggable stopped:", a, b, c);    }
   })
 }
 
@@ -155,18 +150,14 @@ If it currently exists in the dom, return the text node with the specified id.
 TextNode.find = function(id) {
   if (!id) return;
 
-  var node = $('#' + id);
-  if (node.length > 0) {
-    return node;
+  var $node = $('#' + id);
+  if ($node.length > 0) {
+    return $node[0];
   }
 }
 
 TextNode.findOrCreate = function(node) {
-  if (node.id) {
-    return TextNode.find(node.id);
-  } else {
-    return new TextNode(node);
-  }
+  return TextNode.find(node.id) || (new TextNode(node));
 }
 
 // ============================ Glom and relative accessors
@@ -181,17 +172,17 @@ ourselves. If we have neither, then we must be the only child of our parent.
 TextNode.prototype.glom = function() {
   var relative;
   if (relative = this.predecessor()) {
-    relative[0].attachSuccessor(this);
+    relative.attachSuccessor(this);
     return this;
   }
 
   if (relative = this.successor()) {
-    relative[0].attachPredecessor(this);
+    relative.attachPredecessor(this);
     return this;
   }
 
   if (relative = this.parent()) {
-    relative[0].attachChild(this);
+    relative.attachChild(this);
     return this;
   }
 
@@ -219,7 +210,7 @@ TextNode.prototype.attachChild = function(child) {
 
 /*
 Search the dom for a TextNode whose id matches the predecessor id of this
-and return it in a jquery-wrapped object if found.
+and return it if found.
 */
 TextNode.prototype.predecessor = function() {
   return TextNode.find(this.predecessor_id);
@@ -228,7 +219,7 @@ TextNode.prototype.predecessor = function() {
 
 /*
 Search the dom for a TextNode whose id matches the predecessor id of this
-and return it in a jquery-wrapped object if found.
+and return it if found.
 */
 TextNode.prototype.successor = function() {
   return TextNode.find(this.successor_id);
@@ -237,7 +228,7 @@ TextNode.prototype.successor = function() {
 
 /*
 Search the dom for a TextNode whose id matches the parent id of this
-and return it in a jquery-wrapped object if found.
+and return it if found.
 */
 TextNode.prototype.parent = function() {
   return TextNode.find(this.parent_id);
@@ -361,9 +352,22 @@ TextNode.prototype.expandCollapseRecursiveButton = function() {
 }
 
 
-// =========================== Add Child
+// =========================== Add Node
+
+// TextNode.prototype.addChild = function(node) {
+//   if (!node) {
+//     node = TextNode.defaultSpec;
+//   }
+//
+//   this.addChildOnServer(node,
+//     function(node) {
+//       if (node.error) return;
+//       (TextNode.findOrCreate(node)).glom();
+//     });
+// };
+
 /*
-Ask the server to add a child text node, specified by <node>,
+Ask the server to add a text node, specified by <node>,
 to the node represented by this text node.
 
 If node is null, create a new default node.
@@ -373,34 +377,49 @@ but without an id, create a new node as specified.
 
 If node is non-null, but just contains an id, use the existing node
 with that id for the add operation and move it to the new location
-as a child of the node represented by <this>.
+relative to <this>.
+
+mode determines how node is moved relative to <this>, as either a child, successor, or predecessor
+of the node represented by <this>. mode should be a string, one of: 'child', 'successor', 'predecessor'
 */
-TextNode.prototype.addChild = function(node) {
+TextNode.prototype.addNode = function(node, mode) {
   if (!node) {
     node = TextNode.defaultSpec;
   }
 
-  this.addChildOnServer(node,
+  this.addNodeOnServer(node, mode,
     function(node) {
       if (node.error) return;
-      (TextNode.findOrCreate(node)).glom();
+      TextNode.findOrCreate(node)
+      .update(node)
+      .glom();
     });
 };
 
-// jjj: start here: use an Op object with an endpoint() method to switch between child and successor endpoints.
-// TODO: Review endpoints to see if they should be consolidated on server side.
-TextNode.prototype.addNode = function(node) {
-  if (!node) {
-    node = TextNode.defaultSpec;
-  }
 
-  this.addNodeOnServer(node,
-    function(node) {
-      if (node.error) return;
-      (TextNode.findOrCreate(node)).glom();
-    });
-};
+/*
+Update ourselves with new information from the server-side rep <node>.
+In principle, this update could involve any of the fields of a node object.
+As of this writing, we are really only interested in updating hierarchy links.
 
+TODO: in future, make this clear and efficient. Probably want to take the node returned
+by the server and just hook it up to a prototype and call it a day, and also find any existing
+dom objects associated with the node and hook those up too. This may require some cleanup though
+for the dom objects.
+*/
+TextNode.prototype.update = function(node) {
+  this.myId           = node.id
+  this.type_id        = node.type_id
+  this.parent_id      = node.parent_id;
+  this.predecessor_id = node.predecessor_id;
+  this.successor_id   = node.successor_id;
+  this.rank           = node.rank;
+  this.content        = node.content
+  this.width          = node.width
+  this.height         = node.height
+
+  return this;
+}
 
 /*
 Create a new child node, or insert an existing one, on the server,
@@ -412,18 +431,30 @@ Inputs:
         value is the id of the existing node.
   next: This is a continuation function that says what to do after the node is created or inserted.
 */
-TextNode.prototype.addChildOnServer = function(node, next) {
+TextNode.prototype.addNodeOnServer = function(node, mode, next) {
   getJsonFromServer(
     "POST",
-    this.addChildPath(this.id),
+    this.addNodePath(),
     next,
-    {node: node}
+    {node: node, mode:mode}
   );
 };
 
 
-TextNode.prototype.addChildPath = function(parentId) {
-  return '/nodes/' + parentId + '/add_child.json'
+TextNode.prototype.addNodePath = function() {
+  return '/nodes/' + this.id + '/add_node.json'
+}
+
+TextNode.prototype.addChild = function(node) {
+  this.addNode(node, 'add_child');
+}
+
+TextNode.prototype.addSuccessor = function(node) {
+  this.addNode(node, 'add_successor');
+}
+
+TextNode.prototype.addPredecessor = function(node) {
+  this.addNode(node, 'add_predecessor');
 }
 
 
@@ -441,17 +472,17 @@ If node is non-null, but just contains an id, use the existing node
 with that id for the add operation and move it to the new location
 as a successor of the node represented by <this>.
 */
-TextNode.prototype.addSuccessor = function(node) {
-  if (!node) {
-    node = TextNode.defaultSpec;
-  }
-
-  this.addSuccessorOnServer(node,
-    function(node) {
-      if (node.error) return;
-      (TextNode.findOrCreate(node)).glom();
-    });
-};
+// TextNode.prototype.addSuccessor = function(node) {
+//   if (!node) {
+//     node = TextNode.defaultSpec;
+//   }
+//
+//   this.addSuccessorOnServer(node,
+//     function(node) {
+//       if (node.error) return;
+//       (TextNode.findOrCreate(node)).glom();
+//     });
+// };
 
 /*
 Create a new successor node, or insert an existing one, on the server,
@@ -463,18 +494,18 @@ Inputs:
         value is the id of the existing node.
   next: This is a continuation function that says what to do after the node is created or inserted.
 */
-TextNode.prototype.addSuccessorOnServer = function(node, next) {
-  getJsonFromServer(
-    "POST",
-    this.addSuccessorPath(this.id),
-    next,
-    {node: node}
-  );
-}
-
-TextNode.prototype.addSuccessorPath = function(id) {
-  return '/nodes/' + id + '/add_successor.json'
-}
+// TextNode.prototype.addSuccessorOnServer = function(node, next) {
+//   getJsonFromServer(
+//     "POST",
+//     this.addSuccessorPath(this.id),
+//     next,
+//     {node: node}
+//   );
+// }
+//
+// TextNode.prototype.addSuccessorPath = function(id) {
+//   return '/nodes/' + id + '/add_successor.json'
+// }
 
 
 // =========================== trash
@@ -643,7 +674,7 @@ Object.defineProperties(ButtonPanel.prototype, {
 var NodeContent = defCustomTag('node-content', HTMLTextAreaElement, 'textarea')
 
 NodeContent.prototype.afterCreate = function() {
-  var $this = $(this)
+  var $this = $(this);
   $this.addClass('node-content')
   $this.on("blur", this.onBlur)
   $this.on("blur", this.onResize)
@@ -656,9 +687,9 @@ NodeContent.prototype.afterCreate = function() {
     drop: function(event, ui) {
       var textNode = this.getTextNode();
       if (textNode.children.length > 0) { // kludge to prevent acting on phantom drop. TODO: debug this someday.
-        this.addChild(); // jjj
+        console.log("dropping ", ui.draggable[0], " on ", textNode);
+        textNode.addChild({id:ui.draggable[0].id});
       }
-      console.log("dropping ", ui.draggable[0], " on ", this.getTextNode())
     }
   })
 }
@@ -862,7 +893,7 @@ AddChild.prototype.onCreate = function() {
   // adding the new node to the TextNode's NodeChildren element.
   $this.click(function() {
     if (this.is_active()) {
-      this.getTextNode().createChild()
+      this.getTextNode().addChild()
     }
   })
 }
@@ -879,7 +910,7 @@ AddSibling.prototype.onCreate = function() {
 
   // Click function adds a new TextNode after the TextNode associated with this button.
   $this.click(function() {
-    this.getTextNode().createSiblingUi();
+    this.getTextNode().addSuccessor();
   })
 }
 
