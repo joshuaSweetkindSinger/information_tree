@@ -124,18 +124,6 @@ TextNode.prototype.onAttach = function() {
 
 
 Object.defineProperties(TextNode.prototype, {
-    myId: {
-      get: function() {
-        return this.id
-      },
-
-      set: function(id) {
-        this.id = id
-        this.header.myId = id
-        this.childrenContainer.myId = id
-      }
-    },
-
     content: {
       get: function() {
         return $(this).children('node-header').children('textarea').val()
@@ -165,7 +153,39 @@ Object.defineProperties(TextNode.prototype, {
       }
     }
   }
-)
+);
+
+
+/*
+Update ourselves with new information from the server-side rep <node>.
+In principle, this update could involve any of the fields of a node object.
+As of this writing, we are really only interested in updating hierarchy links.
+
+TODO: in future, make this clear and efficient. Probably want to take the node returned
+by the server and just hook it up to a prototype and call it a day, and also find any existing
+dom objects associated with the node and hook those up too. This may require some cleanup though
+for the dom objects.
+*/
+TextNode.prototype.update = function(node) {
+  this.set_id(node.id);
+
+  this.type_id        = node.type_id
+  this.parent_id      = node.parent_id;
+  this.predecessor_id = node.predecessor_id;
+  this.successor_id   = node.successor_id;
+  this.rank           = node.rank;
+  this.content        = node.content
+  this.width          = node.width
+  this.height         = node.height
+
+  return this;
+}
+
+TextNode.prototype.set_id = function(id) {
+  this.id = id;
+  this.header.set_id(id);
+  this.childrenContainer.set_id(id);
+}
 
 TextNode.prototype.visibleNodes = function(result) {
   result.push(this);
@@ -423,30 +443,6 @@ TextNode.prototype.addNode = function(node, mode) {
 
 
 /*
-Update ourselves with new information from the server-side rep <node>.
-In principle, this update could involve any of the fields of a node object.
-As of this writing, we are really only interested in updating hierarchy links.
-
-TODO: in future, make this clear and efficient. Probably want to take the node returned
-by the server and just hook it up to a prototype and call it a day, and also find any existing
-dom objects associated with the node and hook those up too. This may require some cleanup though
-for the dom objects.
-*/
-TextNode.prototype.update = function(node) {
-  this.myId           = node.id
-  this.type_id        = node.type_id
-  this.parent_id      = node.parent_id;
-  this.predecessor_id = node.predecessor_id;
-  this.successor_id   = node.successor_id;
-  this.rank           = node.rank;
-  this.content        = node.content
-  this.width          = node.width
-  this.height         = node.height
-
-  return this;
-}
-
-/*
 Create a new node, or insert an existing one, on the server.
 Attach it to the text node tree at a position relative to this node
 as indicated by mode, which must be one of 'add_child', 'add_successor', 'add_predeessor'.
@@ -595,19 +591,12 @@ NodeHeader.prototype.onCreate = function() {
   $(this.buttonPanel).hide()
 }
 
-Object.defineProperties(NodeHeader.prototype, {
-    myId: {
-      get: function() {
-        return this.id
-      },
+NodeHeader.prototype.set_id = function(id) {
+  this.id = 'NodeHeader-' + id;
+  this.content.set_id(id);
+  this.buttonPanel.set_id(id);
+}
 
-      set: function(id) {
-        this.id = id
-        this.content.id = id
-        this.buttonPanel.id = id
-      }
-    }
-  })
 
 // =========================================================================
 //                   Button Panel
@@ -644,22 +633,19 @@ ButtonPanel.prototype.onCreate = function() {
   $this.append(this.expandCollapseRecursiveButton)
 }
 
-Object.defineProperties(ButtonPanel.prototype, {
-  myId: {
-    get: function() {
-      return this.id
-    },
 
-    // TODO: Are these necessary? Who uses them?
-    set: function(id) {
-      this.id                      = id
-      this.expandCollapseButton.id = id
-      this.addChildButton.id       = id
-      this.addSiblingButton.id     = id
-      this.trashNodeButton.id      = id
-    }
-  }
-})
+ButtonPanel.prototype.set_id = function(id) {
+  this.id = 'ButtonPanel-' + id;
+  this.debugButton.set_id(id);
+  this.followLinkButton.set_id(id);
+  this.autoSizeButton.set_id(id);
+  this.addChildButton.set_id(id);
+  this.addSiblingButton.set_id(id);
+  this.trashNodeButton.set_id(id);
+  this.expandCollapseButton.set_id(id);
+  this.expandCollapseRecursiveButton.set_id(id);
+}
+
 
 // =========================================================================
 //                   Node Content
@@ -684,6 +670,10 @@ NodeContent.prototype.afterCreate = function() {
       window.dragDrop.drop.source = ui.draggable[0];
     }
   })
+}
+
+NodeContent.prototype.set_id = function(id) {
+  this.id = 'NodeContent-' + id;
 }
 
 
@@ -725,7 +715,9 @@ var NodeChildren = defCustomTag('node-children', HTMLElement)
 NodeChildren.prototype.onCreate = function() {
 }
 
-
+NodeChildren.prototype.set_id = function(id) {
+  this.id = 'NodeChildren-' + id;
+}
 // =========================================================================
 //                   Node Button
 // =========================================================================
@@ -737,6 +729,10 @@ NodeButton.prototype.onCreate = function() {
   var $this = $(this)
   $this.addClass('node-button')
   this.activate()
+}
+
+NodeButton.prototype.set_id = function(id) {
+  this.id = 'NodeButton-' + id;
 }
 
 NodeButton.prototype.is_active = function() {
@@ -784,6 +780,10 @@ FollowLink.prototype.onCreate = function() {
     this.getTextNode().followLink()
   })
 }
+
+FollowLink.prototype.set_id = function(id) {
+  this.id = 'FollowLink-' + id;
+}
 // =========================================================================
 //                   NodeDebug Button
 // =========================================================================
@@ -801,6 +801,7 @@ NodeDebug.prototype.onCreate = function() {
   })
 }
 
+
 // =========================================================================
 //                   AutoSize Button
 // =========================================================================
@@ -816,6 +817,9 @@ AutoSize.prototype.onCreate = function() {
   $this.click(function(event) {this.getTextNode().autoSize()})
 }
 
+AutoSize.prototype.set_id = function(id) {
+  this.id = 'AutoSize-' + id;
+}
 // =========================================================================
 //                   Expand / Collapse Button
 // =========================================================================
@@ -825,6 +829,10 @@ ExpandCollapse.prototype.onCreate = function() {
   NodeButton.prototype.onCreate.call(this)
 
   $(this).click(function(event) {this.toggle()})
+}
+
+ExpandCollapse.prototype.set_id = function(id) {
+  this.id = 'ExpandCollapse-' + id;
 }
 
 
@@ -853,6 +861,10 @@ ExpandCollapseRecursive.prototype.onCreate = function() {
   NodeButton.prototype.onCreate.call(this)
   $(this).click(function(event) {
     this.toggle()})
+}
+
+ExpandCollapseRecursive.prototype.set_id = function(id) {
+  this.id = 'ExpandCollapseRecursive-' + id;
 }
 
 
@@ -892,6 +904,10 @@ AddChild.prototype.onCreate = function() {
   })
 }
 
+AddChild.prototype.set_id = function(id) {
+  this.id = 'AddChild-' + id;
+}
+
 // =========================================================================
 //                   Add Sibling Button
 // =========================================================================
@@ -906,6 +922,10 @@ AddSibling.prototype.onCreate = function() {
   $this.click(function() {
     this.getTextNode().addSuccessor();
   })
+}
+
+AddSibling.prototype.set_id = function(id) {
+  this.id = 'AddSibling-' + id;
 }
 
 
@@ -923,4 +943,9 @@ TrashNode.prototype.onCreate = function() {
   $this.click(function() {
     this.getTextNode().trash()
   })
+}
+
+
+TrashNode.prototype.set_id = function(id) {
+  this.id = 'TrashNode-' + id;
 }
