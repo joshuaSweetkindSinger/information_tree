@@ -25,14 +25,20 @@ has been sent back to the client.
 // =========================================================================
 //                   Text Tree
 // =========================================================================
-var TextTree = defCustomTag('text-tree', HTMLElement)
+var TextTree = defCustomTag('text-tree', HTMLElement);
 
 // Find the top node of the tree and add it to the dom.
 TextTree.prototype.onCreate = function() {
-  var $me = $(this)
+  window.textTree = this;
+  this.addTop();
+}
+
+TextTree.prototype.addTop = function() {
+  var me = this;
   this.getTopNodeFromServer(function(node) {
     if (node) {
-      $me.append(new TextNode(node))
+      me.top = new TextNode(node);
+      $(me).append(me.top)
     }})
 }
 
@@ -42,6 +48,17 @@ TextTree.prototype.topNodePath = function() {
 
 TextTree.prototype.getTopNodeFromServer = function(continuation) {
   getJsonFromServer("GET", this.topNodePath(), continuation)
+}
+
+// =========================== Class Methods
+/*
+Return an array of all the nodes in the text tree that are currently visible.
+Return the nodes in order of descending y-value. This means that every visible node will
+be preceded by its older siblings, all their visible descendants, and by its parent.
+*/
+TextTree.visibleNodes = function() {
+  var result = [];
+  result.push()
 }
 
 // =========================================================================
@@ -81,10 +98,11 @@ TextNode.prototype.afterCreate = function(nodeRef) {
     revert: true,
     helper: "clone",
     start: function(a, b, c) {
-      console.log("draggable started:", a, b, c);
+      // console.log("draggable started:", a, b, c);
     },
     stop: function(a, b, c) {
-      console.log("draggable stopped:", a, b, c);    }
+      // console.log("draggable stopped:", a, b, c);
+    }
   })
 }
 
@@ -354,21 +372,10 @@ TextNode.prototype.expandCollapseRecursiveButton = function() {
 
 // =========================== Add Node
 
-// TextNode.prototype.addChild = function(node) {
-//   if (!node) {
-//     node = TextNode.defaultSpec;
-//   }
-//
-//   this.addChildOnServer(node,
-//     function(node) {
-//       if (node.error) return;
-//       (TextNode.findOrCreate(node)).glom();
-//     });
-// };
-
 /*
 Ask the server to add a text node, specified by <node>,
-to the node represented by this text node.
+to the node represented by this text node. After the server
+responds with a success code, effect the same changes on the client-side.
 
 If node is null, create a new default node.
 
@@ -422,13 +429,15 @@ TextNode.prototype.update = function(node) {
 }
 
 /*
-Create a new child node, or insert an existing one, on the server,
-and make its parent be the node represented
-by this TextNode instance. Then execute the function next() when done.
+Create a new node, or insert an existing one, on the server.
+Attach it to the text node tree at a position relative to this node
+as indicated by mode, which must be one of 'add_child', 'add_successor', 'add_predeessor'.
+Then execute the function next() when done.
 Inputs:
   node: if creating a new node, this should be an object that specs out the desired new node.
-        If adding an existing node, then this should just be an object with an id key whose
+        If adding an existing node, then this should just be an object with an id whose
         value is the id of the existing node.
+  mode: one of 'add_child', 'add_successor', 'add_predecessor'.
   next: This is a continuation function that says what to do after the node is created or inserted.
 */
 TextNode.prototype.addNodeOnServer = function(node, mode, next) {
@@ -445,67 +454,35 @@ TextNode.prototype.addNodePath = function() {
   return '/nodes/' + this.id + '/add_node.json'
 }
 
+/*
+Create a new node, or insert an existing one, on the server, with the
+node represented by this node as its parent. Then effect the same transformation
+on the client side.
+*/
 TextNode.prototype.addChild = function(node) {
   this.addNode(node, 'add_child');
 }
 
+
+/*
+Create a new node, or insert an existing one, on the server, with the
+node represented by this node as its predecessor. Then effect the same transformation
+on the client side.
+*/
 TextNode.prototype.addSuccessor = function(node) {
   this.addNode(node, 'add_successor');
 }
 
+
+
+/*
+Create a new node, or insert an existing one, on the server, with the
+node represented by this node as its successor. Then effect the same transformation
+on the client side.
+*/
 TextNode.prototype.addPredecessor = function(node) {
   this.addNode(node, 'add_predecessor');
 }
-
-
-// =========================== Add Successor
-/*
-Ask the server to add a successor text node, specified by <node>,
-to the node represented by <this> text node.
-
-If node is null, create a new default node.
-
-If node is non-null and fully spec'd,
-but without an id, create a new node as specified.
-
-If node is non-null, but just contains an id, use the existing node
-with that id for the add operation and move it to the new location
-as a successor of the node represented by <this>.
-*/
-// TextNode.prototype.addSuccessor = function(node) {
-//   if (!node) {
-//     node = TextNode.defaultSpec;
-//   }
-//
-//   this.addSuccessorOnServer(node,
-//     function(node) {
-//       if (node.error) return;
-//       (TextNode.findOrCreate(node)).glom();
-//     });
-// };
-
-/*
-Create a new successor node, or insert an existing one, on the server,
-and make its predecessor be the node represented
-by this TextNode instance. Then execute the function next() when done.
-Inputs:
-  node: if creating a new node, this should be an object that specs out the desired new node.
-        If adding an existing node, then this should just be an object with an id key whose
-        value is the id of the existing node.
-  next: This is a continuation function that says what to do after the node is created or inserted.
-*/
-// TextNode.prototype.addSuccessorOnServer = function(node, next) {
-//   getJsonFromServer(
-//     "POST",
-//     this.addSuccessorPath(this.id),
-//     next,
-//     {node: node}
-//   );
-// }
-//
-// TextNode.prototype.addSuccessorPath = function(id) {
-//   return '/nodes/' + id + '/add_successor.json'
-// }
 
 
 // =========================== trash
@@ -687,7 +664,7 @@ NodeContent.prototype.afterCreate = function() {
     drop: function(event, ui) {
       var textNode = this.getTextNode();
       if (textNode.children.length > 0) { // kludge to prevent acting on phantom drop. TODO: debug this someday.
-        console.log("dropping ", ui.draggable[0], " on ", textNode);
+        // console.log("dropping ", ui.draggable[0], " on ", textNode);
         textNode.addChild({id:ui.draggable[0].id});
       }
     }
@@ -803,7 +780,8 @@ NodeDebug.prototype.onCreate = function() {
   var $this = $(this)
   $this.html('D')
   $this.click(function(event) {
-    console.log("Debug: ", this.getTextNode())
+    console.log("Assigning this node to the global window.debug: ", this.getTextNode())
+    window.debug = this.getTextNode();
   })
 }
 
