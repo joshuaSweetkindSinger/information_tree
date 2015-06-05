@@ -22,7 +22,7 @@ certain properties. The name nodeRep indicates that a representation of the now-
 has been sent back to the client.
  */
 
-// =========================================================================
+// ========================================================================
 //                   Text Tree
 // =========================================================================
 var TextTree = defCustomTag('text-tree', HTMLElement);
@@ -50,15 +50,14 @@ TextTree.prototype.getTopNodeFromServer = function(continuation) {
   getJsonFromServer("GET", this.topNodePath(), continuation)
 }
 
-// =========================== Class Methods
+
 /*
 Return an array of all the nodes in the text tree that are currently visible.
 Return the nodes in order of descending y-value. This means that every visible node will
 be preceded by its older siblings, all their visible descendants, and by its parent.
 */
-TextTree.visibleNodes = function() {
-  var result = [];
-  result.push()
+TextTree.prototype.visibleNodes = function() {
+  return this.top.visibleNodes([]);
 }
 
 // =========================================================================
@@ -93,15 +92,22 @@ TextNode.prototype.afterCreate = function(nodeRef) {
   this.childrenFetched = false // True when we have received child node information from the server. See fetch_and_expand()
   this.collapse()
 
-
+  var me = this;
   $this.draggable({
     revert: true,
     helper: "clone",
     start: function(a, b, c) {
-      // console.log("draggable started:", a, b, c);
+      window.dragDrop = {drag:{}, drop:{}};
     },
-    stop: function(a, b, c) {
-      // console.log("draggable stopped:", a, b, c);
+    stop: function(event, helper) {
+      window.dragDrop.drag.event  = event;
+      window.dragDrop.drag.helper = helper;
+      window.dragDrop.drag.Obj    = me;
+      /*
+      if (textNode.children.length > 0) { // kludge to prevent acting on phantom drop. TODO: debug this someday.
+        textNode.addChild({id:ui.draggable[0].id});
+      }
+      */
     }
   })
 }
@@ -161,7 +167,19 @@ Object.defineProperties(TextNode.prototype, {
   }
 )
 
+TextNode.prototype.visibleNodes = function(result) {
+  result.push(this);
+  if (this.state == 'expanded') {
+    this.kids().each(function(index){
+      this.visibleNodes(result);
+    });
+  }
+  return result;
+}
+
 // ====================================== Class Methods
+// TODO: Maybe make all of these instance methods of TextTree.
+
 /*
 If it currently exists in the dom, return the text node with the specified id.
 */
@@ -662,14 +680,12 @@ NodeContent.prototype.afterCreate = function() {
     hoverClass: "drop-hover",
     greedy: true,
     drop: function(event, ui) {
-      var textNode = this.getTextNode();
-      if (textNode.children.length > 0) { // kludge to prevent acting on phantom drop. TODO: debug this someday.
-        // console.log("dropping ", ui.draggable[0], " on ", textNode);
-        textNode.addChild({id:ui.draggable[0].id});
-      }
+      window.dragDrop.drop.target = this.getTextNode();;
+      window.dragDrop.drop.source = ui.draggable[0];
     }
   })
 }
+
 
 NodeContent.prototype.onClick = function() {
   var panel = $(this).parent()[0].buttonPanel
