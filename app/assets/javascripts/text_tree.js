@@ -103,6 +103,12 @@ TextNode.prototype.afterCreate = function(nodeRef) {
       window.dragDrop.drag.event  = event;
       window.dragDrop.drag.helper = helper;
       window.dragDrop.drag.Obj    = me;
+
+      if (window.dragDrop.drop.target) {
+        console.log("Drop event");
+      } else {
+        console.log("Drag event");
+      }
       /*
       if (textNode.children.length > 0) { // kludge to prevent acting on phantom drop. TODO: debug this someday.
         textNode.addChild({id:ui.draggable[0].id});
@@ -666,8 +672,11 @@ NodeContent.prototype.afterCreate = function() {
     hoverClass: "drop-hover",
     greedy: true,
     drop: function(event, ui) {
-      window.dragDrop.drop.target = this.getTextNode();;
-      window.dragDrop.drop.source = ui.draggable[0];
+      var textNode = this.getTextNode();
+      if (textNode.id) {
+        window.dragDrop.drop.target = textNode;
+        window.dragDrop.drop.source = ui.draggable[0];
+      }
     }
   })
 }
