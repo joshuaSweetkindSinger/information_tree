@@ -92,7 +92,6 @@ TextNode.prototype.afterCreate = function(nodeRef) {
   this.childrenFetched = false // True when we have received child node information from the server. See fetch_and_expand()
   this.collapse()
 
-  var me = this;
   $this.draggable({
     revert: true,
     helper: "clone",
@@ -101,7 +100,7 @@ TextNode.prototype.afterCreate = function(nodeRef) {
     },
     stop: function(event, helper) {
       if (window.dropTarget) {
-        window.dropTarget.addChild({id: me.id});
+        window.dropTarget.addChild({id: this.id});
       } else {
         var y = helper.position.top;
         var nodes = window.textTree.visibleNodes().reverse();
