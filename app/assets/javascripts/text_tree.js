@@ -108,7 +108,7 @@ TextNode.prototype.afterCreate = function(nodeRef) {
         for(var i = 0; i < nodes.length; i++) {
           var node = nodes[i];
           if ($(node).position().top < y) {
-            node.addSuccessor({id: me.id});
+            node.addSuccessor({id: this.id});
             break;
           }
         };
