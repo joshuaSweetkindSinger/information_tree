@@ -96,24 +96,23 @@ TextNode.prototype.afterCreate = function(nodeRef) {
   $this.draggable({
     revert: true,
     helper: "clone",
-    start: function(a, b, c) {
-      window.dragDrop = {drag:{}, drop:{}};
+    start: function() {
+      window.dropTarget = null;
     },
     stop: function(event, helper) {
-      window.dragDrop.drag.event  = event;
-      window.dragDrop.drag.helper = helper;
-      window.dragDrop.drag.Obj    = me;
-
-      if (window.dragDrop.drop.target) {
-        console.log("Drop event");
+      if (window.dropTarget) {
+        window.dropTarget.addChild({id: me.id});
       } else {
-        console.log("Drag event");
+        var y = helper.position.top;
+        var nodes = window.textTree.visibleNodes().reverse();
+        for(var i = 0; i < nodes.length; i++) {
+          var node = nodes[i];
+          if ($(node).position().top < y) {
+            node.addSuccessor({id: me.id});
+            break;
+          }
+        };
       }
-      /*
-      if (textNode.children.length > 0) { // kludge to prevent acting on phantom drop. TODO: debug this someday.
-        textNode.addChild({id:ui.draggable[0].id});
-      }
-      */
     }
   })
 }
@@ -674,8 +673,7 @@ NodeContent.prototype.afterCreate = function() {
     drop: function(event, ui) {
       var textNode = this.getTextNode();
       if (textNode.id) {
-        window.dragDrop.drop.target = textNode;
-        window.dragDrop.drop.source = ui.draggable[0];
+        window.dropTarget = textNode;
       }
     }
   })
