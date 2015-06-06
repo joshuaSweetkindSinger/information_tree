@@ -60,6 +60,40 @@ TextTree.prototype.visibleNodes = function() {
   return this.top.visibleNodes([]);
 }
 
+
+TextTree.prototype.findLowestNodeAbove = function(y) {
+  var nodes = this.visibleNodes().reverse();
+  for(var i = 0; i < nodes.length; i++) {
+    var node = nodes[i];
+
+    // Ignore any "phantom" node that does not have an id.
+    if (!node.id) {
+      continue;
+    }
+    
+    if ($(node).position().top < y) {
+      return node;
+    }
+  };
+}
+
+
+/*
+If it currently exists in the dom, return the text node with the specified id.
+*/
+TextTree.prototype.find = function(id) {
+  if (!id) return;
+
+  var $node = $('#' + id);
+  if ($node.length > 0) {
+    return $node[0];
+  }
+}
+
+TextTree.prototype.findOrCreate = function(node) {
+  return this.find(node.id) || (new TextNode(node));
+}
+
 // =========================================================================
 //                   Text Node
 // =========================================================================
@@ -90,31 +124,45 @@ TextNode.prototype.afterCreate = function(nodeRef) {
 
   // Record client-side state info
   this.childrenFetched = false // True when we have received child node information from the server. See fetch_and_expand()
-  this.collapse()
+  this.collapse();
 
   $this.draggable({
     revert: true,
     helper: "clone",
-    start: function() {
-      window.dropTarget = null;
-    },
-    stop: function(event, helper) {
-      if (window.dropTarget) {
-        window.dropTarget.addChild({id: this.id});
-      } else {
-        var y = helper.position.top;
-        var nodes = window.textTree.visibleNodes().reverse();
-        for(var i = 0; i < nodes.length; i++) {
-          var node = nodes[i];
-          if ($(node).position().top < y) {
-            node.addSuccessor({id: this.id});
-            break;
-          }
-        };
-      }
-    }
+    start: this.dragStart,
+    stop: this.dragStop
   })
 }
+
+
+/*
+A drag event just started. Erase the last drop target.
+This function is called whenever a new drag event is initiated.
+*/
+
+TextNode.prototype.dragStart = function() {
+  window.dropTarget = null;
+}
+
+
+/*
+A drag event just ended. Determine whether we were dropped on top of another node,
+or let go beneath a node, and do either an addChild() or an addSuccessor() accordingly.
+*/
+TextNode.prototype.dragStop = function(event, helper) {
+  // There's a drop target: add a child
+  if (window.dropTarget) {
+    window.dropTarget.addChild({id: this.id});
+    return;
+  }
+
+  // There's a node above the release position: add a successor
+  var node = window.textTree.findLowestNodeAbove(helper.position.top);
+  if (node) {
+    node.addSuccessor({id: this.id});
+  }
+};
+
 
 // Clean up the width and height after we are attached.
 // The problem here is that width and height are set at create time, which is the only time
@@ -204,22 +252,6 @@ TextNode.prototype.visibleNodes = function(result) {
 // ====================================== Class Methods
 // TODO: Maybe make all of these instance methods of TextTree.
 
-/*
-If it currently exists in the dom, return the text node with the specified id.
-*/
-TextNode.find = function(id) {
-  if (!id) return;
-
-  var $node = $('#' + id);
-  if ($node.length > 0) {
-    return $node[0];
-  }
-}
-
-TextNode.findOrCreate = function(node) {
-  return TextNode.find(node.id) || (new TextNode(node));
-}
-
 // ============================ Glom and relative accessors
 /*
 Attach ourselves to the Text tree. This is done just after a new
@@ -273,7 +305,7 @@ Search the dom for a TextNode whose id matches the predecessor id of this
 and return it if found.
 */
 TextNode.prototype.predecessor = function() {
-  return TextNode.find(this.predecessor_id);
+  return window.textTree.find(this.predecessor_id);
 };
 
 
@@ -282,7 +314,7 @@ Search the dom for a TextNode whose id matches the predecessor id of this
 and return it if found.
 */
 TextNode.prototype.successor = function() {
-  return TextNode.find(this.successor_id);
+  return window.textTree.find(this.successor_id);
 };
 
 
@@ -291,7 +323,7 @@ Search the dom for a TextNode whose id matches the parent id of this
 and return it if found.
 */
 TextNode.prototype.parent = function() {
-  return TextNode.find(this.parent_id);
+  return window.textTree.find(this.parent_id);
 }
 
 TextNode.prototype.kids = function() {
@@ -439,7 +471,7 @@ TextNode.prototype.addNode = function(node, mode) {
   this.addNodeOnServer(node, mode,
     function(node) {
       if (node.error) return;
-      TextNode.findOrCreate(node)
+      window.textTree.findOrCreate(node)
       .update(node)
       .glom();
     });
@@ -669,14 +701,26 @@ NodeContent.prototype.afterCreate = function() {
     tolerance: "pointer",
     hoverClass: "drop-hover",
     greedy: true,
-    drop: function(event, ui) {
-      var textNode = this.getTextNode();
-      if (textNode.id) {
-        window.dropTarget = textNode;
-      }
-    }
+    drop: this.handleDrop
   })
 }
+
+
+/*
+Handle a drop event. We were just dropped on top of a node.
+Record the drop target so that we can be added as a child when the drag event finishes.
+Note: It seems that a single mouse-release can generate two drop events, one of them a phantom.
+Not sure why. But the "true" drop event is recognizable because the associated drop node will have an id.
+We only record this node as the drop target, not the phantom. I believe the phantom has to do with
+the cloned helper node that is created as part of the drag.
+*/
+NodeContent.prototype.handleDrop = function(event, ui) {
+  var textNode = this.getTextNode();
+  if (textNode.id) {
+    window.dropTarget = textNode;
+  }
+};
+
 
 NodeContent.prototype.set_id = function(id) {
   this.id = 'NodeContent-' + id;
