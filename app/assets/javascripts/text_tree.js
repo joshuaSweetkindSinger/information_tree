@@ -408,7 +408,7 @@ TextNode.prototype.childrenPath = function(id) {
 TextNode.prototype.expandInternal = function() {
   this.state = 'expanded'
   $(this).children('node-children').show('slow')
-  this.header.showButtonPanel();
+  // this.header.showButtonPanel();
 }
 
 
@@ -417,7 +417,7 @@ TextNode.prototype.collapse = function(doRecursive) {
   this.state = 'collapsed'
   var nodeChildren = $(this).children('node-children')
   nodeChildren.hide('slow')
-  this.header.hideButtonPanel();
+  // this.header.hideButtonPanel();
   if (doRecursive) {
     nodeChildren.children().each(function(index) {
       this.collapse(doRecursive)
@@ -433,12 +433,12 @@ TextNode.prototype.toggle = function(doRecursive) {
   }
 }
 
-TextNode.prototype.expandCollapseButton = function() {
-  return this.header.buttonPanel.expandCollapseButton
-}
-TextNode.prototype.expandCollapseRecursiveButton = function() {
-  return this.header.buttonPanel.expandCollapseRecursiveButton
-}
+// TextNode.prototype.expandCollapseButton = function() {
+//   return this.header.buttonPanel.expandCollapseButton
+// }
+// TextNode.prototype.expandCollapseRecursiveButton = function() {
+//   return this.header.buttonPanel.expandCollapseRecursiveButton
+// }
 
 
 // =========================== Add Node
@@ -467,7 +467,12 @@ TextNode.prototype.addNode = function(node, mode) {
 
   this.addNodeOnServer(node, mode,
     function(node) {
-      if (node.error) return;
+      if (node.error) {
+        console.log("Got an error attempting to add this node on the server:", node);
+        window.debug = node;
+        return;
+      };
+
       window.textTree.findOrCreate(node)
       .update(node)
       .glom();

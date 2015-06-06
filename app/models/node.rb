@@ -50,11 +50,13 @@ class Node < ActiveRecord::Base
   #
   # The return value of this method is node.
   def insert (splice_position)
-    _unhook!
-    _splice!(splice_position)
-    self.rank = calc_rank()
-    save!
-    self
+    self.transaction do
+      _unhook!
+      _splice!(splice_position)
+      self.rank = calc_rank()
+      save!
+      self
+    end
   end
 
 
