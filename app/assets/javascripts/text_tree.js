@@ -29,7 +29,9 @@ var TextTree = defCustomTag('text-tree', HTMLElement);
 
 // Find the top node of the tree and add it to the dom.
 TextTree.prototype.onCreate = function() {
-  window.textTree = this;
+  window.textTree  = this;
+  this.buttonPanel = new ButtonPanel;
+  $(this.buttonPanel).hide()
   this.addTop();
 }
 
@@ -70,7 +72,7 @@ TextTree.prototype.findLowestNodeAbove = function(y) {
     if (!node.id) {
       continue;
     }
-    
+
     if ($(node).position().top < y) {
       return node;
     }
@@ -141,7 +143,7 @@ This function is called whenever a new drag event is initiated.
 */
 
 TextNode.prototype.dragStart = function() {
-  window.dropTarget = null;
+  window.textTree.dropTarget = null;
 }
 
 
@@ -151,8 +153,8 @@ or let go beneath a node, and do either an addChild() or an addSuccessor() accor
 */
 TextNode.prototype.dragStop = function(event, helper) {
   // There's a drop target: add a child
-  if (window.dropTarget) {
-    window.dropTarget.addChild({id: this.id});
+  if (window.textTree.dropTarget) {
+    window.textTree.dropTarget.addChild({id: this.id});
     return;
   }
 
@@ -406,9 +408,7 @@ TextNode.prototype.childrenPath = function(id) {
 TextNode.prototype.expandInternal = function() {
   this.state = 'expanded'
   $(this).children('node-children').show('slow')
-  this.expandCollapseButton().expand()
-  this.expandCollapseRecursiveButton().expand()
-  $(this.header.buttonPanel).show('slow')
+  this.header.showButtonPanel();
 }
 
 
@@ -417,16 +417,13 @@ TextNode.prototype.collapse = function(doRecursive) {
   this.state = 'collapsed'
   var nodeChildren = $(this).children('node-children')
   nodeChildren.hide('slow')
-  this.expandCollapseButton().collapse()
-  this.expandCollapseRecursiveButton().collapse()
-  $(this.header.buttonPanel).hide('slow')
+  this.header.hideButtonPanel();
   if (doRecursive) {
     nodeChildren.children().each(function(index) {
       this.collapse(doRecursive)
     })
   }
 }
-
 
 TextNode.prototype.toggle = function(doRecursive) {
   if (this.state == 'expanded') {
@@ -621,16 +618,23 @@ NodeHeader.prototype.onCreate = function() {
 
   this.content = new NodeContent
   $this.append(this.content)
-
-  this.buttonPanel = new ButtonPanel
-  $this.append(this.buttonPanel)
-  $(this.buttonPanel).hide()
 }
 
 NodeHeader.prototype.set_id = function(id) {
   this.id = 'NodeHeader-' + id;
   this.content.set_id(id);
-  this.buttonPanel.set_id(id);
+}
+
+
+NodeHeader.prototype.showButtonPanel = function() {
+  $(this).append(window.textTree.buttonPanel);
+  $(window.textTree.buttonPanel).show('slow');
+}
+
+
+NodeHeader.prototype.hideButtonPanel = function() {
+  $(this).append(window.textTree.buttonPanel);
+  $(window.textTree.buttonPanel).hide('slow');
 }
 
 
@@ -670,19 +674,6 @@ ButtonPanel.prototype.onCreate = function() {
 }
 
 
-ButtonPanel.prototype.set_id = function(id) {
-  this.id = 'ButtonPanel-' + id;
-  this.debugButton.set_id(id);
-  this.followLinkButton.set_id(id);
-  this.autoSizeButton.set_id(id);
-  this.addChildButton.set_id(id);
-  this.addSiblingButton.set_id(id);
-  this.trashNodeButton.set_id(id);
-  this.expandCollapseButton.set_id(id);
-  this.expandCollapseRecursiveButton.set_id(id);
-}
-
-
 // =========================================================================
 //                   Node Content
 // =========================================================================
@@ -717,7 +708,7 @@ the cloned helper node that is created as part of the drag.
 NodeContent.prototype.handleDrop = function(event, ui) {
   var textNode = this.getTextNode();
   if (textNode.id) {
-    window.dropTarget = textNode;
+    window.textTree.dropTarget = textNode;
   }
 };
 
@@ -728,10 +719,9 @@ NodeContent.prototype.set_id = function(id) {
 
 
 NodeContent.prototype.onClick = function() {
-  var panel = $(this).parent()[0].buttonPanel
-  $(panel).show()
+  $(this).parent()[0].showButtonPanel();
 
-  this.getTextNode().toggle()
+  // this.getTextNode().toggle()
 }
 
 // This event-handler is bound to the object's blur event.
@@ -781,9 +771,6 @@ NodeButton.prototype.onCreate = function() {
   this.activate()
 }
 
-NodeButton.prototype.set_id = function(id) {
-  this.id = 'NodeButton-' + id;
-}
 
 NodeButton.prototype.is_active = function() {
   return $(this).hasClass('node-button-active')
@@ -831,9 +818,6 @@ FollowLink.prototype.onCreate = function() {
   })
 }
 
-FollowLink.prototype.set_id = function(id) {
-  this.id = 'FollowLink-' + id;
-}
 // =========================================================================
 //                   NodeDebug Button
 // =========================================================================
@@ -867,9 +851,6 @@ AutoSize.prototype.onCreate = function() {
   $this.click(function(event) {this.getTextNode().autoSize()})
 }
 
-AutoSize.prototype.set_id = function(id) {
-  this.id = 'AutoSize-' + id;
-}
 // =========================================================================
 //                   Expand / Collapse Button
 // =========================================================================
@@ -877,12 +858,9 @@ var ExpandCollapse = defCustomTag('expand-collapse', NodeButton)
 
 ExpandCollapse.prototype.onCreate = function() {
   NodeButton.prototype.onCreate.call(this)
+  $(this).html('c');
 
   $(this).click(function(event) {this.toggle()})
-}
-
-ExpandCollapse.prototype.set_id = function(id) {
-  this.id = 'ExpandCollapse-' + id;
 }
 
 
@@ -890,17 +868,6 @@ ExpandCollapse.prototype.toggle = function() {
   this.getTextNode().toggle(false)
 }
 
-ExpandCollapse.prototype.collapse = function() {
-  var $this = $(this)
-  $this.html("o")
-  // $this.siblings('add-child')[0].deactivate() // commented this out--can always add a child, it will auto-expand the node.
-}
-
-ExpandCollapse.prototype.expand = function() {
-  var $this = $(this)
-  $this.html("c")
-  // $this.siblings('add-child')[0].activate()  // commented this out--can always add a child, it will auto-expand the node.
-}
 
 // =========================================================================
 //                   Expand / Collapse Recursive Button
@@ -909,12 +876,9 @@ var ExpandCollapseRecursive = defCustomTag('expand-collapse-recursive', NodeButt
 
 ExpandCollapseRecursive.prototype.onCreate = function() {
   NodeButton.prototype.onCreate.call(this)
+  $(this).html('C');
   $(this).click(function(event) {
     this.toggle()})
-}
-
-ExpandCollapseRecursive.prototype.set_id = function(id) {
-  this.id = 'ExpandCollapseRecursive-' + id;
 }
 
 
@@ -922,17 +886,6 @@ ExpandCollapseRecursive.prototype.toggle = function() {
   this.getTextNode().toggle(true)
 }
 
-ExpandCollapseRecursive.prototype.collapse = function() {
-  var $this = $(this)
-  $this.html("O")
-  // $this.siblings('add-child')[0].deactivate() // Commented this out--can always add a child, and it will auto-expand the node.
-}
-
-ExpandCollapseRecursive.prototype.expand = function() {
-  var $this = $(this)
-  $this.html("C")
-  // $this.siblings('add-child')[0].activate() // Commented this out--can always add a child, and it will auto-expand the node.
-}
 
 // =========================================================================
 //                   Add Child Button
@@ -954,10 +907,6 @@ AddChild.prototype.onCreate = function() {
   })
 }
 
-AddChild.prototype.set_id = function(id) {
-  this.id = 'AddChild-' + id;
-}
-
 // =========================================================================
 //                   Add Sibling Button
 // =========================================================================
@@ -974,11 +923,6 @@ AddSibling.prototype.onCreate = function() {
   })
 }
 
-AddSibling.prototype.set_id = function(id) {
-  this.id = 'AddSibling-' + id;
-}
-
-
 // =========================================================================
 //                   Trash Node Button
 // =========================================================================
@@ -993,9 +937,4 @@ TrashNode.prototype.onCreate = function() {
   $this.click(function() {
     this.getTextNode().trash()
   })
-}
-
-
-TrashNode.prototype.set_id = function(id) {
-  this.id = 'TrashNode-' + id;
 }
