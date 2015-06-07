@@ -541,7 +541,7 @@ TextNode.prototype.trash = function() {
     this.trashPath(this.id),
     function(request) {
       if (HTTP.is_success_code(request.status)) {
-      me.trashOnClient()
+        me.trashOnClient();
       }
     })
 }
@@ -667,11 +667,17 @@ ButtonPanel.prototype.onCreate = function() {
 
 /*
 Move button panel to float above node.
+Programmer's Note: In the case in which the selected node is deleted, we hide the button panel.
+If we then select a new node and change the button panel's offset before showing it, it shows up
+in the wrong place in the dom. Not sure why. But if you show the panel before setting the offset,
+then everything works okay.
 */
 ButtonPanel.prototype.popTo = function(node) {
+  $(this).show(); // I'm not sure why, but showing this before doing new offset avoids a bug. See documentation above.
   var offset = $(node).offset();
-  var left = offset.left, top = offset.top;
-  $(this).offset({left:left-42, top:top}).show();
+  var left   = offset.left,
+      top    = offset.top;
+  $(this).offset({left:left-42, top:top});
 }
 
 
@@ -885,6 +891,8 @@ TrashNode.prototype.onCreate = function() {
 
   // Click function trashs the TextNode associated with this button.
   $this.click(function() {
-    window.textTree.selectedNode.trash()
+    window.textTree.selectedNode.trash();
+    window.textTree.selectedNode = null;   // We just deleted the selected node, so now there is none.
+    $(window.textTree.buttonPanel).hide(); // we just deleted the selected node, so hide the button panel.
   })
 }
