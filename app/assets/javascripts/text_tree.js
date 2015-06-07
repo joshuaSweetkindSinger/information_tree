@@ -426,6 +426,7 @@ TextNode.prototype.collapse = function(doRecursive) {
 }
 
 TextNode.prototype.toggle = function(doRecursive) {
+  console.log("textnode:toggle");
   if (this.state == 'expanded') {
     this.collapse(doRecursive)
   } else {
@@ -865,11 +866,15 @@ ExpandCollapse.prototype.onCreate = function() {
   NodeButton.prototype.onCreate.call(this)
   $(this).html('c');
 
-  $(this).click(function(event) {this.toggle()})
+  $(this).click(function(event) {
+    console.log("expandcollapse.clickfun");
+    this.toggle()
+    })
 }
 
 
 ExpandCollapse.prototype.toggle = function() {
+  console.log("expandcollapse.toggle");
   this.getTextNode().toggle(false)
 }
 
