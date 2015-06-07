@@ -30,17 +30,21 @@ var TextTree = defCustomTag('text-tree', HTMLElement);
 // Find the top node of the tree and add it to the dom.
 TextTree.prototype.onCreate = function() {
   window.textTree  = this;
-  this.buttonPanel = new ButtonPanel;
-  $(this.buttonPanel).hide()
-  this.addTop();
 }
 
-TextTree.prototype.addTop = function() {
+TextTree.prototype.onAttach = function() {
+  this.initTop();
+}
+
+TextTree.prototype.initTop = function() {
   var me = this;
   this.getTopNodeFromServer(function(node) {
     if (node) {
       me.top = new TextNode(node);
+      me.buttonPanel = new ButtonPanel;
+      $(me).append(me.buttonPanel);
       $(me).append(me.top)
+      me.top.select();
     }})
 }
 
@@ -251,8 +255,6 @@ TextNode.prototype.visibleNodes = function(result) {
   return result;
 }
 
-// ====================================== Class Methods
-// TODO: Maybe make all of these instance methods of TextTree.
 
 // ============================ Glom and relative accessors
 /*
@@ -408,7 +410,6 @@ TextNode.prototype.childrenPath = function(id) {
 TextNode.prototype.expandInternal = function() {
   this.state = 'expanded'
   $(this).children('node-children').show('slow')
-  // this.header.showButtonPanel();
 }
 
 
@@ -417,7 +418,7 @@ TextNode.prototype.collapse = function(doRecursive) {
   this.state = 'collapsed'
   var nodeChildren = $(this).children('node-children')
   nodeChildren.hide('slow')
-  // this.header.hideButtonPanel();
+
   if (doRecursive) {
     nodeChildren.children().each(function(index) {
       this.collapse(doRecursive)
@@ -426,20 +427,12 @@ TextNode.prototype.collapse = function(doRecursive) {
 }
 
 TextNode.prototype.toggle = function(doRecursive) {
-  console.log("textnode:toggle");
   if (this.state == 'expanded') {
     this.collapse(doRecursive)
   } else {
     this.expand(doRecursive)
   }
 }
-
-// TextNode.prototype.expandCollapseButton = function() {
-//   return this.header.buttonPanel.expandCollapseButton
-// }
-// TextNode.prototype.expandCollapseRecursiveButton = function() {
-//   return this.header.buttonPanel.expandCollapseRecursiveButton
-// }
 
 
 // =========================== Add Node
@@ -612,6 +605,14 @@ TextNode.prototype.setAttributesOnClient = function(jsonNode) {
   if (jsonNode.height)this.height    = jsonNode.height
 }
 
+/*
+Make this node be the selected node. Attach pop up menu to it.
+*/
+TextNode.prototype.select = function() {
+  window.textTree.selectedNode = this;
+  window.textTree.buttonPanel.popTo(this);
+}
+
 // =========================================================================
 //                   Node Header
 // =========================================================================
@@ -632,18 +633,6 @@ NodeHeader.prototype.set_id = function(id) {
 }
 
 
-NodeHeader.prototype.showButtonPanel = function() {
-  $(this).append(window.textTree.buttonPanel);
-  $(window.textTree.buttonPanel).show('slow');
-}
-
-
-NodeHeader.prototype.hideButtonPanel = function() {
-  $(this).append(window.textTree.buttonPanel);
-  $(window.textTree.buttonPanel).hide('slow');
-}
-
-
 // =========================================================================
 //                   Button Panel
 // =========================================================================
@@ -653,9 +642,6 @@ ButtonPanel is a container for the node's buttons.
 var ButtonPanel = defCustomTag('button-panel', HTMLElement)
 ButtonPanel.prototype.onCreate = function() {
   var $this = $(this)
-
-  this.debugButton = new NodeDebug
-  $this.append(this.debugButton)
 
   this.followLinkButton = new FollowLink
   $this.append(this.followLinkButton)
@@ -679,6 +665,15 @@ ButtonPanel.prototype.onCreate = function() {
   $this.append(this.expandCollapseRecursiveButton)
 }
 
+/*
+Move button panel to float above node.
+*/
+ButtonPanel.prototype.popTo = function(node) {
+  var offset = $(node).offset();
+  var left = offset.left, top = offset.top;
+  $(this).offset({left:left-42, top:top}).show();
+}
+
 
 // =========================================================================
 //                   Node Content
@@ -689,7 +684,6 @@ var NodeContent = defCustomTag('node-content', HTMLTextAreaElement, 'textarea')
 
 NodeContent.prototype.afterCreate = function() {
   var $this = $(this);
-  $this.addClass('node-content')
   $this.on("blur", this.onBlur)
   $this.on("blur", this.onResize)
   $this.on("click", this.onClick)
@@ -725,9 +719,7 @@ NodeContent.prototype.set_id = function(id) {
 
 
 NodeContent.prototype.onClick = function() {
-  $(this).parent()[0].showButtonPanel();
-
-  // this.getTextNode().toggle()
+  this.getTextNode().select();
 }
 
 // This event-handler is bound to the object's blur event.
@@ -767,43 +759,11 @@ NodeChildren.prototype.set_id = function(id) {
 // =========================================================================
 //                   Node Button
 // =========================================================================
-// Base class for text node buttons. It provides functionality to activate or deactivate
-// a button.
+// Base class for text node buttons.
 var NodeButton = defCustomTag('node-button', HTMLElement)
 
 NodeButton.prototype.onCreate = function() {
-  var $this = $(this)
-  $this.addClass('node-button')
-  this.activate()
-}
-
-
-NodeButton.prototype.is_active = function() {
-  return $(this).hasClass('node-button-active')
-}
-
-// Render the button inactive, which means that it displays a grayed-out state
-// and clicking on it doesn't do anything. The button is rendered inactivate when
-// its associated node is collapsed, to prevent creation of children that would immediately
-// be hidden from view.
-NodeButton.prototype.deactivate = function() {
-  var $this = $(this)
-  $this.removeClass('node-button-active')
-  $this.addClass('node-button-inactive')
-}
-
-// Render the button active, which means that
-// clicking on it does something. The button is rendered active when
-// its associated node is expanded, to allow creation of child nodes.
-// TODO: This should be a method on a base class from which AddChild inherits.
-NodeButton.prototype.activate = function() {
-  var $this = $(this)
-  $this.removeClass('node-button-inactive')
-  $this.addClass('node-button-active')
-}
-
-NodeButton.prototype.getTextNode = function() {
-  return $(this).parents('text-node')[0]
+  $(this).addClass('node-button')
 }
 
 
@@ -820,26 +780,10 @@ FollowLink.prototype.onCreate = function() {
   var $this = $(this)
   $this.html('->')
   $this.click(function(event) {
-    this.getTextNode().followLink()
+    window.textTree.selectedNode.followLink();
   })
 }
 
-// =========================================================================
-//                   NodeDebug Button
-// =========================================================================
-// Pressing this button prints the associated node out to the console for debugging.
-var NodeDebug = defCustomTag('node-debug', NodeButton)
-
-NodeDebug.prototype.onCreate = function() {
-  NodeButton.prototype.onCreate.call(this)
-
-  var $this = $(this)
-  $this.html('D')
-  $this.click(function(event) {
-    console.log("Assigning this node to the global window.debug: ", this.getTextNode())
-    window.debug = this.getTextNode();
-  })
-}
 
 
 // =========================================================================
@@ -854,7 +798,7 @@ AutoSize.prototype.onCreate = function() {
 
   var $this = $(this)
   $this.html('s')
-  $this.click(function(event) {this.getTextNode().autoSize()})
+  $this.click(function(event) {window.textTree.selectedNode.autoSize()})
 }
 
 // =========================================================================
@@ -867,15 +811,13 @@ ExpandCollapse.prototype.onCreate = function() {
   $(this).html('c');
 
   $(this).click(function(event) {
-    console.log("expandcollapse.clickfun");
     this.toggle()
     })
 }
 
 
 ExpandCollapse.prototype.toggle = function() {
-  console.log("expandcollapse.toggle");
-  this.getTextNode().toggle(false)
+  window.textTree.selectedNode.toggle(false)
 }
 
 
@@ -893,7 +835,7 @@ ExpandCollapseRecursive.prototype.onCreate = function() {
 
 
 ExpandCollapseRecursive.prototype.toggle = function() {
-  this.getTextNode().toggle(true)
+  window.textTree.selectedNode.toggle(true)
 }
 
 
@@ -911,10 +853,8 @@ AddChild.prototype.onCreate = function() {
   // Click function adds a new child TextNode to the TextNode associated with this button. This means
   // adding the new node to the TextNode's NodeChildren element.
   $this.click(function() {
-    if (this.is_active()) {
-      this.getTextNode().addChild()
-    }
-  })
+      window.textTree.selectedNode.addChild();
+    })
 }
 
 // =========================================================================
@@ -929,7 +869,7 @@ AddSibling.prototype.onCreate = function() {
 
   // Click function adds a new TextNode after the TextNode associated with this button.
   $this.click(function() {
-    this.getTextNode().addSuccessor();
+    window.textTree.selectedNode.addSuccessor();
   })
 }
 
@@ -945,6 +885,6 @@ TrashNode.prototype.onCreate = function() {
 
   // Click function trashs the TextNode associated with this button.
   $this.click(function() {
-    this.getTextNode().trash()
+    window.textTree.selectedNode.trash()
   })
 }
