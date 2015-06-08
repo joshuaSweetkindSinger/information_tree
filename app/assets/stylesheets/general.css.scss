@@ -81,6 +81,10 @@ li.side-nav {
   margin:3px;
   vertical-align:middle;
   padding:10px;
+  &:hover {
+    background:blue;
+    color:white;
+  }
 }
 
 .node-button {

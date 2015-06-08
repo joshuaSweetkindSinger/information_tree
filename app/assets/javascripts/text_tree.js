@@ -108,25 +108,26 @@ TextNode.defaultSpec = {content:'New Node', width:100, height:50} // Default jso
 
 // ======= Construction and Initialization
 /*
-Create a client-side representation of nodeRef, which exists on the server.
+Create a client-side representation of node, which exists on the server.
 
 NOTE: afterCreate() is only called via programmatic creation of new objects, as opposed to static creation.
 We put all the logic in our afterCreate() method, because we know we are not doing static creation, and we
 need to pass args, which can only be passed via afterCreate().
  */
-TextNode.prototype.afterCreate = function(nodeRef) {
+TextNode.prototype.afterCreate = function(node) {
   var $this = $(this)
 
   // Create dom-substructures
   // NOTE: These must be created before the properties below are assigned,
   // because some of them get passed into the substructures.
-  this.header = new NodeHeader
+  this.header = new NodeHeader({toolTip:"Created on " + node.created_at}); // TODO: this is inelegant. should use this.createdAt, but it hasn't been assigned yet, and can't be assigned before header node is created.
+  // TODO: how do you handle re-initializing existing memory, as opposed to genning new memory, for instances?
+
   $this.append(this.header)
   this.childrenContainer = new NodeChildren;
   $this.append(this.childrenContainer)
 
-  // Assign properties from ref
-  this.update(nodeRef)
+  this.update(node) // Assign properties from node
 
   // Record client-side state info
   this.childrenFetched = false // True when we have received child node information from the server. See fetch_and_expand()
@@ -235,6 +236,8 @@ TextNode.prototype.update = function(node) {
   this.content        = node.content
   this.width          = node.width
   this.height         = node.height
+  this.createdAt      = node.created_at;
+  this.updatedAt      = node.updated_at;
 
   return this;
 }
@@ -620,10 +623,10 @@ TextNode.prototype.select = function() {
 NodeHeader is a container for the node's content and buttons.
 */
 var NodeHeader = defCustomTag('node-header', HTMLElement)
-NodeHeader.prototype.onCreate = function() {
+NodeHeader.prototype.afterCreate = function(options) {
   var $this = $(this)
 
-  this.content = new NodeContent
+  this.content = new NodeContent(options);
   $this.append(this.content)
 }
 
@@ -640,7 +643,7 @@ NodeHeader.prototype.set_id = function(id) {
 ButtonPanel is a container for the node's buttons.
 */
 var ButtonPanel = defCustomTag('button-panel', HTMLElement)
-ButtonPanel.prototype.onCreate = function() {
+ButtonPanel.prototype.afterCreate = function() {
   var $this = $(this)
 
   this.followLinkButton = new FollowLink
@@ -688,11 +691,13 @@ ButtonPanel.prototype.popTo = function(node) {
 
 var NodeContent = defCustomTag('node-content', HTMLTextAreaElement, 'textarea')
 
-NodeContent.prototype.afterCreate = function() {
+NodeContent.prototype.afterCreate = function(options) {
   var $this = $(this);
+  $this.addClass('node-content');
   $this.on("blur", this.onBlur)
   $this.on("blur", this.onResize)
   $this.on("click", this.onClick)
+  $this.tooltip({content:options.toolTip});
 
   $this.droppable({
     tolerance: "pointer",
@@ -756,7 +761,7 @@ NodeContent.prototype.getTextNode = function() {
 // =========================================================================
 // NodeChildren is a container for the node's child nodes.
 var NodeChildren = defCustomTag('node-children', HTMLElement)
-NodeChildren.prototype.onCreate = function() {
+NodeChildren.prototype.afterCreate = function() {
 }
 
 NodeChildren.prototype.set_id = function(id) {
@@ -768,7 +773,7 @@ NodeChildren.prototype.set_id = function(id) {
 // Base class for text node buttons.
 var NodeButton = defCustomTag('node-button', HTMLElement)
 
-NodeButton.prototype.onCreate = function() {
+NodeButton.prototype.afterCreate = function() {
   $(this).addClass('node-button')
 }
 
@@ -780,8 +785,8 @@ NodeButton.prototype.onCreate = function() {
 // for the text.
 var FollowLink = defCustomTag('follow-link', NodeButton)
 
-FollowLink.prototype.onCreate = function() {
-  NodeButton.prototype.onCreate.call(this)
+FollowLink.prototype.afterCreate = function() {
+  NodeButton.prototype.afterCreate.call(this)
 
   var $this = $(this)
   $this.html('->')
@@ -799,8 +804,8 @@ FollowLink.prototype.onCreate = function() {
 // for the text.
 var AutoSize = defCustomTag('auto-size', NodeButton)
 
-AutoSize.prototype.onCreate = function() {
-  NodeButton.prototype.onCreate.call(this)
+AutoSize.prototype.afterCreate = function() {
+  NodeButton.prototype.afterCreate.call(this)
 
   var $this = $(this)
   $this.html('s')
@@ -812,8 +817,8 @@ AutoSize.prototype.onCreate = function() {
 // =========================================================================
 var ExpandCollapse = defCustomTag('expand-collapse', NodeButton)
 
-ExpandCollapse.prototype.onCreate = function() {
-  NodeButton.prototype.onCreate.call(this)
+ExpandCollapse.prototype.afterCreate = function() {
+  NodeButton.prototype.afterCreate.call(this)
   $(this).html('c');
 
   $(this).click(function(event) {
@@ -832,8 +837,8 @@ ExpandCollapse.prototype.toggle = function() {
 // =========================================================================
 var ExpandCollapseRecursive = defCustomTag('expand-collapse-recursive', NodeButton)
 
-ExpandCollapseRecursive.prototype.onCreate = function() {
-  NodeButton.prototype.onCreate.call(this)
+ExpandCollapseRecursive.prototype.afterCreate = function() {
+  NodeButton.prototype.afterCreate.call(this)
   $(this).html('C');
   $(this).click(function(event) {
     this.toggle()})
@@ -850,8 +855,8 @@ ExpandCollapseRecursive.prototype.toggle = function() {
 // =========================================================================
 var AddChild = defCustomTag('add-child', NodeButton)
 
-AddChild.prototype.onCreate = function() {
-  NodeButton.prototype.onCreate.call(this)
+AddChild.prototype.afterCreate = function() {
+  NodeButton.prototype.afterCreate.call(this)
 
   var $this = $(this)
   $this.html('(+)')
@@ -867,8 +872,8 @@ AddChild.prototype.onCreate = function() {
 //                   Add Sibling Button
 // =========================================================================
 var AddSibling = defCustomTag('add-sibling', NodeButton)
-AddSibling.prototype.onCreate = function() {
-  NodeButton.prototype.onCreate.call(this)
+AddSibling.prototype.afterCreate = function() {
+  NodeButton.prototype.afterCreate.call(this)
 
   var $this = $(this)
   $this.html('...+')
@@ -883,8 +888,8 @@ AddSibling.prototype.onCreate = function() {
 //                   Trash Node Button
 // =========================================================================
 var TrashNode = defCustomTag('trash-node', NodeButton)
-TrashNode.prototype.onCreate = function() {
-  NodeButton.prototype.onCreate.call(this)
+TrashNode.prototype.afterCreate = function() {
+  NodeButton.prototype.afterCreate.call(this)
 
   var $this = $(this)
   $this.html('x')
