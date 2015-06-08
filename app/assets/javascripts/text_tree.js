@@ -30,6 +30,7 @@ var TextTree = defCustomTag('text-tree', HTMLElement);
 // Find the top node of the tree and add it to the dom.
 TextTree.prototype.onCreate = function() {
   window.textTree  = this;
+  $(document).tooltip(); // TODO: is there a way for this not to be here?
 }
 
 TextTree.prototype.onAttach = function() {
@@ -120,7 +121,7 @@ TextNode.prototype.afterCreate = function(node) {
   // Create dom-substructures
   // NOTE: These must be created before the properties below are assigned,
   // because some of them get passed into the substructures.
-  this.header = new NodeHeader({toolTip:"Created on " + node.created_at}); // TODO: this is inelegant. should use this.createdAt, but it hasn't been assigned yet, and can't be assigned before header node is created.
+  this.header = new NodeHeader({tooltip:"Created on " + node.created_at}); // TODO: this is inelegant. should use this.createdAt, but it hasn't been assigned yet, and can't be assigned before header node is created.
   // TODO: how do you handle re-initializing existing memory, as opposed to genning new memory, for instances?
 
   $this.append(this.header)
@@ -697,7 +698,7 @@ NodeContent.prototype.afterCreate = function(options) {
   $this.on("blur", this.onBlur)
   $this.on("blur", this.onResize)
   $this.on("click", this.onClick)
-  $this.tooltip({content:options.toolTip});
+  this.title = options.tooltip;
 
   $this.droppable({
     tolerance: "pointer",
@@ -864,8 +865,12 @@ AddChild.prototype.afterCreate = function() {
   // Click function adds a new child TextNode to the TextNode associated with this button. This means
   // adding the new node to the TextNode's NodeChildren element.
   $this.click(function() {
-      window.textTree.selectedNode.addChild();
+    this.addChild();
     })
+}
+
+AddChild.prototype.addChild = function() {
+  window.textTree.selectedNode.addChild();
 }
 
 // =========================================================================
