@@ -117,7 +117,7 @@ If it does not yet exist in the dom, assume that node is a complete spec for a n
 instantiate it and return the new node after glomming it to the text tree in its proper position.
 */
 TextTree.prototype.addNodeOnClient = function(node) {
-  this.findOrCreate(node).glom();
+  return this.findOrCreate(node).glom();
 }
 
 // =========================================================================
@@ -493,11 +493,11 @@ TextNode.prototype.expand = function(doRecursive) {
   if (this.childrenFetched) {
     if (doRecursive) {
       this.kids().each(function(index) {
-        this.expand(doRecursive)
+        this.expand(true)
       })
     }
-    this.expandInternal()
-    return
+    this.expandInternal();
+    return;
   }
 
   // Fetch and Expand
@@ -506,11 +506,13 @@ TextNode.prototype.expand = function(doRecursive) {
     if (!childrenReps) return
 
     childrenReps.forEach(function(nodeRep) {
-      var node = (new TextNode(nodeRep)).glom() // TODO: Figure out how to not incur browser redraw cost for each added child.
-      if (doRecursive) node.expand(doRecursive)
+      var node = window.textTree.addNodeOnClient(nodeRep); // TODO: Figure out how to not incur browser redraw cost for each added child.
+      // TODO: won't each node be created visible? Don't we need to create them with a hidden status?
+      if (doRecursive) node.expand(true)
     })
     me.childrenFetched = true;
-    me.expandInternal()
+    me.expandInternal() // TODO: Does this capture the right logic block? What is rel bet. childrenFetched and expanded?
+    // TODO: We want to say: get children from server; expandOnClient. But we have a continuation. What is best form for this?
   })
 }
 
