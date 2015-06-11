@@ -63,36 +63,41 @@ class Node < ActiveRecord::Base
   # An internal method. Unhook ourselves from the hierarchy so that we have no parent, successor, or predecessor.
   # Patch the other ends of each of these links as necessary to maintain integrity of the hierarchy.
   def _unhook!
-
-    # Get siblings
-    old_successor   = self.successor
-    old_predecessor = self.predecessor
-
-    # Wipe out sibling links
-    if old_successor
-      old_successor._set_predecessor!(old_predecessor)
-    elsif old_predecessor
-      old_predecessor._set_successor!(old_successor)
-    end
-
-    # Wipe out our links
-    self.parent      = nil
-    self.predecessor = nil
-    self.successor   = nil
+    _repatch_siblings
+    _untether
 
     # Save in correct order to avoid unique index errors.
+    old_successor   = self.successor
+    old_predecessor = self.predecessor
     save!
     old_successor.save!   if old_successor
     old_predecessor.save! if old_predecessor
   end
 
 
+  def _untether
+    self.parent      = nil
+    self.predecessor = nil
+    self.successor   = nil
+  end
+
+
+  def _repatch_siblings
+    if self.successor
+      self.successor._set_predecessor(self.predecessor)
+    elsif self.predecessor
+      self.predecessor._set_successor(nil)
+    end
+  end
+
+
+
   # Link ourselves into the position specified by splice_position,
   # updating our links and those of our new siblings.
   def _splice! (splice_position)
     self.parent = splice_position.parent
-    _set_predecessor!(splice_position.predecessor)
-    _set_successor!(splice_position.successor)
+    _set_predecessor(splice_position.predecessor)
+    _set_successor(splice_position.successor)
 
     # Save in correct order to avoid unique index errors.
     successor.save!   if successor
@@ -102,13 +107,13 @@ class Node < ActiveRecord::Base
 
 
   # An internal method: Patch up predecessor/successor links with the specified predecessor.
-  def _set_predecessor! (predecessor)
+  def _set_predecessor (predecessor)
     self.predecessor      = predecessor
     predecessor.successor = self if predecessor
   end
 
   # An internal method: Patch up predecessor/successor links with the specified successor.
-  def _set_successor! (successor)
+  def _set_successor (successor)
     self.successor        = successor
     successor.predecessor = self if successor
   end
