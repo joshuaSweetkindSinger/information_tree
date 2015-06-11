@@ -97,8 +97,27 @@ TextTree.prototype.find = function(id) {
   }
 }
 
+/*
+If it currently exists in the dom, return the text node whose id is node.id,
+after updating it with possibly new values from node;
+otherwise, assume that node is a complete spec for a new node: instantiate it and
+return the new node. Note that the newly created note is unglommed; that is, it is
+unattached to the text tree.
+*/
 TextTree.prototype.findOrCreate = function(node) {
-  return this.find(node.id) || (new TextNode(node));
+  var result = this.find(node.id);
+  return result ? result.update(node) : new TextNode(node);
+}
+
+/*
+If it currently exists in the dom, merely update the text node whose id is node.id
+with the other information contained in node, and return it.
+
+If it does not yet exist in the dom, assume that node is a complete spec for a new node:
+instantiate it and return the new node after glomming it to the text tree in its proper position.
+*/
+TextTree.prototype.addNodeOnClient = function(node) {
+  this.findOrCreate(node).glom();
 }
 
 // =========================================================================
@@ -370,18 +389,17 @@ TextNode.prototype.addNode = function(node, mode) {
 
   this.addNodeOnServer(node, mode,
     function(node) {
-      if (node.error) {
-        console.log("Got an error attempting to add this node on the server:", node);
-        window.debug = node;
-        return;
-      };
+      if (node.error) { this.reportAddNodeOnServerError(node, mode)};
 
-      window.textTree.findOrCreate(node)
-      .update(node)
-      .glom();
+      window.textTree.addNodeOnClient(node);
     });
 };
 
+TextNode.prototype.reportAddNodeOnServerError = function(node, mode) {
+  console.log("Got an error attempting to add this node on the server:", node);
+  window.debug = node;
+  return;
+}
 
 /*
 Create a new node on the server, or insert an existing one at a new location.
