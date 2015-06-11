@@ -259,8 +259,11 @@ TextNode.prototype.visibleNodes = function(result) {
   return result;
 }
 
+// =========================================================================
+//                    Text Node
+// Tree Hierarchy Accessors And Manipulation Methods
+// =========================================================================
 
-// ============================ Glom and relative accessors
 /*
 Attach ourselves to the Text tree. This is done just after a new
 TextNode is created from a rep sent by the server to the client.
@@ -268,21 +271,25 @@ TextNode is created from a rep sent by the server to the client.
 We figure out where to attach ourselves by examining our predecessor, successor,
 and parent links. If we have one of the first two links, we know exactly where to attach
 ourselves. If we have neither, then we must be the only child of our parent.
+
+In all cases, make sure that our new parent has had its children downloaded from the server
+before we glom ourselves to it; otherwise, we create an indeterminate state in which only some
+of the parent's children are represented on the client side.
 */
 TextNode.prototype.glom = function() {
   var relative;
   if (relative = this.predecessor()) {
-    relative.attachSuccessor(this);
+    relative._attachSuccessor(this);
     return this;
   }
 
   if (relative = this.successor()) {
-    relative.attachPredecessor(this);
+    relative._attachPredecessor(this);
     return this;
   }
 
   if (relative = this.parent()) {
-    relative.attachChild(this);
+    relative._attachChild(this);
     return this;
   }
 
@@ -290,19 +297,19 @@ TextNode.prototype.glom = function() {
 };
 
 
-TextNode.prototype.attachSuccessor = function(successor) {
+TextNode.prototype._attachSuccessor = function(successor) {
   $(this).after(successor);
   return this;
 };
 
 
-TextNode.prototype.attachPredecessor = function(predecessor) {
+TextNode.prototype._attachPredecessor = function(predecessor) {
   $(this).before(predecessor);
   return this;
 };
 
 
-TextNode.prototype.attachChild = function(child) {
+TextNode.prototype._attachChild = function(child) {
   $(this.childrenContainer).append(child);
   return this;
 };
@@ -337,6 +344,129 @@ TextNode.prototype.parent = function() {
 TextNode.prototype.kids = function() {
   return $(this.childrenContainer).children();
 }
+
+// =========================== Add Node
+/*
+Ask the server to add a child or sibling node, specified by <node>,
+to the node represented by this text node. After the server
+responds with a success code, effect the same changes on the client-side.
+
+If node is null, create a new default node.
+
+If node is non-null and fully spec'd,
+but without an id, create a new node as specified.
+
+If node is non-null, but just contains an id, use the existing node
+with that id for the add operation and move it to the new location (child or sibling)
+relative to <this>.
+
+mode determines how node is moved relative to <this>, as either a child, successor, or predecessor
+of the node represented by <this>. mode should be a string, one of: 'child', 'successor', 'predecessor'
+*/
+TextNode.prototype.addNode = function(node, mode) {
+  if (!node) {
+    node = TextNode.defaultSpec;
+  }
+
+  this.addNodeOnServer(node, mode,
+    function(node) {
+      if (node.error) {
+        console.log("Got an error attempting to add this node on the server:", node);
+        window.debug = node;
+        return;
+      };
+
+      window.textTree.findOrCreate(node)
+      .update(node)
+      .glom();
+    });
+};
+
+
+/*
+Create a new node on the server, or insert an existing one at a new location.
+Attach it to the text node tree at a position relative to the node named by <this>
+as indicated by mode, which must be one of 'add_child', 'add_successor', 'add_predeessor'.
+Then execute the function next() when done.
+Inputs:
+  node: if creating a new node, this should be an object that specs out the desired new node.
+        If adding an existing node, then this should just be an object with an id whose
+        value is the id of the existing node.
+  mode: one of 'add_child', 'add_successor', 'add_predecessor'.
+  next: This is a continuation function that says what to do after the node is created or inserted.
+*/
+TextNode.prototype.addNodeOnServer = function(node, mode, next) {
+  getJsonFromServer(
+    "POST",
+    this.addNodePath(),
+    next,
+    {node: node, mode:mode}
+  );
+};
+
+
+TextNode.prototype.addNodePath = function() {
+  return '/nodes/' + this.id + '/add_node.json'
+}
+
+/*
+Create a new node on the server or insert an existing one, in either case making the
+node represented by this node be its parent. Then effect the same transformation
+on the client side.
+*/
+TextNode.prototype.addChild = function(node) {
+  this.addNode(node, 'add_child');
+}
+
+
+/*
+Create a new node on the server or insert an existing one, in either case making the
+node represented by this node be its predecessor. Then effect the same transformation
+on the client side.
+*/
+TextNode.prototype.addSuccessor = function(node) {
+  this.addNode(node, 'add_successor');
+}
+
+
+
+/*
+Create a new node on the server or insert an existing one, in either case making the
+node represented by this node be its successor. Then effect the same transformation
+on the client side.
+*/
+TextNode.prototype.addPredecessor = function(node) {
+  this.addNode(node, 'add_predecessor');
+}
+
+
+// =========================== trash
+// Ask the server to trash this node from the hierarchy.
+// When the server replies, trash the node from the browser.
+TextNode.prototype.trash = function() {
+  var me = this
+  sendServer(
+    "DELETE",
+    this.trashPath(this.id),
+    function(request) {
+      if (HTTP.is_success_code(request.status)) {
+        me.trashOnClient();
+      }
+    })
+}
+
+TextNode.prototype.trashPath = function(id) {
+  return '/nodes/' + id + '/trash.json'
+}
+
+
+/*
+Get rid of <this> from the text tree.
+*/
+TextNode.prototype.trashOnClient = function() {
+  $(this).remove()
+}
+
 
 // =================== Expand / Collapse
 // Expand this node, first fetching its children from the server if necessary.
@@ -406,128 +536,6 @@ TextNode.prototype.toggle = function(doRecursive) {
   }
 }
 
-
-// =========================== Add Node
-
-/*
-Ask the server to add a text node, specified by <node>,
-to the node represented by this text node. After the server
-responds with a success code, effect the same changes on the client-side.
-
-If node is null, create a new default node.
-
-If node is non-null and fully spec'd,
-but without an id, create a new node as specified.
-
-If node is non-null, but just contains an id, use the existing node
-with that id for the add operation and move it to the new location
-relative to <this>.
-
-mode determines how node is moved relative to <this>, as either a child, successor, or predecessor
-of the node represented by <this>. mode should be a string, one of: 'child', 'successor', 'predecessor'
-*/
-TextNode.prototype.addNode = function(node, mode) {
-  if (!node) {
-    node = TextNode.defaultSpec;
-  }
-
-  this.addNodeOnServer(node, mode,
-    function(node) {
-      if (node.error) {
-        console.log("Got an error attempting to add this node on the server:", node);
-        window.debug = node;
-        return;
-      };
-
-      window.textTree.findOrCreate(node)
-      .update(node)
-      .glom();
-    });
-};
-
-
-/*
-Create a new node, or insert an existing one, on the server.
-Attach it to the text node tree at a position relative to this node
-as indicated by mode, which must be one of 'add_child', 'add_successor', 'add_predeessor'.
-Then execute the function next() when done.
-Inputs:
-  node: if creating a new node, this should be an object that specs out the desired new node.
-        If adding an existing node, then this should just be an object with an id whose
-        value is the id of the existing node.
-  mode: one of 'add_child', 'add_successor', 'add_predecessor'.
-  next: This is a continuation function that says what to do after the node is created or inserted.
-*/
-TextNode.prototype.addNodeOnServer = function(node, mode, next) {
-  getJsonFromServer(
-    "POST",
-    this.addNodePath(),
-    next,
-    {node: node, mode:mode}
-  );
-};
-
-
-TextNode.prototype.addNodePath = function() {
-  return '/nodes/' + this.id + '/add_node.json'
-}
-
-/*
-Create a new node, or insert an existing one, on the server, with the
-node represented by this node as its parent. Then effect the same transformation
-on the client side.
-*/
-TextNode.prototype.addChild = function(node) {
-  this.addNode(node, 'add_child');
-}
-
-
-/*
-Create a new node, or insert an existing one, on the server, with the
-node represented by this node as its predecessor. Then effect the same transformation
-on the client side.
-*/
-TextNode.prototype.addSuccessor = function(node) {
-  this.addNode(node, 'add_successor');
-}
-
-
-
-/*
-Create a new node, or insert an existing one, on the server, with the
-node represented by this node as its successor. Then effect the same transformation
-on the client side.
-*/
-TextNode.prototype.addPredecessor = function(node) {
-  this.addNode(node, 'add_predecessor');
-}
-
-
-// =========================== trash
-// Ask the server to trash this node from the hierarchy.
-// When the server replies, trash the node from the browser.
-TextNode.prototype.trash = function() {
-  var me = this
-  sendServer(
-    "DELETE",
-    this.trashPath(this.id),
-    function(request) {
-      if (HTTP.is_success_code(request.status)) {
-        me.trashOnClient();
-      }
-    })
-}
-
-TextNode.prototype.trashPath = function(id) {
-  return '/nodes/' + id + '/trash.json'
-}
-
-
-// Create a new sibling node on the client side, with data specified in the nodeRep hash.
-// See TextNode.afterCreate() for relevant keys in nodeRep
-TextNode.prototype.trashOnClient = function() {
-  $(this).remove()
-}
 
 // =================== Auto-Size
 // Calculate a pleasing size for the content textarea associated with this text node.
