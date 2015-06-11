@@ -64,21 +64,20 @@ class Node < ActiveRecord::Base
   # Patch the other ends of each of these links as necessary to maintain integrity of the hierarchy.
   def _unhook!
     _repatch_siblings
-    _untether
-
-    # Save in correct order to avoid unique index errors.
-    old_successor   = self.successor
-    old_predecessor = self.predecessor
-    save!
-    old_successor.save!   if old_successor
-    old_predecessor.save! if old_predecessor
+    siblings_to_save = _untether
+    save!                                    # Save self first in order to avoid unique index errors.
+    siblings_to_save.each {|node| node.save!}
   end
 
-
+# Blow away parent and sibling info. Return siblings that were non-nil
+# before bashing so that the caller can save them at the proper time
+# as part of an insert() operation.
   def _untether
+    siblings_to_save = [predecessor, successor].select {|node| node}
     self.parent      = nil
     self.predecessor = nil
     self.successor   = nil
+    siblings_to_save
   end
 
 
