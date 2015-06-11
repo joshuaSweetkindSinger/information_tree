@@ -338,38 +338,6 @@ TextNode.prototype.kids = function() {
   return $(this.childrenContainer).children();
 }
 
-
-// =================== Auto-Size
-// Calculate a pleasing size for the content textarea associated with this text node.
-TextNode.prototype.autoSize = function() {
-  this.setAttributes(this.calcAutoSize(this.content.length))
-}
-
-// Calculate a pleasing width and height for a textarea input box that contains n chars.
-// Return the calculated values as a hash.
-// TODO: Get rid of magic numbers, and make calculation take font size into account.
-// TODO: height is not set correctly for large amounts of text. Fix it.
-TextNode.prototype.calcAutoSize = function(n) {
-  var maxWidth = 1000.0
-  var charWidth  = 8.0
-  var charHeight = 15.0
-  var margin     = 10.0
-  var width = 0
-  var height = 0
-  if (n < 60) {
-    width  = n * charWidth
-    height = 1 * charHeight + margin
-  } else {
-    var squareSideChars = Math.sqrt(n) // The number of chars on a side, assuming a square region with charWidth = charHeight
-    var distortedWidthChars = 1.5 * squareSideChars * charHeight / charWidth // square it up in char units by taking width/height pixels into account, and make width 1.5 longer for good measure.
-    width = Math.min(maxWidth, distortedWidthChars * charWidth) // Want the width to be 1.5 the height in pixels for smaller bits of text.
-    var widthInChars = width / charWidth
-    var heightInChars = n / widthInChars
-    height = heightInChars * charHeight + margin
-  }
-
-  return {width:width, height:height}
-}
 // =================== Expand / Collapse
 // Expand this node, first fetching its children from the server if necessary.
 TextNode.prototype.expand = function(doRecursive) {
@@ -559,6 +527,38 @@ TextNode.prototype.trashPath = function(id) {
 // See TextNode.afterCreate() for relevant keys in nodeRep
 TextNode.prototype.trashOnClient = function() {
   $(this).remove()
+}
+
+// =================== Auto-Size
+// Calculate a pleasing size for the content textarea associated with this text node.
+TextNode.prototype.autoSize = function() {
+  this.setAttributes(this.calcAutoSize(this.content.length))
+}
+
+// Calculate a pleasing width and height for a textarea input box that contains n chars.
+// Return the calculated values as a hash.
+// TODO: Get rid of magic numbers, and make calculation take font size into account.
+// TODO: height is not set correctly for large amounts of text. Fix it.
+TextNode.prototype.calcAutoSize = function(n) {
+  var maxWidth = 1000.0
+  var charWidth  = 8.0
+  var charHeight = 15.0
+  var margin     = 10.0
+  var width = 0
+  var height = 0
+  if (n < 60) {
+    width  = n * charWidth
+    height = 1 * charHeight + margin
+  } else {
+    var squareSideChars = Math.sqrt(n) // The number of chars on a side, assuming a square region with charWidth = charHeight
+    var distortedWidthChars = 1.5 * squareSideChars * charHeight / charWidth // square it up in char units by taking width/height pixels into account, and make width 1.5 longer for good measure.
+    width = Math.min(maxWidth, distortedWidthChars * charWidth) // Want the width to be 1.5 the height in pixels for smaller bits of text.
+    var widthInChars = width / charWidth
+    var heightInChars = n / widthInChars
+    height = heightInChars * charHeight + margin
+  }
+
+  return {width:width, height:height}
 }
 
 // =========================== Follow Link
