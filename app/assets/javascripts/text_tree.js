@@ -151,7 +151,7 @@ TextNode.prototype.afterCreate = function(node) {
 
   // Record client-side state info
   this.childrenFetched = false // True when we have received child node information from the server. See fetch_and_expand()
-  this.collapse();
+  this.state = 'collapsed';
 
   $this.draggable({
     revert: true,
@@ -316,19 +316,41 @@ TextNode.prototype.glom = function() {
 };
 
 
+/*
+ Attach the node <successor> to the tree as our successor. Make sure to expand our
+ parent first.
+ NOTE: It can happen that the parent is not expanded, because an addChild() action on the parent,
+ which may not be expanded yet, will result in glom()'s calling attachSuccessor() or attachPredecessor(),
+ if the parent already has children.
+*/
 TextNode.prototype._attachSuccessor = function(successor) {
+  this.parent().expand(); // Make sure our parent is expanded before adding a new node at this level.
   $(this).after(successor);
   return this;
 };
 
 
+/*
+ Attach the node <predecessor> to the tree as our predecessor. Make sure to expand our
+ parent first.
+ NOTE: It can happen that the parent is not expanded, because an addChild() action on the parent,
+ which may not be expanded yet, will result in glom()'s calling attachSuccessor() or attachPredecessor(),
+ if the parent already has children.
+*/
 TextNode.prototype._attachPredecessor = function(predecessor) {
+  this.parent().expand(); // Make sure our parent is expanded before adding a new node at this level.
   $(this).before(predecessor);
   return this;
 };
 
 
+/*
+ Attach the node <child> to the tree as our successor. Make sure to expand our
+ parent first.
+ NOTE: This method will only be called by glom() if the parent has no children yet.
+*/
 TextNode.prototype._attachChild = function(child) {
+  this.expand(); // Make sure we're expanded before adding a new child node.
   $(this.childrenContainer).append(child);
   return this;
 };
@@ -530,6 +552,8 @@ TextNode.prototype.childrenPath = function(id) {
 
 // Expand this node, which means revealing its children and showing its button panel.
 TextNode.prototype.expandInternal = function() {
+  if (this.state == 'expanded') return; // Already expanded, so do nothing.
+
   this.state = 'expanded'
   $(this).children('node-children').show('slow')
 }
