@@ -104,9 +104,9 @@ otherwise, assume that node is a complete spec for a new node: instantiate it an
 return the new node. Note that the newly created note is unglommed; that is, it is
 unattached to the text tree.
 */
-TextTree.prototype.findOrCreate = function(node) {
-  var result = this.find(node.id);
-  return result ? result.update(node) : new TextNode(node);
+TextTree.prototype._findOrCreate = function(node) {
+  var foundNode = this.find(node.id);
+  return foundNode ? foundNode.update(node) : new TextNode(node);
 }
 
 /*
@@ -116,8 +116,13 @@ with the other information contained in node, and return it.
 If it does not yet exist in the dom, assume that node is a complete spec for a new node:
 instantiate it and return the new node after glomming it to the text tree in its proper position.
 */
-TextTree.prototype.addNodeOnClient = function(node) {
-  return this.findOrCreate(node).glom();
+TextTree.prototype._addNodeOnClient = function(node) {
+  return this._findOrCreate(node)._glom();
+}
+
+
+TextTree.prototype._addNodesOnClient = function(fetchedNodes) {
+  return fetchedNodes.map(this._addNodeOnClient.bind(this));
 }
 
 // =========================================================================
@@ -151,7 +156,7 @@ TextNode.prototype.afterCreate = function(node) {
 
   // Record client-side state info
   this.childrenFetched = false // True when we have received child node information from the server. See fetch_and_expand()
-  this.state = 'collapsed';
+  this.collapse();             // Note: need to call this method, not just set state, so that child dom element will be hidden.
 
   $this.draggable({
     revert: true,
@@ -271,8 +276,8 @@ TextNode.prototype.set_id = function(id) {
 TextNode.prototype.visibleNodes = function(result) {
   result.push(this);
   if (this.state == 'expanded') {
-    this.kids().each(function(index){
-      this.visibleNodes(result);
+    this.kids().forEach(function(node) {
+      node.visibleNodes(result);
     });
   }
   return result;
@@ -295,7 +300,7 @@ In all cases, make sure that our new parent has had its children downloaded from
 before we glom ourselves to it; otherwise, we create an indeterminate state in which only some
 of the parent's children are represented on the client side.
 */
-TextNode.prototype.glom = function() {
+TextNode.prototype._glom = function() {
   var relative;
   if (relative = this.predecessor()) {
     relative._attachSuccessor(this);
@@ -316,41 +321,22 @@ TextNode.prototype.glom = function() {
 };
 
 
-/*
- Attach the node <successor> to the tree as our successor. Make sure to expand our
- parent first.
- NOTE: It can happen that the parent is not expanded, because an addChild() action on the parent,
- which may not be expanded yet, will result in glom()'s calling attachSuccessor() or attachPredecessor(),
- if the parent already has children.
-*/
 TextNode.prototype._attachSuccessor = function(successor) {
-  this.parent().expand(); // Make sure our parent is expanded before adding a new node at this level.
   $(this).after(successor);
   return this;
 };
 
 
-/*
- Attach the node <predecessor> to the tree as our predecessor. Make sure to expand our
- parent first.
- NOTE: It can happen that the parent is not expanded, because an addChild() action on the parent,
- which may not be expanded yet, will result in glom()'s calling attachSuccessor() or attachPredecessor(),
- if the parent already has children.
-*/
 TextNode.prototype._attachPredecessor = function(predecessor) {
-  this.parent().expand(); // Make sure our parent is expanded before adding a new node at this level.
   $(this).before(predecessor);
   return this;
 };
 
 
 /*
- Attach the node <child> to the tree as our successor. Make sure to expand our
- parent first.
- NOTE: This method will only be called by glom() if the parent has no children yet.
+NOTE: This method will only be called by glom() if the parent has no children yet.
 */
 TextNode.prototype._attachChild = function(child) {
-  this.expand(); // Make sure we're expanded before adding a new child node.
   $(this.childrenContainer).append(child);
   return this;
 };
@@ -383,13 +369,13 @@ TextNode.prototype.parent = function() {
 }
 
 TextNode.prototype.kids = function() {
-  return $(this.childrenContainer).children();
+  return $(this.childrenContainer).children().get();
 }
 
 // =========================== Add Node
 /*
 Ask the server to add a child or sibling node, specified by <node>,
-to the node represented by this text node. After the server
+to the node represented by <this> text node. After the server
 responds with a success code, effect the same changes on the client-side.
 
 If node is null, create a new default node.
@@ -404,24 +390,25 @@ relative to <this>.
 mode determines how node is moved relative to <this>, as either a child, successor, or predecessor
 of the node represented by <this>. mode should be a string, one of: 'child', 'successor', 'predecessor'
 */
-TextNode.prototype.addNode = function(node, mode) {
+TextNode.prototype._addNode = function(node, mode) {
   if (!node) {
     node = TextNode.defaultSpec;
   }
 
-  this.addNodeOnServer(node, mode,
+  this._addNodeOnServer(node, mode,
     function(node) {
-      if (node.error) { this.reportAddNodeOnServerError(node, mode)};
+      if (node.error) { this._reportAddNodeOnServerError(node, mode)};
 
-      window.textTree.addNodeOnClient(node);
+      window.textTree._addNodeOnClient(node);
     });
 };
 
-TextNode.prototype.reportAddNodeOnServerError = function(node, mode) {
+TextNode.prototype._reportAddNodeOnServerError = function(node, mode) {
   console.log("Got an error attempting to add this node on the server:", node);
   window.debug = node;
   return;
 }
+
 
 /*
 Create a new node on the server, or insert an existing one at a new location.
@@ -435,17 +422,17 @@ Inputs:
   mode: one of 'add_child', 'add_successor', 'add_predecessor'.
   next: This is a continuation function that says what to do after the node is created or inserted.
 */
-TextNode.prototype.addNodeOnServer = function(node, mode, next) {
+TextNode.prototype._addNodeOnServer = function(node, mode, next) {
   getJsonFromServer(
     "POST",
-    this.addNodePath(),
+    this._addNodePath(),
     next,
     {node: node, mode:mode}
   );
 };
 
 
-TextNode.prototype.addNodePath = function() {
+TextNode.prototype._addNodePath = function() {
   return '/nodes/' + this.id + '/add_node.json'
 }
 
@@ -455,7 +442,8 @@ node represented by this node be its parent. Then effect the same transformation
 on the client side.
 */
 TextNode.prototype.addChild = function(node) {
-  this.addNode(node, 'add_child');
+  this.expand(); // Make sure we are expanded so that the new child node can be seen.
+  this._addNode(node, 'add_child');
 }
 
 
@@ -465,9 +453,9 @@ node represented by this node be its predecessor. Then effect the same transform
 on the client side.
 */
 TextNode.prototype.addSuccessor = function(node) {
-  this.addNode(node, 'add_successor');
+  this.parent().expand(); // Make sure that our parent is expanded so that the new node can be seen.
+  this._addNode(node, 'add_successor');
 }
-
 
 
 /*
@@ -476,9 +464,9 @@ node represented by this node be its successor. Then effect the same transformat
 on the client side.
 */
 TextNode.prototype.addPredecessor = function(node) {
-  this.addNode(node, 'add_predecessor');
+  this.parent().expand(); // Make sure that our parent is expanded so that the new node can be seen.
+  this._addNode(node, 'add_predecessor');
 }
-
 
 // =========================== trash
 // Ask the server to trash this node from the hierarchy.
@@ -487,15 +475,15 @@ TextNode.prototype.trash = function() {
   var me = this
   sendServer(
     "DELETE",
-    this.trashPath(this.id),
+    this._trashPath(this.id),
     function(request) {
       if (HTTP.is_success_code(request.status)) {
-        me.trashOnClient();
+        me._trashOnClient();
       }
     })
 }
 
-TextNode.prototype.trashPath = function(id) {
+TextNode.prototype._trashPath = function(id) {
   return '/nodes/' + id + '/trash.json'
 }
 
@@ -503,55 +491,87 @@ TextNode.prototype.trashPath = function(id) {
 /*
 Get rid of <this> from the text tree.
 */
-TextNode.prototype.trashOnClient = function() {
+TextNode.prototype._trashOnClient = function() {
   $(this).remove()
 }
 
 
 // =================== Expand / Collapse
-// Expand this node, first fetching its children from the server if necessary.
+/*
+Expand this node. Expansion means:
+  - fetch all children from server if they have not yet been fetched.
+  - attach them to this node as children on the client side.
+  - make sure they are displayed and not hidden.
+  - if doRecursive is true, then recursively invoke expand() on each of the child nodes.
+PROGRAMMER's NOTE: As written, the recursive expansion won't reveal smoothly in the dom,
+because it launches several server-side threads asynchronously and updates the dom as they finish.
+To do this correctly, we would need to launch all the asynchronous threads but have a manager in charge
+that noticed when the last one finished, only then invoking the show() that would expand the toplevel
+node. Another approach would be to have the server calls block until they are finished.
+*/
 TextNode.prototype.expand = function(doRecursive) {
-  // Children are already fetched--just expand on browser side.
-  if (this.childrenFetched) {
-    if (doRecursive) {
-      this.kids().each(function(index) {
-        this.expand(true)
-      })
-    }
-    this.expandInternal();
-    return;
-  }
-
-  // Fetch and Expand
   var me = this;
-  this.getChildrenFromServer(function(childrenReps) {
-    if (!childrenReps) return
-
-    childrenReps.forEach(function(nodeRep) {
-      var node = window.textTree.addNodeOnClient(nodeRep); // TODO: Figure out how to not incur browser redraw cost for each added child.
-      // TODO: won't each node be created visible? Don't we need to create them with a hidden status?
-      if (doRecursive) node.expand(true)
-    })
-    me.childrenFetched = true;
-    me.expandInternal() // TODO: Does this capture the right logic block? What is rel bet. childrenFetched and expanded?
-    // TODO: We want to say: get children from server; expandOnClient. But we have a continuation. What is best form for this?
-  })
+  this._fetchAndAddChildrenOnClient(
+    function() {
+      me._expand();
+      if (doRecursive) {
+        me.kids().forEach(function(node) {node.expand(true)});
+      }
+    });
 }
 
 
-// Get our child nodes from the server, in json format, and pass this json structure
-// to continuation for further processing.
-TextNode.prototype.getChildrenFromServer = function(continuation) {
-  getJsonFromServer("GET", this.childrenPath(this.id), continuation)
+/*
+Fetch our child nodes from the server, if necessary; attach each newly fetched
+child node to the tree on the client-side;
+Finally call continuation with the array of newly created text nodes from the
+representations that were fetched, or call continuation with [] if none were fetched.
+*/
+TextNode.prototype._fetchAndAddChildrenOnClient = function(continuation) {
+  this._fetchChildren(
+    function(fetchedNodes) {
+      if (fetchedNodes) {
+        continuation(window.textTree._addNodesOnClient(fetchedNodes));
+      } else {
+        continuation([]);
+      }
+    });
 }
 
-TextNode.prototype.childrenPath = function(id) {
+
+/*
+Get our child nodes from the server, in json format, and pass this json structure
+to continuation for further processing. This method does *not* attach the fetched nodes
+to the tree on the client side. It *does* record that the children have been fetched.
+So it leaves the state of the client-side in a precarious way if things should be aborted here.
+It should only be called by expand(), who knows what it's doing.
+*/
+TextNode.prototype._fetchChildren = function(continuation) {
+  if (this.childrenFetched) {
+    continuation(false); // Pass false to the continuation to indicate that no children were fetched.
+  } else {
+    var me = this;
+    getJsonFromServer("GET", this._childrenPath(this.id),
+      function(fetchedNodes) {
+        me.childrenFetched = true;
+        continuation(fetchedNodes);
+      });
+  }
+}
+
+
+TextNode.prototype._childrenPath = function(id) {
   return '/nodes/' + id + '/children.json'
 }
 
 
-// Expand this node, which means revealing its children and showing its button panel.
-TextNode.prototype.expandInternal = function() {
+/*
+Do the client-side stuff necessary to xxpand this node,
+which means revealing its children and showing its button panel.
+This is a helper method called by expand(). The parent method takes care
+of ensuring that this node already has its children fetched from the server.
+*/
+TextNode.prototype._expand = function() {
   if (this.state == 'expanded') return; // Already expanded, so do nothing.
 
   this.state = 'expanded'
