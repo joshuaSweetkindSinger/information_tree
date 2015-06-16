@@ -395,9 +395,10 @@ TextNode.prototype._addNode = function(node, mode) {
     node = TextNode.defaultSpec;
   }
 
+  var me = this;
   this._addNodeOnServer(node, mode,
     function(node) {
-      if (node.error) { this._reportAddNodeOnServerError(node, mode)};
+      if (node.error) { me._reportAddNodeOnServerError(node, mode)};
 
       window.textTree._addNodeOnClient(node);
     });
