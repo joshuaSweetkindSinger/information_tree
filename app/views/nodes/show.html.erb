@@ -41,7 +41,7 @@
 <p>
   <b>Children:</b>
   <ul>
-    <% @obj.children.each do |child| %>
+    <% @obj.children.order(:rank).each do |child| %>
     <li><%= link_to(child.content, child) if child %></li>
     <% end %>
   </ul>

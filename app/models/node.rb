@@ -1,9 +1,9 @@
 class Node < ActiveRecord::Base
   # TODO -- put these in the database instead
-  BULLET = 1 # type_id of this value indicates a bullet item.
+  BULLET    = 1 # type_id of this value indicates a bullet item.
   PARAGRAPH = 2 # type_id of this value indicates a paragraph item.
-  TOP_ID = -1 # system-designated "parent" id for top node.
-  TRASH_ID = -2 # system-designated "parent" id for trash node.
+  TOP_ID    = -1 # system-designated "parent" id for top node.
+  TRASH_ID  = -2 # system-designated "parent" id for trash node.
 
   attr_accessible :content, :parent_id, :rank, :type_id, :predecessor_id, :successor_id, :width, :height
   belongs_to :parent, class_name: 'Node'
@@ -43,16 +43,23 @@ class Node < ActiveRecord::Base
   end
 
   # Print a quick and dirty report to stdout that shows nodes with inconsistent
-  # links. This means that the predecessor/successor links are broken, since these are
-  # the only links that can be inconsistent at this point in the architecture. Parent/child
-  # links can't be broken because we don't have child links, just parent links.
+  # links or missing rank. Inconsistent links means that the predecessor/successor links
+  # are broken, since these are the only links that can be inconsistent at this point
+  # in the architecture. Parent/child links can't be broken because we don't have child links,
+  # just parent links.
+  # TODO: Make this method efficient.
   def self.find_broken_nodes
     result = []
     self.all.each do |node|
       if node.predecessor && node.predecessor.successor != node && !result.include?(node)
         result.push(node);
       end
+
       if node.successor && node.successor.predecessor != node && !result.include?(node)
+        result.push(node);
+      end
+
+      if !node.rank && !result.include?(node)
         result.push(node);
       end
     end
@@ -62,8 +69,7 @@ class Node < ActiveRecord::Base
   # Move to the trash all nodes that have no parent.
   def self.trash_orphans
     self.where(parent_id: nil).each do |node|
-      node.parent = Node.trash
-      node.save!
+      node.trash
     end
   end
 
@@ -81,7 +87,7 @@ class Node < ActiveRecord::Base
   #
   # The return value of this method is node.
   def insert (splice_position)
-    self.transaction do
+    transaction do
       _unhook!
       _splice!(splice_position)
       self.rank = calc_rank()
@@ -166,6 +172,22 @@ class Node < ActiveRecord::Base
   end
 
 
+  # Loop through your children and re-assign ranks to each of them.
+  # This is a utility method that keeps the ranks from getting exponentially small and marching toward
+  # underflow. The re-ranking process just assigns rank k/(n+1) to the k-th child of n children.
+  # This keeps the rank increasing, and between 0 and 1 exclusive.
+  def rerank_children
+    c = children.order(:rank)
+    n = c.length
+    transaction do
+      c.each_with_index do |node, k|
+        node.rank = (k + 1) / Float(n + 1) # We use k+1 because the index is 0-based.
+        node.save!
+      end
+    end
+  end
+
+
   # Add node to the node hierarchy, to be a new child
   # of self. It's added onto the beginning of self's set of children, unless last
   # is true, in which case it is added onto the end.
@@ -173,12 +195,14 @@ class Node < ActiveRecord::Base
     node.insert(SplicePositionParent.new(self, last))
   end
 
+
   # Add node to the node hierarchy to be the successor
   # of self. If node is already in the hiearchy, then its existing parent- and sibling-links
   # will be detached and re-hooked-up to fit with its new position.
   def add_successor (node)
     node.insert(SplicePositionPredecessor.new(self))
   end
+
 
   # Add node to the node hierarchy to be the predecessor
   # of self. If node is already in the hiearchy, then its existing parent- and sibling-links
