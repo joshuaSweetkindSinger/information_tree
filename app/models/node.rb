@@ -15,6 +15,7 @@ class Node < ActiveRecord::Base
     node.type_id ||= BULLET # By default, new nodes are bullets rather than paragraphs or other types.
   end
 
+  # ===================================== Class Methods
   def self.top
     result = where("parent_id = #{TOP_ID}").first
     result || _make_top_node
@@ -40,6 +41,36 @@ class Node < ActiveRecord::Base
     result.save!
     result
   end
+
+  # Print a quick and dirty report to stdout that shows nodes with inconsistent
+  # links. This means that the predecessor/successor links are broken, since these are
+  # the only links that can be inconsistent at this point in the architecture. Parent/child
+  # links can't be broken because we don't have child links, just parent links.
+  def self.find_broken_nodes
+    result = []
+    self.all.each do |node|
+      if node.predecessor && node.predecessor.successor != node && !result.include?(node)
+        result.push(node);
+      end
+      if node.successor && node.successor.predecessor != node && !result.include?(node)
+        result.push(node);
+      end
+    end
+    result
+  end
+
+  # Move to the trash all nodes that have no parent.
+  def self.trash_orphans
+    self.where(parent_id: nil).each do |node|
+      node.parent = Node.trash
+      node.save!
+    end
+  end
+
+
+
+
+  # ===================================== Instance Methods
 
   # Insert ourselves into the node hierarchy at position, which is a SplicePosition instance.
   #
