@@ -443,7 +443,10 @@ node represented by this node be its parent. Then effect the same transformation
 on the client side.
 */
 TextNode.prototype.addChild = function(node) {
-  this.expand(); // Make sure we are expanded so that the new child node can be seen.
+  // null node means we're creating a new node as opposed to moving an existing one.
+  // Make sure we are expanded so that the new child node can be seen.
+  if (!node) this.expand();
+  
   this._addNode(node, 'add_child');
 }
 
