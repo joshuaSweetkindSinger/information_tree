@@ -125,6 +125,12 @@ TextTree.prototype._addNodesOnClient = function(fetchedNodes) {
   return fetchedNodes.map(this._addNodeOnClient.bind(this));
 }
 
+// TODO: the trash functionality needs to record information about the former parentage
+// and sibling relationships somewhere so that a trashed node can be restored later.
+TextTree.prototype.restoreLastDeletedNode = function() {
+  alert("Untrash has not yet bee implemented");
+}
+
 // =========================================================================
 //                   Text Node
 // =========================================================================
@@ -446,7 +452,7 @@ TextNode.prototype.addChild = function(node) {
   // null node means we're creating a new node as opposed to moving an existing one.
   // Make sure we are expanded so that the new child node can be seen.
   if (!node) this.expand();
-  
+
   this._addNode(node, 'add_child');
 }
 
@@ -472,7 +478,17 @@ TextNode.prototype.addPredecessor = function(node) {
   this._addNode(node, 'add_predecessor');
 }
 
-// =========================== trash
+// =========================== Copy
+TextNode.prototype.copy = function() {
+  window.textTree.copiedNode = this;
+};
+
+// ========================== Paste
+TextNode.prototype.paste = function() {
+  this.addChild({id: window.textTree.copiedNode.id});
+};
+
+// =========================== Trash
 // Ask the server to trash this node from the hierarchy.
 // When the server replies, trash the node from the browser.
 TextNode.prototype.trash = function() {
@@ -723,8 +739,11 @@ var ButtonPanel = defCustomTag('button-panel', HTMLElement)
 ButtonPanel.prototype.afterCreate = function() {
   var $this = $(this)
 
-  this.followLinkButton = new FollowLink
-  $this.append(this.followLinkButton)
+  this.expandCollapseButton = new ExpandCollapse
+  $this.append(this.expandCollapseButton)
+
+  this.expandCollapseRecursiveButton = new ExpandCollapseRecursive
+  $this.append(this.expandCollapseRecursiveButton)
 
   this.autoSizeButton = new AutoSize
   $this.append(this.autoSizeButton)
@@ -735,14 +754,20 @@ ButtonPanel.prototype.afterCreate = function() {
   this.addSiblingButton = new AddSibling
   $this.append(this.addSiblingButton)
 
+  this.copyButton = new CopyNode
+  $this.append(this.copyButton)
+
+  this.pasteButton = new PasteNode
+  $this.append(this.pasteButton)
+
+  this.followLinkButton = new FollowLink
+  $this.append(this.followLinkButton)
+
   this.trashNodeButton = new TrashNode
   $this.append(this.trashNodeButton)
 
-  this.expandCollapseButton = new ExpandCollapse
-  $this.append(this.expandCollapseButton)
-
-  this.expandCollapseRecursiveButton = new ExpandCollapseRecursive
-  $this.append(this.expandCollapseRecursiveButton)
+  this.untrashNodeButton = new UntrashNode
+  $this.append(this.untrashNodeButton)
 }
 
 /*
@@ -757,7 +782,7 @@ ButtonPanel.prototype.popTo = function(node) {
   var offset = $(node).offset();
   var left   = offset.left,
       top    = offset.top;
-  $(this).offset({left:left-42, top:top});
+  $(this).offset({left:left-82, top:top}); // TODO: Remove hardcoded constant.
 }
 
 
@@ -890,6 +915,35 @@ AutoSize.prototype.afterCreate = function() {
 }
 
 // =========================================================================
+//                   Copy Button
+// =========================================================================
+// Pressing this button copies the selected node to the copy buffer for later pasting.
+var CopyNode = defCustomTag('copy-node', NodeButton)
+
+CopyNode.prototype.afterCreate = function() {
+  NodeButton.prototype.afterCreate.call(this)
+
+  var $this = $(this)
+  $this.html('copy')
+  $this.click(function(event) {window.textTree.selectedNode.copy()})
+}
+
+// =========================================================================
+//                   Paste Button
+// =========================================================================
+// Pressing this button pastes the node in the copy buffer into the selected node, making
+// it a child of the selected node.
+var PasteNode = defCustomTag('paste-node', NodeButton)
+
+PasteNode.prototype.afterCreate = function() {
+  NodeButton.prototype.afterCreate.call(this)
+
+  var $this = $(this)
+  $this.html('paste')
+  $this.click(function(event) {window.textTree.selectedNode.paste()})
+}
+
+// =========================================================================
 //                   Expand / Collapse Button
 // =========================================================================
 var ExpandCollapse = defCustomTag('expand-collapse', NodeButton)
@@ -981,4 +1035,21 @@ TrashNode.prototype.afterCreate = function() {
     window.textTree.selectedNode = null;   // We just deleted the selected node, so now there is none.
     $(window.textTree.buttonPanel).hide(); // we just deleted the selected node, so hide the button panel.
   })
+}
+
+// =========================================================================
+//                   Untrash Node Button
+// =========================================================================
+// Pressing this button undoes the last delete operation, restoring the last trashed node to the hierarchy
+// by re-inserting it with the predecessor it had before. This is guaranteed to work if it is performed just
+// after the delete operation was performed. However, if performed later on, the predecessor itself may have been
+// moved or may have been trashed, in which case unexpected results may occur.
+var UntrashNode = defCustomTag('untrash-node', NodeButton)
+
+UntrashNode.prototype.afterCreate = function() {
+  NodeButton.prototype.afterCreate.call(this)
+
+  var $this = $(this)
+  $this.html('untrash')
+  $this.click(function(event) {window.textTree.restoreLastDeletedNode()})
 }
