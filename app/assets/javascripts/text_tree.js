@@ -170,6 +170,26 @@ TextNode.prototype.afterCreate = function(node) {
     start: this.dragStart,
     stop: this.dragStop
   })
+
+  var self = this;
+  /*
+  This is the master right-button-click handler for a node. The ContentNode object intercepts
+  the click and then delegates it to us to handle.
+  */
+  // TODO: this is named as though it is an event handler, but it's not directly assigned to be one.
+  // Instead, it's delegated to. Do we need a different name?
+  self.onContextMenu = function(event) {
+    self.select();
+    window.textTree.buttonPanel.popTo(self);
+    return false;
+  }
+}
+
+/*
+Make ourselves be the selected node.
+*/
+TextNode.prototype.select = function() {
+  window.textTree.selectedNode = this;
 }
 
 
@@ -704,13 +724,7 @@ TextNode.prototype.setAttributesOnClient = function(jsonNode) {
   if (jsonNode.height)this.height    = jsonNode.height
 }
 
-/*
-Make this node be the selected node. Attach pop up menu to it.
-*/
-TextNode.prototype.select = function() {
-  window.textTree.selectedNode = this;
-  window.textTree.buttonPanel.popTo(this);
-}
+
 
 // =========================================================================
 //                   Node Header
@@ -785,7 +799,7 @@ ButtonPanel.prototype.popTo = function(node) {
   var offset = $(node).offset();
   var left   = offset.left,
       top    = offset.top;
-  $(this).offset({left:left-82, top:top}); // TODO: Remove hardcoded constant.
+  $(this).offset({left:left-102, top:top}); // TODO: Remove hardcoded constant.
 }
 
 
@@ -798,10 +812,12 @@ var NodeContent = defCustomTag('node-content', HTMLTextAreaElement, 'textarea')
 
 NodeContent.prototype.afterCreate = function(options) {
   var $this = $(this);
+
   $this.addClass('node-content');
   $this.on("blur", this.onBlur)
   $this.on("blur", this.onResize)
-  $this.on("click", this.onClick)
+  $this.on("contextmenu", this.onContextMenu);
+
   this.title = options.tooltip;
 
   $this.droppable({
@@ -810,6 +826,15 @@ NodeContent.prototype.afterCreate = function(options) {
     greedy: true,
     drop: this.handleDrop
   })
+}
+
+/*
+This somewhat awkward intermediary is necessary because, at create time, we don't have
+a pointer to the Node parent from the NodeContent object. So we create a delegator
+that will work at click-time.
+*/
+NodeContent.prototype.onContextMenu = function(event) {
+  return this.getTextNode().onContextMenu(event);
 }
 
 
@@ -833,10 +858,6 @@ NodeContent.prototype.set_id = function(id) {
   this.id = 'NodeContent-' + id;
 }
 
-
-NodeContent.prototype.onClick = function() {
-  this.getTextNode().select();
-}
 
 // This event-handler is bound to the object's blur event.
 // It causes the content of the node to change on the server.
@@ -894,7 +915,7 @@ FollowLink.prototype.afterCreate = function() {
   NodeButton.prototype.afterCreate.call(this)
 
   var $this = $(this)
-  $this.html('->')
+  $this.html('Follow Link')
   $this.click(function(event) {
     window.textTree.selectedNode.followLink();
   })
@@ -913,7 +934,7 @@ AutoSize.prototype.afterCreate = function() {
   NodeButton.prototype.afterCreate.call(this)
 
   var $this = $(this)
-  $this.html('s')
+  $this.html('Autosize')
   $this.click(function(event) {window.textTree.selectedNode.autoSize()})
 }
 
@@ -927,7 +948,7 @@ CopyNode.prototype.afterCreate = function() {
   NodeButton.prototype.afterCreate.call(this)
 
   var $this = $(this)
-  $this.html('copy')
+  $this.html('Copy')
   $this.click(function(event) {window.textTree.selectedNode.copy()})
 }
 
@@ -942,7 +963,7 @@ PasteNode.prototype.afterCreate = function() {
   NodeButton.prototype.afterCreate.call(this)
 
   var $this = $(this)
-  $this.html('paste')
+  $this.html('Paste')
   $this.click(function(event) {window.textTree.selectedNode.paste()})
 }
 
@@ -953,7 +974,7 @@ var ExpandCollapse = defCustomTag('expand-collapse', NodeButton)
 
 ExpandCollapse.prototype.afterCreate = function() {
   NodeButton.prototype.afterCreate.call(this)
-  $(this).html('c');
+  $(this).html('Open/Close');
 
   $(this).click(function(event) {
     this.toggle()
@@ -973,7 +994,7 @@ var ExpandCollapseRecursive = defCustomTag('expand-collapse-recursive', NodeButt
 
 ExpandCollapseRecursive.prototype.afterCreate = function() {
   NodeButton.prototype.afterCreate.call(this)
-  $(this).html('C');
+  $(this).html('Open/Close All');
   $(this).click(function(event) {
     this.toggle()})
 }
@@ -993,7 +1014,7 @@ AddChild.prototype.afterCreate = function() {
   NodeButton.prototype.afterCreate.call(this)
 
   var $this = $(this)
-  $this.html('(+)')
+  $this.html('+Child')
 
   // Click function adds a new child TextNode to the TextNode associated with this button. This means
   // adding the new node to the TextNode's NodeChildren element.
@@ -1014,7 +1035,7 @@ AddSibling.prototype.afterCreate = function() {
   NodeButton.prototype.afterCreate.call(this)
 
   var $this = $(this)
-  $this.html('...+')
+  $this.html('+Sibling')
 
   // Click function adds a new TextNode after the TextNode associated with this button.
   $this.click(function() {
@@ -1030,7 +1051,7 @@ TrashNode.prototype.afterCreate = function() {
   NodeButton.prototype.afterCreate.call(this)
 
   var $this = $(this)
-  $this.html('x')
+  $this.html('Delete!')
 
   // Click function trashs the TextNode associated with this button.
   $this.click(function() {
@@ -1053,6 +1074,6 @@ UntrashNode.prototype.afterCreate = function() {
   NodeButton.prototype.afterCreate.call(this)
 
   var $this = $(this)
-  $this.html('untrash')
+  $this.html('Untrash')
   $this.click(function(event) {window.textTree.restoreLastDeletedNode()})
 }
