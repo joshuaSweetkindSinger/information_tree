@@ -22,25 +22,59 @@ certain properties. The name nodeRep indicates that a representation of the now-
 has been sent back to the client.
  */
 
+ // ========================================================================
+ //                   User Interface
+ // =========================================================================
+/*
+Although everything on the client side is in some sense user-interface, here we are specifically
+designating a Ui object whose methods are those that respond directly to browser events and
+whose member variables are those that keep track of Ui state, such as selected objects, etc.
+
+The Ui gets its job done by calling lower-level client-side methods, which manipulate
+client-side objects. These lower-level methods
+do not belong to the ui and are distinguished by being callable in different ui contexts.
+*/
+var Ui = function() {
+  var self = this;
+
+
+  // Click function trashes the TextNode associated with this button.
+  self.trash = function() {
+    window.textTree.selectedNode.trash();
+    window.textTree.selectedNode = null;   // We just deleted the selected node, so now there is none.
+    $(window.textTree.buttonPanel).hide(); // we just deleted the selected node, so hide the button panel.
+    // TODO: move button panel to the ui, but watch out: it needs to have a dom parent and this can interrupt layout of the tree.
+  };
+}
+
 // ========================================================================
 //                   Text Tree
 // =========================================================================
 var TextTree = defCustomTag('text-tree', HTMLElement);
 
-// Find the top node of the tree and add it to the dom.
+/*
+We do some things onCreate that are independent of the existence of dom objects,
+but which the dom manipulations onAttach will depend on.
+*/
 TextTree.prototype.onCreate = function() {
   window.textTree  = this;
-  $(document).tooltip(); // TODO: is there a way for this not to be here?
+  window.ui        = new Ui;
 }
+
 
 TextTree.prototype.onAttach = function() {
   this.initTop();
 }
 
+
+// Find the top node of the tree and add it to the dom.
+// Initialize the ui.
 TextTree.prototype.initTop = function() {
   var me = this;
   this.getTopNodeFromServer(function(node) {
     if (node) {
+      $(document).tooltip(); // TODO: is there a way for this not to be here?
+
       me.top = new TextNode(node);
       me.buttonPanel = new ButtonPanel;
       $(me).append(me.buttonPanel);
@@ -128,7 +162,7 @@ TextTree.prototype._addNodesOnClient = function(fetchedNodes) {
 // TODO: the trash functionality needs to record information about the former parentage
 // and sibling relationships somewhere so that a trashed node can be restored later.
 TextTree.prototype.restoreLastDeletedNode = function() {
-  alert("Untrash has not yet bee implemented");
+  alert("Untrash has not yet been implemented");
 }
 
 // =========================================================================
@@ -1047,18 +1081,13 @@ AddSibling.prototype.afterCreate = function() {
 //                   Trash Node Button
 // =========================================================================
 var TrashNode = defCustomTag('trash-node', NodeButton)
-TrashNode.prototype.afterCreate = function() {
+TrashNode.prototype.onCreate = function() {
   NodeButton.prototype.afterCreate.call(this)
 
   var $this = $(this)
   $this.html('Delete!')
 
-  // Click function trashs the TextNode associated with this button.
-  $this.click(function() {
-    window.textTree.selectedNode.trash();
-    window.textTree.selectedNode = null;   // We just deleted the selected node, so now there is none.
-    $(window.textTree.buttonPanel).hide(); // we just deleted the selected node, so hide the button panel.
-  })
+  $this.click(ui.trash);
 }
 
 // =========================================================================
