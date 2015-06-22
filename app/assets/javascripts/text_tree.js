@@ -45,6 +45,31 @@ var Ui = function() {
     $(window.textTree.buttonPanel).hide(); // we just deleted the selected node, so hide the button panel.
     // TODO: move button panel to the ui, but watch out: it needs to have a dom parent and this can interrupt layout of the tree.
   };
+
+  self.clickLeftOnNode = function(node) {
+    self.selectNode(node);
+    self.toggleSelectedNodeExpandCollapse(node);
+  }
+
+
+  self.clickRightOnNode = function(node) {
+    self.selectNode(node);
+    window.textTree.buttonPanel.popTo(node);
+    return false;
+  }
+
+
+  /*
+  Make ourselves be the selected node.
+  TODO: Consider putting selectedNode state on ui instead of on textTree.
+  */
+  self.selectNode = function(node) {
+    window.textTree.selectedNode = node;
+  }
+
+  self.toggleSelectedNodeExpandCollapse = function(node) {
+    window.textTree.selectedNode.toggle(false);
+  }
 }
 
 // ========================================================================
@@ -78,8 +103,9 @@ TextTree.prototype.initTop = function() {
       me.top = new TextNode(node);
       me.buttonPanel = new ButtonPanel;
       $(me).append(me.buttonPanel);
-      $(me).append(me.top)
-      me.top.select();
+      $(me).append(me.top);
+      window.ui.selectNode(me.top);
+      $(me.buttonPanel).hide();
     }})
 }
 
@@ -204,26 +230,6 @@ TextNode.prototype.afterCreate = function(node) {
     start: this.dragStart,
     stop: this.dragStop
   })
-
-  var self = this;
-  /*
-  This is the master right-button-click handler for a node. The ContentNode object intercepts
-  the click and then delegates it to us to handle.
-  */
-  // TODO: this is named as though it is an event handler, but it's not directly assigned to be one.
-  // Instead, it's delegated to. Do we need a different name?
-  self.onContextMenu = function(event) {
-    self.select();
-    window.textTree.buttonPanel.popTo(self);
-    return false;
-  }
-}
-
-/*
-Make ourselves be the selected node.
-*/
-TextNode.prototype.select = function() {
-  window.textTree.selectedNode = this;
 }
 
 
@@ -669,7 +675,7 @@ TextNode.prototype.collapse = function(doRecursive) {
   }
 }
 
-TextNode.prototype.toggle = function(doRecursive) {
+  TextNode.prototype.toggle = function(doRecursive) {
   if (this.state == 'expanded') {
     this.collapse(doRecursive)
   } else {
@@ -790,9 +796,6 @@ var ButtonPanel = defCustomTag('button-panel', HTMLElement)
 ButtonPanel.prototype.afterCreate = function() {
   var $this = $(this)
 
-  this.expandCollapseButton = new ExpandCollapse
-  $this.append(this.expandCollapseButton)
-
   this.expandCollapseRecursiveButton = new ExpandCollapseRecursive
   $this.append(this.expandCollapseRecursiveButton)
 
@@ -819,6 +822,11 @@ ButtonPanel.prototype.afterCreate = function() {
 
   this.untrashNodeButton = new UntrashNode
   $this.append(this.untrashNodeButton)
+
+  // Hide button panel after it is clicked on.
+  $this.click(function() {
+    $this.hide();
+  })
 }
 
 /*
@@ -846,8 +854,10 @@ var NodeContent = defCustomTag('node-content', HTMLTextAreaElement, 'textarea')
 
 NodeContent.prototype.afterCreate = function(options) {
   var $this = $(this);
+  var self  = this;
 
   $this.addClass('node-content');
+  $this.on("click", this.onClick);
   $this.on("blur", this.onBlur)
   $this.on("blur", this.onResize)
   $this.on("contextmenu", this.onContextMenu);
@@ -862,13 +872,18 @@ NodeContent.prototype.afterCreate = function(options) {
   })
 }
 
+// Handle a left click in the text area.
+NodeContent.prototype.onClick = function (event) {
+  return window.ui.clickLeftOnNode(this.getTextNode());
+}
+
 /*
 This somewhat awkward intermediary is necessary because, at create time, we don't have
 a pointer to the Node parent from the NodeContent object. So we create a delegator
 that will work at click-time.
 */
 NodeContent.prototype.onContextMenu = function(event) {
-  return this.getTextNode().onContextMenu(event);
+  return ui.clickRightOnNode(this.getTextNode());
 }
 
 
@@ -928,9 +943,9 @@ NodeChildren.prototype.set_id = function(id) {
   this.id = 'NodeChildren-' + id;
 }
 // =========================================================================
-//                   Node Button
+//                   Button Panel Button
 // =========================================================================
-// Base class for text node buttons.
+// Base class for button panel  buttons.
 var NodeButton = defCustomTag('node-button', HTMLElement)
 
 NodeButton.prototype.afterCreate = function() {
@@ -1011,13 +1026,13 @@ ExpandCollapse.prototype.afterCreate = function() {
   $(this).html('Open/Close');
 
   $(this).click(function(event) {
-    this.toggle()
+    this.toggle(event);
     })
 }
 
 
 ExpandCollapse.prototype.toggle = function() {
-  window.textTree.selectedNode.toggle(false)
+  window.ui.toggleSelectedNodeExpandCollapse(event, this.getTextNode());
 }
 
 
