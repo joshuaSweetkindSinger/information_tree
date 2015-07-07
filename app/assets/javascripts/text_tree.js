@@ -106,6 +106,7 @@ TextTree.prototype.initTop = function() {
       $(me).append(me.top);
       window.ui.selectNode(me.top);
       $(me.buttonPanel).hide();
+      $(me).click(function() {$(me.buttonPanel).hide()});
     }})
 }
 
@@ -194,8 +195,14 @@ TextTree.prototype.restoreLastDeletedNode = function() {
 // =========================================================================
 //                   Text Node
 // =========================================================================
-var TextNode = defCustomTag('text-node', HTMLElement)
-TextNode.defaultSpec = {content:'New Node', width:100, height:50} // Default json spec for a new node
+var TextNode = defCustomTag('text-node', HTMLElement);
+
+ // Default json spec for a new node
+TextNode.defaultSpec = {
+  content:'New Node',
+  width:100,
+  height:25
+  }
 
 // ======= Construction and Initialization
 /*
