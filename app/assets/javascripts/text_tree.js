@@ -1,12 +1,13 @@
 /*
-This defines classes for the node hierarchy of an outline document.
+This file defines client-side functionality for the information-tree sub-app.
+
+This defines dom tag classes for the node hierarchy of an information tree.
 The structure is as follows:
 TextTree: a single node of this type is put in a static html file, which initiates the dynamic
           creation of a text tree when the html file is loaded into the browser, via its custom tag constructor.
           A text tree is made up of TextNodes.
 TextNode: has two child elements, called NodeHeader and NodeChildren.
-NodeHeader: represents content for the node, as well as clickable buttons to take action on the node. It
-            contains an element NodeContent, as well as button elements like ExpandCollapse, AddChild, AddSibling.
+NodeHeader: represents content for the node.
 NodeChildren: represents a container for sub-nodes. Its only children are of type TextNode.
 
 Text Nodes are stored in the db in the nodes table. When the client-side expands a node, it asks the db for its children,

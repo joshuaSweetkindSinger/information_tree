@@ -1,3 +1,12 @@
-# Place all the behaviors and hooks related to the matching controller here.
-# All this logic will automatically be available in application.js.
-# You can use CoffeeScript in this file: http://jashkenas.github.com/coffee-script/
+# Initialize javascript functionality for the static pages sub-app.
+# This sub-app stores information in static .erb files. The client-side
+# functionality allows the user to expand/collapse the associated nodes.
+
+#= require expand_collapse_list_items
+
+
+# Initialize the page after the DOM is ready.
+$(document).ready( ->
+    $("li").click(handleClick)
+    initializeExpandCollapse()
+  )

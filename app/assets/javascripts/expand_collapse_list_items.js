@@ -153,10 +153,3 @@ function initializeExpandCollapse () {
   collapseTree(topLi)
   expandLiOneLevel(topLi)
 }
-
-// Initialize the page after the DOM is ready.
-$(document).ready(function() {
-  console.log("Running document ready function")
-  $("li").click(handleClick)
-  initializeExpandCollapse()
-})

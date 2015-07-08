@@ -13,4 +13,7 @@
 //= require underscore
 //= require jquery
 //= require jquery_ujs
-//= require_tree .
+//= require aa_custom_tag
+//= require utils.js
+
+// require_tree .
