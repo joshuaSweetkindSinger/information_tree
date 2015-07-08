@@ -77,6 +77,14 @@ var Ui = function() {
   self.toggleNodeExpandCollapse = function(node) {
     node.toggle(false);
   }
+
+  self.addSuccessorToSelectedNode = function() {
+    window.textTree.selectedNode.addSuccessor();
+  }
+
+  self.addPredecessorToSelectedNode = function() {
+    window.textTree.selectedNode.addPredecessor();
+  }
 }
 
 // ========================================================================
@@ -823,8 +831,11 @@ ButtonPanel.prototype.afterCreate = function() {
   this.addChildButton = new AddChild
   $this.append(this.addChildButton)
 
-  this.addSiblingButton = new AddSibling
-  $this.append(this.addSiblingButton)
+  this.addSuccessorButton = new AddSuccessor
+  $this.append(this.addSuccessorButton)
+
+  this.addPredecessorButton = new AddPredecessor
+  $this.append(this.addPredecessorButton)
 
   this.copyButton = new CopyNode
   $this.append(this.copyButton)
@@ -1011,7 +1022,6 @@ FollowLink.prototype.afterCreate = function() {
 }
 
 
-
 // =========================================================================
 //                   AutoSize Button
 // =========================================================================
@@ -1098,18 +1108,34 @@ AddChild.prototype.addChild = function() {
 }
 
 // =========================================================================
-//                   Add Sibling Button
+//                   Add Successor Button
 // =========================================================================
-var AddSibling = defCustomTag('add-sibling', ButtonPanelButton)
-AddSibling.prototype.afterCreate = function() {
+var AddSuccessor = defCustomTag('add-successor', ButtonPanelButton)
+AddSuccessor.prototype.afterCreate = function() {
   ButtonPanelButton.prototype.afterCreate.call(this)
 
   var $this = $(this)
-  $this.html('+Sibling')
+  $this.html('+Successor')
 
   // Click function adds a new TextNode after the TextNode associated with this button.
   $this.click(function() {
-    window.textTree.selectedNode.addSuccessor();
+    window.ui.addSuccessorToSelectedNode();
+  })
+}
+
+// =========================================================================
+//                   Add Predecessor Button
+// =========================================================================
+var AddPredecessor = defCustomTag('add-predecessor', ButtonPanelButton)
+AddPredecessor.prototype.afterCreate = function() {
+  ButtonPanelButton.prototype.afterCreate.call(this)
+
+  var $this = $(this)
+  $this.html('+Predecessor')
+
+  // Click function adds a new TextNode after the TextNode associated with this button.
+  $this.click(function() {
+    window.ui.addPredecessorToSelectedNode();
   })
 }
 
