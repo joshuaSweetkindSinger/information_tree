@@ -43,7 +43,6 @@ object of interest.
 var Ui = function() {
   var self = this;
 
-
   // Trash the selected node.
   self.trash = function() {
     window.textTree.selectedNode.trash();
