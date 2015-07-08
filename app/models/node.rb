@@ -74,7 +74,16 @@ class Node < ActiveRecord::Base
   end
 
 
+  # Make a backup of the entire information tree.
+  def self.back_up
+    File.open(self.back_up_pathname, 'w') do |f|
+      f << Node.all.to_json
+    end
+  end
 
+  def self.back_up_pathname
+    "backups/information_tree_backup_#{Time.now.strftime("%Y-%m-%d_%H-%M-%S")}"
+  end
 
   # ===================================== Instance Methods
 

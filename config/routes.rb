@@ -4,11 +4,13 @@ JssNotes::Application.routes.draw do
     collection do
       get :interactive
       get :top
+      post :back_up
+      get :test_me
     end
 
     member do
       get :children        # route is /nodes/:id/children
-      post :add_node      # route is /nodes/:id/add_child
+      post :add_node      # route is /nodes/:id/add_node
       put :set_attributes  # route is /nodes/:id/set_attributes
       delete :trash        # route is /nodes/:id/trash
     end

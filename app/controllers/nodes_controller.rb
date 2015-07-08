@@ -12,6 +12,7 @@ class NodesController < ApplicationController
     end
   end
 
+
   # GET /nodes/1
   # GET /nodes/1.json
   def show
@@ -22,6 +23,7 @@ class NodesController < ApplicationController
       format.json { render json: @obj }
     end
   end
+
 
   # GET /nodes/new
   # GET /nodes/new.json
@@ -36,10 +38,12 @@ class NodesController < ApplicationController
     end
   end
 
+
   # GET /nodes/1/edit
   def edit
     @obj = Node.find(params[:id])
   end
+
 
   # POST /nodes
   # POST /nodes.json
@@ -57,6 +61,7 @@ class NodesController < ApplicationController
     end
   end
 
+
   # PUT /nodes/1
   # PUT /nodes/1.json
   def update
@@ -72,6 +77,7 @@ class NodesController < ApplicationController
       end
     end
   end
+
 
   # DELETE /nodes/1
   # DELETE /nodes/1.json
@@ -90,6 +96,7 @@ class NodesController < ApplicationController
     @obj = Node.top # Get specified node, or top node if none specified.
   end
 
+
   # /nodes/top
   def top
     @obj = Node.top
@@ -98,6 +105,7 @@ class NodesController < ApplicationController
       format.json {render json: @obj}
     end
   end
+
 
   def children
     @obj      = Node.find(params[:id])
@@ -108,6 +116,7 @@ class NodesController < ApplicationController
       format.json {render json: @children}
     end
   end
+
 
   # Create a new text node, or use an existing one, and insert it into the node
   # hierarchy as the child or sibling of the node with id params[:id].
@@ -142,36 +151,6 @@ class NodesController < ApplicationController
     end
   end
 
-  # # Create a new child text node, or insert an existing one, and make its parent be the one with id params[:id].
-  # # A new node is spec'd in params[:node]. If an node child, then params[:node][:id] references it.
-  # # For json format, return the newly created node as a json object.
-  # def add_child
-  #   parent = Node.find(params[:id])
-  #   return render(json: {error: "Parent with id #{id} not found"}) unless parent
-  #
-  #   @obj = parent.add_child(Node.new(params[:node]))
-  #
-  #   respond_to do |format|
-  #     format.html { redirect_to interactive_nodes_path, notice: 'Node was successfully created.' }
-  #     format.json { render json: @obj, status: :created, location: @obj }
-  #   end
-  # end
-  #
-  #
-  # # Create a new sibling text node, or insert an existing one, and make its predecessor be the one with id params[:id].
-  # # A new node is spec'd in params[:node]. If an existing node, then params[:node][:id] references it.
-  # # For json format, return the newly created node as a json object.
-  # def add_successor
-  #   node = Node.find(params[:id])
-  #   return render(json: {error: "Node with id #{id} not found"}) unless node
-  #
-  #   @obj = node.add_successor(Node.new(params[:node]))
-  #
-  #   respond_to do |format|
-  #     format.html { redirect_to interactive_nodes_path, notice: 'Node was successfully created.' }
-  #     format.json { render json: @obj, status: :created, location: @obj }
-  #   end
-  # end
 
   # Set one or more attributes of the object whose id is params[:id].
   # The attributes and their values are passed in as a sub-hash on params[:node], e.g.
@@ -202,6 +181,7 @@ class NodesController < ApplicationController
     end
   end
 
+
   # Remove self from the node hierarchy, patching up predecessor/successor links.
   # This moves the node and its children under the "Trash" node. They're not really deleted.
   # DELETE /nodes/:id/remove
@@ -212,6 +192,20 @@ class NodesController < ApplicationController
     respond_to do |format|
       format.html { redirect_to nodes_url }
       format.json { head :no_content }
+    end
+  end
+
+
+  # Make back up of the entire information tree.
+  def back_up
+    Node.back_up
+    render js: 'alert("backup saved")'
+  end
+
+  def test_me
+    respond_to do |format|
+      format.html {render inline: "Returning html!"}
+      format.js {render js: 'alert("this is a test!");', content_type: 'application/javascript'}
     end
   end
 end
