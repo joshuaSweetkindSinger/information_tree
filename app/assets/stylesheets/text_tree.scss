@@ -1,0 +1,78 @@
+@import "bootstrap";
+
+
+// Custom tags derived from built-in tags
+// can't have css based on the derived tag,
+// because the derived tag is not really instantiated.
+// We must use css classes to style them instead.
+.node-content {
+  display:inline-block;
+  box-sizing:border-box;
+  margin:3px;
+  vertical-align:middle;
+  padding:10px;
+  &:hover {
+  }
+}
+
+expand-collapse {
+  display:inline-block;
+  width:13px;
+  padding-left:5px;
+  background:blue;
+  color:white;
+  border:1px solid black;
+}
+
+// Custom tags derived from parent tags
+// do not inherit the tag-based styling of their parent.
+// We have to use css classes instead.
+.button-panel-button {
+  display:block;
+  border:1px solid black;
+  box-sizing:border-box;
+  margin-left:10px;
+  vertical-align:middle;
+  padding:5px;
+  background:blue;
+  color:white;
+}
+
+button-panel {
+  display:block;
+  box-sizing:border-box;
+  width:100px;
+  position:absolute;
+}
+
+text-tree {
+}
+
+text-node {
+  display:block;
+  box-sizing:border-box;
+}
+
+.drop-hover {
+  background:blue;
+}
+
+node-children {
+  display:block;
+  box-sizing:border-box;
+  margin-left:40px;
+}
+node-header {
+  display:block;
+  box-sizing:border-box;
+}
+
+ui-node {
+  display:block;
+  box-sizing:border-box;
+}
+
+textarea {
+  min-width: 10px;
+  min-height:10px;
+}
