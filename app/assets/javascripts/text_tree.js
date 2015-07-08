@@ -22,6 +22,12 @@ are identical-looking json objects. The name nodeSpec indicates a request to cre
 certain properties. The name nodeRep indicates that a representation of the now-existing object
 has been sent back to the client.
  */
+// TODO: Have all button click methods call a ui method.a
+// TODO: put window.ui and window.textTree under one space under window.
+// TODO: rename textTree to informationTree.
+// TODO: Move buttonpanel to ui
+
+
 
  // ========================================================================
  //                   User Interface
@@ -44,10 +50,12 @@ object of interest.
 var Ui = function() {
   var self = this;
 
+  self.selectedNode = null; // The Ui maintains a "selected node", to which actions are performed.
+
   // Trash the selected node.
   self.trash = function() {
-    window.textTree.selectedNode.trash();
-    window.textTree.selectedNode = null;   // We just deleted the selected node, so now there is none.
+    self.selectedNode.trash();
+    self.selectedNode = null;   // We just deleted the selected node, so now there is none.
     $(window.textTree.buttonPanel).hide(); // we just deleted the selected node, so hide the button panel.
     // TODO: move button panel to the ui, but watch out: it needs to have a dom parent and this can interrupt layout of the tree.
   };
@@ -69,7 +77,7 @@ var Ui = function() {
   Select the specified node.
   */
   self.selectNode = function(node) {
-    window.textTree.selectedNode = node;
+    self.selectedNode = node;
   }
 
 
@@ -79,11 +87,11 @@ var Ui = function() {
   }
 
   self.addSuccessorToSelectedNode = function() {
-    window.textTree.selectedNode.addSuccessor();
+    self.selectedNode.addSuccessor();
   }
 
   self.addPredecessorToSelectedNode = function() {
-    window.textTree.selectedNode.addPredecessor();
+    self.selectedNode.addPredecessor();
   }
 }
 
@@ -1017,7 +1025,7 @@ FollowLink.prototype.afterCreate = function() {
   var $this = $(this)
   $this.html('Follow Link')
   $this.click(function(event) {
-    window.textTree.selectedNode.followLink();
+    window.ui.selectedNode.followLink();
   })
 }
 
@@ -1034,7 +1042,7 @@ AutoSize.prototype.afterCreate = function() {
 
   var $this = $(this)
   $this.html('Autosize')
-  $this.click(function(event) {window.textTree.selectedNode.autoSize()})
+  $this.click(function(event) {window.ui.selectedNode.autoSize()})
 }
 
 // =========================================================================
@@ -1048,7 +1056,7 @@ CopyNode.prototype.afterCreate = function() {
 
   var $this = $(this)
   $this.html('Copy')
-  $this.click(function(event) {window.textTree.selectedNode.copy()})
+  $this.click(function(event) {window.ui.selectedNode.copy()})
 }
 
 // =========================================================================
@@ -1063,7 +1071,7 @@ PasteNode.prototype.afterCreate = function() {
 
   var $this = $(this)
   $this.html('Paste')
-  $this.click(function(event) {window.textTree.selectedNode.paste()})
+  $this.click(function(event) {window.ui.selectedNode.paste()})
 }
 
 
@@ -1081,7 +1089,7 @@ ExpandCollapseRecursive.prototype.afterCreate = function() {
 
 
 ExpandCollapseRecursive.prototype.toggle = function() {
-  window.textTree.selectedNode.toggle(true)
+  window.ui.selectedNode.toggle(true)
 }
 
 
@@ -1104,7 +1112,7 @@ AddChild.prototype.afterCreate = function() {
 }
 
 AddChild.prototype.addChild = function() {
-  window.textTree.selectedNode.addChild();
+  window.ui.selectedNode.addChild();
 }
 
 // =========================================================================
