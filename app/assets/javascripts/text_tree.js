@@ -33,12 +33,18 @@ whose member variables are those that keep track of Ui state, such as selected o
 The Ui gets its job done by calling lower-level client-side methods, which manipulate
 client-side objects. These lower-level methods
 do not belong to the ui and are distinguished by being callable in different ui contexts.
+
+Rather than making the Ui functionality be distributed across various classes, according to which dom
+object is receiving the click, we instead coalesce the full set of ui functionality in one place, which
+makes these methods more "functional" in the approach, because each ui function will need to be told an object-of-interest
+to act on. Under normal circumstances, it would be more natural to just associate the functionality as a method on the
+object of interest.
 */
 var Ui = function() {
   var self = this;
 
 
-  // Click function trashes the TextNode associated with this button.
+  // Trash the selected node.
   self.trash = function() {
     window.textTree.selectedNode.trash();
     window.textTree.selectedNode = null;   // We just deleted the selected node, so now there is none.
@@ -46,12 +52,13 @@ var Ui = function() {
     // TODO: move button panel to the ui, but watch out: it needs to have a dom parent and this can interrupt layout of the tree.
   };
 
+  // Respond to a left-click on a node. Select the node and toggle the expanded-collapsed state of that node.
   self.clickLeftOnNode = function(node) {
     self.selectNode(node);
     self.toggleSelectedNodeExpandCollapse(node);
   }
 
-
+  // Respond to a right-click on a node. Select the node and pop up the command menu.
   self.clickRightOnNode = function(node) {
     self.selectNode(node);
     window.textTree.buttonPanel.popTo(node);
@@ -60,13 +67,14 @@ var Ui = function() {
 
 
   /*
-  Make ourselves be the selected node.
-  TODO: Consider putting selectedNode state on ui instead of on textTree.
+  Select the specified node.
   */
   self.selectNode = function(node) {
     window.textTree.selectedNode = node;
   }
 
+
+  // Toggle the expanded-collapsed state of node.
   self.toggleSelectedNodeExpandCollapse = function(node) {
     window.textTree.selectedNode.toggle(false);
   }
