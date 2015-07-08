@@ -26,6 +26,8 @@ has been sent back to the client.
 // TODO: put window.ui and window.textTree under one space under window.
 // TODO: rename textTree to informationTree.
 // TODO: Move buttonpanel to ui
+// TODO: Get rid of getTextNode()
+// TODO: All Ui functions should take a node that defaults to selectedNode.
 
 
 
@@ -47,13 +49,14 @@ makes these methods more "functional" in the approach, because each ui function 
 to act on. Under normal circumstances, it would be more natural to just associate the functionality as a method on the
 object of interest.
 */
-var Ui = function() {
+var Ui;
+Ui = function () {
   var self = this;
 
   self.selectedNode = null; // The Ui maintains a "selected node", to which actions are performed.
 
   // Trash the selected node.
-  self.trash = function() {
+  self.trash = function () {
     self.selectedNode.trash();
     self.selectedNode = null;   // We just deleted the selected node, so now there is none.
     $(window.textTree.buttonPanel).hide(); // we just deleted the selected node, so hide the button panel.
@@ -61,12 +64,12 @@ var Ui = function() {
   };
 
   // Respond to a left-click on a node. Select the node and toggle the expanded-collapsed state of that node.
-  self.clickLeftOnNode = function(node) {
+  self.clickLeftOnNode = function (node) {
     self.selectNode(node);
   }
 
   // Respond to a right-click on a node. Select the node and pop up the command menu.
-  self.clickRightOnNode = function(node) {
+  self.clickRightOnNode = function (node) {
     self.selectNode(node);
     window.textTree.buttonPanel.popTo(node);
     return false;
@@ -74,26 +77,61 @@ var Ui = function() {
 
 
   /*
-  Select the specified node.
-  */
-  self.selectNode = function(node) {
+   Select the specified node.
+   */
+  self.selectNode = function (node) {
     self.selectedNode = node;
   }
 
 
   // Toggle the expanded-collapsed state of node.
-  self.toggleNodeExpandCollapse = function(node) {
+  self.toggleNodeExpandCollapse = function (node) {
     node.toggle(false);
   }
 
-  self.addSuccessorToSelectedNode = function() {
+  self.addSuccessorToSelectedNode = function () {
     self.selectedNode.addSuccessor();
   }
 
-  self.addPredecessorToSelectedNode = function() {
+  self.addPredecessorToSelectedNode = function () {
     self.selectedNode.addPredecessor();
   }
-}
+
+  self.hideButtonPanel = function () {
+    $(window.textTree.buttonPanel).hide()
+  }
+
+  self.followLink = function (node) {
+    (node || self.selectedNode).followLink()
+  }
+
+  self.autoSize = function (node) {
+    (node || self.selectedNode).autoSize()
+  }
+
+  self.copy = function (node) {
+    (node || self.selectedNode).copy()
+  }
+
+  self.paste = function (node) {
+    (node || self.selectedNode).paste()
+  }
+
+  self.toggleExpandCollapseAll = function (node) {
+    (node || self.selectedNode).toggle(true)
+  }
+
+  self.addChild = function (node) {
+    (node || self.selectedNode).addChild();
+  }
+
+  // TODO: the trash functionality needs to record information about the former parentage
+  // and sibling relationships somewhere so that a trashed node can be restored later.
+  self.restoreLastDeletedNode = function() {
+    alert("Untrash has not yet been implemented");
+  }
+};
+
 
 // ========================================================================
 //                   Text Tree
@@ -129,9 +167,10 @@ TextTree.prototype.initTop = function() {
       $(me).append(me.top);
       window.ui.selectNode(me.top);
       $(me.buttonPanel).hide();
-      $(me).click(function() {$(me.buttonPanel).hide()});
+      $(me).click(function() {window.ui.hideButtonPanel()});
     }})
 }
+
 
 TextTree.prototype.topNodePath = function() {
   return '/nodes/top.json'
@@ -209,11 +248,6 @@ TextTree.prototype._addNodesOnClient = function(fetchedNodes) {
   return fetchedNodes.map(this._addNodeOnClient.bind(this));
 }
 
-// TODO: the trash functionality needs to record information about the former parentage
-// and sibling relationships somewhere so that a trashed node can be restored later.
-TextTree.prototype.restoreLastDeletedNode = function() {
-  alert("Untrash has not yet been implemented");
-}
 
 // =========================================================================
 //                   Text Node
@@ -861,9 +895,7 @@ ButtonPanel.prototype.afterCreate = function() {
   $this.append(this.untrashNodeButton)
 
   // Hide button panel after it is clicked on.
-  $this.click(function() {
-    $this.hide();
-  })
+  $this.click(function() {$this.hide()})
 }
 
 /*
@@ -911,8 +943,9 @@ NodeContent.prototype.afterCreate = function(options) {
 
 // Handle a left click in the text area.
 NodeContent.prototype.onClick = function (event) {
-  return window.ui.clickLeftOnNode(this.getTextNode());
+  return ui.clickLeftOnNode(this.getTextNode());
 }
+
 
 /*
 This somewhat awkward intermediary is necessary because, at create time, we don't have
@@ -990,9 +1023,7 @@ ExpandCollapse.prototype.afterCreate = function(textNode) {
 
   $(this).html('>');
 
-  $(this).click(function(event) {
-    this.toggle(event);
-  })
+  $(this).click(function(event) {this.toggle(event)})
 }
 
 
@@ -1024,9 +1055,7 @@ FollowLink.prototype.afterCreate = function() {
 
   var $this = $(this)
   $this.html('Follow Link')
-  $this.click(function(event) {
-    window.ui.selectedNode.followLink();
-  })
+  $this.click(function(event) {ui.followLink()})
 }
 
 
@@ -1042,8 +1071,9 @@ AutoSize.prototype.afterCreate = function() {
 
   var $this = $(this)
   $this.html('Autosize')
-  $this.click(function(event) {window.ui.selectedNode.autoSize()})
+  $this.click(function(event) {ui.autoSize()})
 }
+
 
 // =========================================================================
 //                   Copy Button
@@ -1056,7 +1086,7 @@ CopyNode.prototype.afterCreate = function() {
 
   var $this = $(this)
   $this.html('Copy')
-  $this.click(function(event) {window.ui.selectedNode.copy()})
+  $this.click(function(event) {ui.copy()})
 }
 
 // =========================================================================
@@ -1071,9 +1101,8 @@ PasteNode.prototype.afterCreate = function() {
 
   var $this = $(this)
   $this.html('Paste')
-  $this.click(function(event) {window.ui.selectedNode.paste()})
+  $this.click(function(event) {ui.paste()})
 }
-
 
 // =========================================================================
 //                   Expand / Collapse Recursive Button
@@ -1083,13 +1112,7 @@ var ExpandCollapseRecursive = defCustomTag('expand-collapse-recursive', ButtonPa
 ExpandCollapseRecursive.prototype.afterCreate = function() {
   ButtonPanelButton.prototype.afterCreate.call(this)
   $(this).html('Open/Close All');
-  $(this).click(function(event) {
-    this.toggle()})
-}
-
-
-ExpandCollapseRecursive.prototype.toggle = function() {
-  window.ui.selectedNode.toggle(true)
+  $(this).click(function(event) {ui.toggleExpandCollapseAll()})
 }
 
 
@@ -1106,13 +1129,7 @@ AddChild.prototype.afterCreate = function() {
 
   // Click function adds a new child TextNode to the TextNode associated with this button. This means
   // adding the new node to the TextNode's NodeChildren element.
-  $this.click(function() {
-    this.addChild();
-    })
-}
-
-AddChild.prototype.addChild = function() {
-  window.ui.selectedNode.addChild();
+  $this.click(function() {ui.addChild()})
 }
 
 // =========================================================================
@@ -1126,9 +1143,7 @@ AddSuccessor.prototype.afterCreate = function() {
   $this.html('+Successor')
 
   // Click function adds a new TextNode after the TextNode associated with this button.
-  $this.click(function() {
-    window.ui.addSuccessorToSelectedNode();
-  })
+  $this.click(function() {ui.addSuccessorToSelectedNode()})
 }
 
 // =========================================================================
@@ -1142,9 +1157,7 @@ AddPredecessor.prototype.afterCreate = function() {
   $this.html('+Predecessor')
 
   // Click function adds a new TextNode after the TextNode associated with this button.
-  $this.click(function() {
-    window.ui.addPredecessorToSelectedNode();
-  })
+  $this.click(function() {ui.addPredecessorToSelectedNode()})
 }
 
 // =========================================================================
@@ -1174,5 +1187,5 @@ UntrashNode.prototype.afterCreate = function() {
 
   var $this = $(this)
   $this.html('Untrash')
-  $this.click(function(event) {window.textTree.restoreLastDeletedNode()})
+  $this.click(function(event) {ui.restoreLastDeletedNode()})
 }
