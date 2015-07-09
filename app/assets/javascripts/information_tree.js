@@ -22,8 +22,6 @@ are identical-looking json objects. The name nodeSpec indicates a request to cre
 certain properties. The name nodeRep indicates that a representation of the now-existing object
 has been sent back to the client.
  */
-// TODO: put informationTree.ui and informationTree.tree under one space under window.
-// TODO: rename textTree to informationTree.
 // TODO: Move buttonpanel to ui
 // TODO: Get rid of getTextNode()
 
@@ -140,26 +138,26 @@ var Ui = function () {
 // ========================================================================
 //                   Text Tree
 // =========================================================================
-var TextTree = defCustomTag('text-tree', HTMLElement);
+var InformationTree = defCustomTag('information-tree', HTMLElement);
 
 /*
 We do some things onCreate that are independent of the existence of dom objects,
 but which the dom manipulations onAttach will depend on.
 */
-TextTree.prototype.onCreate = function() {
+InformationTree.prototype.onCreate = function() {
   informationTree.tree  = this;
   informationTree.ui    = new Ui;
 }
 
 
-TextTree.prototype.onAttach = function() {
+InformationTree.prototype.onAttach = function() {
   this.initTop();
 }
 
 
 // Find the top node of the tree and add it to the dom.
 // Initialize the ui.
-TextTree.prototype.initTop = function() {
+InformationTree.prototype.initTop = function() {
   var me = this;
   this.getTopNodeFromServer(function(node) {
     if (node) {
@@ -176,11 +174,11 @@ TextTree.prototype.initTop = function() {
 }
 
 
-TextTree.prototype.topNodePath = function() {
+InformationTree.prototype.topNodePath = function() {
   return '/nodes/top.json'
 }
 
-TextTree.prototype.getTopNodeFromServer = function(continuation) {
+InformationTree.prototype.getTopNodeFromServer = function(continuation) {
   getJsonFromServer("GET", this.topNodePath(), continuation)
 }
 
@@ -190,12 +188,12 @@ Return an array of all the nodes in the text tree that are currently visible.
 Return the nodes in order of descending y-value. This means that every visible node will
 be preceded by its older siblings, all their visible descendants, and by its parent.
 */
-TextTree.prototype.visibleNodes = function() {
+InformationTree.prototype.visibleNodes = function() {
   return this.top.visibleNodes([]);
 }
 
 
-TextTree.prototype.findLowestNodeAbove = function(y) {
+InformationTree.prototype.findLowestNodeAbove = function(y) {
   var nodes = this.visibleNodes().reverse();
   for(var i = 0; i < nodes.length; i++) {
     var node = nodes[i];
@@ -215,7 +213,7 @@ TextTree.prototype.findLowestNodeAbove = function(y) {
 /*
 If it currently exists in the dom, return the text node with the specified id.
 */
-TextTree.prototype.find = function(id) {
+InformationTree.prototype.find = function(id) {
   if (!id) return;
 
   var $node = $('#' + id);
@@ -231,7 +229,7 @@ otherwise, assume that node is a complete spec for a new node: instantiate it an
 return the new node. Note that the newly created note is unglommed; that is, it is
 unattached to the text tree.
 */
-TextTree.prototype._findOrCreate = function(node) {
+InformationTree.prototype._findOrCreate = function(node) {
   var foundNode = this.find(node.id);
   return foundNode ? foundNode.update(node) : new TextNode(node);
 }
@@ -243,12 +241,12 @@ with the other information contained in node, and return it.
 If it does not yet exist in the dom, assume that node is a complete spec for a new node:
 instantiate it and return the new node after glomming it to the text tree in its proper position.
 */
-TextTree.prototype._addNodeOnClient = function(node) {
+InformationTree.prototype._addNodeOnClient = function(node) {
   return this._findOrCreate(node)._glom();
 }
 
 
-TextTree.prototype._addNodesOnClient = function(fetchedNodes) {
+InformationTree.prototype._addNodesOnClient = function(fetchedNodes) {
   return fetchedNodes.map(this._addNodeOnClient.bind(this));
 }
 

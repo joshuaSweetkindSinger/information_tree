@@ -19,7 +19,7 @@ JssNotes::Application.routes.draw do
 
   root to: 'pages#index'
   match '/page(/:area(/:topic))', via: :get, to: 'pages#page', defaults: {topic: 'index'}
-  match '/text_tree', via: :get, to: 'text_tree#text_tree'
+  match '/information_tree', via: :get, to: 'information_tree#information_tree'
   match 'heapsort/new', via: :get, to: 'heapsort#new', as: :new_heapsort
   match 'heapsort/doit', via: :get, to: 'heapsort#doit', as: :do_heapsort
 
