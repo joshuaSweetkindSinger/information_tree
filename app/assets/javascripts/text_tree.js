@@ -22,19 +22,20 @@ are identical-looking json objects. The name nodeSpec indicates a request to cre
 certain properties. The name nodeRep indicates that a representation of the now-existing object
 has been sent back to the client.
  */
-// TODO: All Ui functions should take a node that defaults to selectedNode.
-// TODO: Have all button click methods call a ui method.a
-// TODO: put window.ui and window.textTree under one space under window.
+// TODO: put informationTree.ui and informationTree.tree under one space under window.
 // TODO: rename textTree to informationTree.
 // TODO: Move buttonpanel to ui
 // TODO: Get rid of getTextNode()
 
 
+// ========================================================================
+//                   Global Access Point
+// =========================================================================
+var informationTree = {}
 
-
- // ========================================================================
- //                   User Interface
- // =========================================================================
+// ========================================================================
+//                   User Interface
+// =========================================================================
 /*
 Although everything on the client side is in some sense user-interface, here we are specifically
 designating a Ui object whose methods are those that respond directly to browser events and
@@ -61,7 +62,7 @@ var Ui = function () {
     node.trash();
     if (node === self.selectedNode) {
       self.selectedNode = null;   // We just deleted the selected node, so now there is none.
-      $(window.textTree.buttonPanel).hide(); // we just deleted the selected node, so hide the button panel.
+      $(informationTree.tree.buttonPanel).hide(); // we just deleted the selected node, so hide the button panel.
       // TODO: move button panel to the ui, but watch out: it needs to have a dom parent and this can interrupt layout of the tree.
     }
   };
@@ -74,7 +75,7 @@ var Ui = function () {
   // Respond to a right-click on a node. Select the node and pop up the command menu.
   self.clickRightOnNode = function (node) {
     self.selectNode(node);
-    window.textTree.buttonPanel.popTo(node);
+    informationTree.tree.buttonPanel.popTo(node);
     return false;
   }
 
@@ -101,7 +102,7 @@ var Ui = function () {
   }
 
   self.hideButtonPanel = function () {
-    $(window.textTree.buttonPanel).hide()
+    $(informationTree.tree.buttonPanel).hide()
   }
 
   self.followLink = function (node) {
@@ -146,8 +147,8 @@ We do some things onCreate that are independent of the existence of dom objects,
 but which the dom manipulations onAttach will depend on.
 */
 TextTree.prototype.onCreate = function() {
-  window.textTree  = this;
-  window.ui        = new Ui;
+  informationTree.tree  = this;
+  informationTree.ui    = new Ui;
 }
 
 
@@ -168,9 +169,9 @@ TextTree.prototype.initTop = function() {
       me.buttonPanel = new ButtonPanel;
       $(me).append(me.buttonPanel);
       $(me).append(me.top);
-      window.ui.selectNode(me.top);
+      informationTree.ui.selectNode(me.top);
       $(me.buttonPanel).hide();
-      $(me).click(function() {window.ui.hideButtonPanel()});
+      $(me).click(function() {informationTree.ui.hideButtonPanel()});
     }})
 }
 
@@ -306,7 +307,7 @@ This function is called whenever a new drag event is initiated.
 */
 
 TextNode.prototype.dragStart = function() {
-  window.textTree.dropTarget = null;
+  informationTree.tree.dropTarget = null;
 }
 
 
@@ -316,13 +317,13 @@ or let go beneath a node, and do either an addChild() or an addSuccessor() accor
 */
 TextNode.prototype.dragStop = function(event, helper) {
   // There's a drop target: add a child
-  if (window.textTree.dropTarget) {
-    window.textTree.dropTarget.addChild({id: this.id});
+  if (informationTree.tree.dropTarget) {
+    informationTree.tree.dropTarget.addChild({id: this.id});
     return;
   }
 
   // There's a node above the release position: add a successor
-  var node = window.textTree.findLowestNodeAbove(helper.position.top);
+  var node = informationTree.tree.findLowestNodeAbove(helper.position.top);
   if (node) {
     node.addSuccessor({id: this.id});
   }
@@ -480,7 +481,7 @@ Search the dom for a TextNode whose id matches the predecessor id of this
 and return it if found.
 */
 TextNode.prototype.predecessor = function() {
-  return window.textTree.find(this.predecessor_id);
+  return informationTree.tree.find(this.predecessor_id);
 };
 
 
@@ -489,7 +490,7 @@ Search the dom for a TextNode whose id matches the predecessor id of this
 and return it if found.
 */
 TextNode.prototype.successor = function() {
-  return window.textTree.find(this.successor_id);
+  return informationTree.tree.find(this.successor_id);
 };
 
 
@@ -498,7 +499,7 @@ Search the dom for a TextNode whose id matches the parent id of this
 and return it if found.
 */
 TextNode.prototype.parent = function() {
-  return window.textTree.find(this.parent_id);
+  return informationTree.tree.find(this.parent_id);
 }
 
 TextNode.prototype.kids = function() {
@@ -536,7 +537,7 @@ TextNode.prototype._addNode = function(node, mode) {
         return;
       };
 
-      window.textTree._addNodeOnClient(node);
+      informationTree.tree._addNodeOnClient(node);
     });
 };
 
@@ -610,12 +611,12 @@ TextNode.prototype.addPredecessor = function(node) {
 
 // =========================== Copy
 TextNode.prototype.copy = function() {
-  window.textTree.copiedNode = this;
+  informationTree.tree.copiedNode = this;
 };
 
 // ========================== Paste
 TextNode.prototype.paste = function() {
-  this.addChild({id: window.textTree.copiedNode.id});
+  this.addChild({id: informationTree.tree.copiedNode.id});
 };
 
 // =========================== Trash
@@ -681,7 +682,7 @@ TextNode.prototype._fetchAndAddChildrenOnClient = function(continuation) {
   this._fetchChildren(
     function(fetchedNodes) {
       if (fetchedNodes) {
-        continuation(window.textTree._addNodesOnClient(fetchedNodes));
+        continuation(informationTree.tree._addNodesOnClient(fetchedNodes));
       } else {
         continuation([]);
       }
@@ -946,7 +947,7 @@ NodeContent.prototype.afterCreate = function(options) {
 
 // Handle a left click in the text area.
 NodeContent.prototype.onClick = function (event) {
-  return ui.clickLeftOnNode(this.getTextNode());
+  return informationTree.ui.clickLeftOnNode(this.getTextNode());
 }
 
 
@@ -956,7 +957,7 @@ a pointer to the Node parent from the NodeContent object. So we create a delegat
 that will work at click-time.
 */
 NodeContent.prototype.onContextMenu = function(event) {
-  return ui.clickRightOnNode(this.getTextNode());
+  return informationTree.ui.clickRightOnNode(this.getTextNode());
 }
 
 
@@ -971,7 +972,7 @@ the cloned helper node that is created as part of the drag.
 NodeContent.prototype.handleDrop = function(event, ui) {
   var textNode = this.getTextNode();
   if (textNode.id) {
-    window.textTree.dropTarget = textNode;
+    informationTree.tree.dropTarget = textNode;
   }
 };
 
@@ -1032,7 +1033,7 @@ ExpandCollapse.prototype.afterCreate = function(textNode) {
 
 ExpandCollapse.prototype.toggle = function() {
   $(this).html(this.textNode.state === 'expanded' ? '>' : 'v')
-  ui.toggleNodeExpandCollapse(this.textNode);
+  informationTree.ui.toggleNodeExpandCollapse(this.textNode);
 }
 
 // =========================================================================
@@ -1058,7 +1059,7 @@ FollowLink.prototype.afterCreate = function() {
 
   var $this = $(this)
   $this.html('Follow Link')
-  $this.click(function(event) {ui.followLink()})
+  $this.click(function(event) {informationTree.ui.followLink()})
 }
 
 
@@ -1074,7 +1075,7 @@ AutoSize.prototype.afterCreate = function() {
 
   var $this = $(this)
   $this.html('Autosize')
-  $this.click(function(event) {ui.autoSize()})
+  $this.click(function(event) {informationTree.ui.autoSize()})
 }
 
 
@@ -1089,7 +1090,7 @@ CopyNode.prototype.afterCreate = function() {
 
   var $this = $(this)
   $this.html('Copy')
-  $this.click(function(event) {ui.copy()})
+  $this.click(function(event) {informationTree.ui.copy()})
 }
 
 // =========================================================================
@@ -1104,7 +1105,7 @@ PasteNode.prototype.afterCreate = function() {
 
   var $this = $(this)
   $this.html('Paste')
-  $this.click(function(event) {ui.paste()})
+  $this.click(function(event) {informationTree.ui.paste()})
 }
 
 // =========================================================================
@@ -1115,7 +1116,7 @@ var ExpandCollapseRecursive = defCustomTag('expand-collapse-recursive', ButtonPa
 ExpandCollapseRecursive.prototype.afterCreate = function() {
   ButtonPanelButton.prototype.afterCreate.call(this)
   $(this).html('Open/Close All');
-  $(this).click(function(event) {ui.toggleExpandCollapseAll()})
+  $(this).click(function(event) {informationTree.ui.toggleExpandCollapseAll()})
 }
 
 
@@ -1132,7 +1133,7 @@ AddChild.prototype.afterCreate = function() {
 
   // Click function adds a new child TextNode to the TextNode associated with this button. This means
   // adding the new node to the TextNode's NodeChildren element.
-  $this.click(function() {ui.addChild()})
+  $this.click(function() {informationTree.ui.addChild()})
 }
 
 // =========================================================================
@@ -1146,7 +1147,7 @@ AddSuccessor.prototype.afterCreate = function() {
   $this.html('+Successor')
 
   // Click function adds a new TextNode after the TextNode associated with this button.
-  $this.click(function() {ui.addSuccessor()})
+  $this.click(function() {informationTree.ui.addSuccessor()})
 }
 
 // =========================================================================
@@ -1160,7 +1161,7 @@ AddPredecessor.prototype.afterCreate = function() {
   $this.html('+Predecessor')
 
   // Click function adds a new TextNode after the TextNode associated with this button.
-  $this.click(function() {ui.addPredecessor()})
+  $this.click(function() {informationTree.ui.addPredecessor()})
 }
 
 // =========================================================================
@@ -1173,7 +1174,7 @@ TrashNode.prototype.onCreate = function() {
   var $this = $(this)
   $this.html('Delete!')
 
-  $this.click(function() {ui.trash()});
+  $this.click(function() {informationTree.ui.trash()});
 }
 
 // =========================================================================
@@ -1190,5 +1191,5 @@ UntrashNode.prototype.afterCreate = function() {
 
   var $this = $(this)
   $this.html('Untrash')
-  $this.click(function(event) {ui.restoreLastDeletedNode()})
+  $this.click(function(event) {informationTree.ui.restoreLastDeletedNode()})
 }
