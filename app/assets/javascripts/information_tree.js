@@ -22,8 +22,7 @@ are identical-looking json objects. The name nodeSpec indicates a request to cre
 certain properties. The name nodeRep indicates that a representation of the now-existing object
 has been sent back to the client.
  */
-// TODO: Move buttonpanel to ui
-
+// TODO: Wrap all in an anonymous function to hide the toplevel namespaced classes.
 
 // ========================================================================
 //                   Global Access Point
@@ -51,7 +50,18 @@ object of interest.
 var Ui = function () {
   var self = this;
 
-  self.selectedNode = null; // The Ui maintains a "selected node", to which actions are performed.
+  self.selectedNode = null // The Ui maintains a "selected node", to which actions are performed.
+  self.buttonPanel  = null // The buttonPanel is a pop-up menu that allows the user to take action on the selected node. It gets initialized later on.
+
+  // This is called by the information tree object just after it has gotten the "top" node
+  // back from the server. It gives the ui a chance to do further initialization, now that the top
+  // node has been added to the dom.
+  self.initTop = function() {
+    self.buttonPanel = new ButtonPanel;
+    $(informationTree.tree).append(self.buttonPanel);
+    self.selectNode(informationTree.tree.top);
+    $(self.buttonPanel).hide();
+  }
 
   // Trash the selected node.
   self.trash = function (node) {
@@ -59,8 +69,7 @@ var Ui = function () {
     node.trash();
     if (node === self.selectedNode) {
       self.selectedNode = null;   // We just deleted the selected node, so now there is none.
-      $(informationTree.tree.buttonPanel).hide(); // we just deleted the selected node, so hide the button panel.
-      // TODO: move button panel to the ui, but watch out: it needs to have a dom parent and this can interrupt layout of the tree.
+      $(self.buttonPanel).hide(); // we just deleted the selected node, so hide the button panel.
     }
   };
 
@@ -72,7 +81,7 @@ var Ui = function () {
   // Respond to a right-click on a node. Select the node and pop up the command menu.
   self.clickRightOnNode = function (node) {
     self.selectNode(node);
-    informationTree.tree.buttonPanel.popTo(node);
+    self.buttonPanel.popTo(node);
     return false;
   }
 
@@ -99,7 +108,7 @@ var Ui = function () {
   }
 
   self.hideButtonPanel = function () {
-    $(informationTree.tree.buttonPanel).hide()
+    $(self.buttonPanel).hide()
   }
 
   self.followLink = function (node) {
@@ -133,6 +142,10 @@ var Ui = function () {
   }
 };
 
+Ui.init = function () {
+  informationTree.ui  = new Ui; // Create and register a new Ui object.
+}
+
 
 // ========================================================================
 //                   Text Tree
@@ -144,8 +157,8 @@ We do some things onCreate that are independent of the existence of dom objects,
 but which the dom manipulations onAttach will depend on.
 */
 InformationTree.prototype.onCreate = function() {
-  informationTree.tree  = this;
-  informationTree.ui    = new Ui;
+  informationTree.tree  = this;   // Register ourselves so that we are globally accessible.
+  Ui.init()                       // Tell the UI class to initialize a ui component.
 }
 
 
@@ -163,12 +176,9 @@ InformationTree.prototype.initTop = function() {
       $(document).tooltip(); // TODO: is there a way for this not to be here?
 
       me.top = new TextNode(node);
-      me.buttonPanel = new ButtonPanel;
-      $(me).append(me.buttonPanel);
       $(me).append(me.top);
-      informationTree.ui.selectNode(me.top);
-      $(me.buttonPanel).hide();
       $(me).click(function() {informationTree.ui.hideButtonPanel()});
+      informationTree.ui.initTop();
     }})
 }
 
