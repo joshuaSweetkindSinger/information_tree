@@ -22,12 +22,13 @@ are identical-looking json objects. The name nodeSpec indicates a request to cre
 certain properties. The name nodeRep indicates that a representation of the now-existing object
 has been sent back to the client.
  */
-// TODO: Wrap all in an anonymous function to hide the toplevel namespaced classes.
 
+(function () { // Wrap everything in an anonymous function call to hide some globals.
+  
 // ========================================================================
 //                   Global Access Point
 // =========================================================================
-var informationTree = {}
+window.informationTree = {}
 
 // ========================================================================
 //                   User Interface
@@ -1199,3 +1200,5 @@ UntrashNode.prototype.afterCreate = function() {
   $this.html('Untrash')
   $this.click(function(event) {informationTree.ui.restoreLastDeletedNode()})
 }
+
+})() // We wrapped everything in an anonymous function call to hide some globals.
