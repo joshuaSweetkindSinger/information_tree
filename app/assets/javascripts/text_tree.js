@@ -22,12 +22,13 @@ are identical-looking json objects. The name nodeSpec indicates a request to cre
 certain properties. The name nodeRep indicates that a representation of the now-existing object
 has been sent back to the client.
  */
+// TODO: All Ui functions should take a node that defaults to selectedNode.
 // TODO: Have all button click methods call a ui method.a
 // TODO: put window.ui and window.textTree under one space under window.
 // TODO: rename textTree to informationTree.
 // TODO: Move buttonpanel to ui
 // TODO: Get rid of getTextNode()
-// TODO: All Ui functions should take a node that defaults to selectedNode.
+
 
 
 
@@ -49,18 +50,20 @@ makes these methods more "functional" in the approach, because each ui function 
 to act on. Under normal circumstances, it would be more natural to just associate the functionality as a method on the
 object of interest.
 */
-var Ui;
-Ui = function () {
+var Ui = function () {
   var self = this;
 
   self.selectedNode = null; // The Ui maintains a "selected node", to which actions are performed.
 
   // Trash the selected node.
-  self.trash = function () {
-    self.selectedNode.trash();
-    self.selectedNode = null;   // We just deleted the selected node, so now there is none.
-    $(window.textTree.buttonPanel).hide(); // we just deleted the selected node, so hide the button panel.
-    // TODO: move button panel to the ui, but watch out: it needs to have a dom parent and this can interrupt layout of the tree.
+  self.trash = function (node) {
+    node = node || self.selectedNode
+    node.trash();
+    if (node === self.selectedNode) {
+      self.selectedNode = null;   // We just deleted the selected node, so now there is none.
+      $(window.textTree.buttonPanel).hide(); // we just deleted the selected node, so hide the button panel.
+      // TODO: move button panel to the ui, but watch out: it needs to have a dom parent and this can interrupt layout of the tree.
+    }
   };
 
   // Respond to a left-click on a node. Select the node and toggle the expanded-collapsed state of that node.
@@ -86,15 +89,15 @@ Ui = function () {
 
   // Toggle the expanded-collapsed state of node.
   self.toggleNodeExpandCollapse = function (node) {
-    node.toggle(false);
+    (node || self.selectedNode).toggle(false);
   }
 
-  self.addSuccessorToSelectedNode = function () {
-    self.selectedNode.addSuccessor();
+  self.addSuccessor = function (node) {
+    (node || self.selectedNode).addSuccessor();
   }
 
-  self.addPredecessorToSelectedNode = function () {
-    self.selectedNode.addPredecessor();
+  self.addPredecessor = function (node) {
+    (node || self.selectedNode).addPredecessor();
   }
 
   self.hideButtonPanel = function () {
@@ -1029,7 +1032,7 @@ ExpandCollapse.prototype.afterCreate = function(textNode) {
 
 ExpandCollapse.prototype.toggle = function() {
   $(this).html(this.textNode.state === 'expanded' ? '>' : 'v')
-  window.ui.toggleNodeExpandCollapse(this.textNode);
+  ui.toggleNodeExpandCollapse(this.textNode);
 }
 
 // =========================================================================
@@ -1143,7 +1146,7 @@ AddSuccessor.prototype.afterCreate = function() {
   $this.html('+Successor')
 
   // Click function adds a new TextNode after the TextNode associated with this button.
-  $this.click(function() {ui.addSuccessorToSelectedNode()})
+  $this.click(function() {ui.addSuccessor()})
 }
 
 // =========================================================================
@@ -1157,7 +1160,7 @@ AddPredecessor.prototype.afterCreate = function() {
   $this.html('+Predecessor')
 
   // Click function adds a new TextNode after the TextNode associated with this button.
-  $this.click(function() {ui.addPredecessorToSelectedNode()})
+  $this.click(function() {ui.addPredecessor()})
 }
 
 // =========================================================================
@@ -1170,7 +1173,7 @@ TrashNode.prototype.onCreate = function() {
   var $this = $(this)
   $this.html('Delete!')
 
-  $this.click(ui.trash);
+  $this.click(function() {ui.trash()});
 }
 
 // =========================================================================
