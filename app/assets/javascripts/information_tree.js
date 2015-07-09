@@ -23,7 +23,6 @@ certain properties. The name nodeRep indicates that a representation of the now-
 has been sent back to the client.
  */
 // TODO: Move buttonpanel to ui
-// TODO: Get rid of getTextNode()
 
 
 // ========================================================================
@@ -846,7 +845,7 @@ NodeHeader.prototype.afterCreate = function(textNode, options) {
   this.expandCollapseButton = new ExpandCollapse(textNode)
   $this.append(this.expandCollapseButton)
 
-  this.content = new NodeContent(options);
+  this.content = new NodeContent(textNode, options);
   $this.append(this.content)
 }
 
@@ -923,9 +922,11 @@ ButtonPanel.prototype.popTo = function(node) {
 
 var NodeContent = defCustomTag('node-content', HTMLTextAreaElement, 'textarea')
 
-NodeContent.prototype.afterCreate = function(options) {
+NodeContent.prototype.afterCreate = function(textNode, options) {
   var $this = $(this);
   var self  = this;
+
+  this.textNode = textNode;
 
   $this.addClass('node-content'); // Since we are extending a text-area element, we can't put css on the node-content tag--there isn't one in the dom!
   $this.on("click", this.onClick);
@@ -945,7 +946,7 @@ NodeContent.prototype.afterCreate = function(options) {
 
 // Handle a left click in the text area.
 NodeContent.prototype.onClick = function (event) {
-  return informationTree.ui.clickLeftOnNode(this.getTextNode());
+  return informationTree.ui.clickLeftOnNode(this.textNode);
 }
 
 
@@ -955,7 +956,7 @@ a pointer to the Node parent from the NodeContent object. So we create a delegat
 that will work at click-time.
 */
 NodeContent.prototype.onContextMenu = function(event) {
-  return informationTree.ui.clickRightOnNode(this.getTextNode());
+  return informationTree.ui.clickRightOnNode(this.textNode);
 }
 
 
@@ -968,7 +969,7 @@ We only record this node as the drop target, not the phantom. I believe the phan
 the cloned helper node that is created as part of the drag.
 */
 NodeContent.prototype.handleDrop = function(event, ui) {
-  var textNode = this.getTextNode();
+  var textNode = this.textNode;
   if (textNode.id) {
     informationTree.tree.dropTarget = textNode;
   }
@@ -999,9 +1000,6 @@ NodeContent.prototype.onResize = function(e) {
     height: $this.height()})
 }
 
-NodeContent.prototype.getTextNode = function() {
-  return $(this).parent().parent()[0]
-}
 
 // =========================================================================
 //                   Node Children
