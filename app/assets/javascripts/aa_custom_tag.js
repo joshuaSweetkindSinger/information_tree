@@ -3,46 +3,47 @@
 // ============================================================================
 /*
  HTML5 establishes a protocol for the creation of custom elements, which enhance DOM functionality by allowing the creation
- of new html tag types. These new html tags objects have all the standard
+ of new html tag types. These new html tag objects have all the standard
  html tag object methods and properties, but in addition they can have new methods and member
  variables as supplied by the programmer. In order to better support use of custom elements, we slap a lightweight framework
  on top of the HTML5 protocol and define the function defCustomTag() below.
 
  Using defCustomTag extends the html tag system so that the browser will understand
- new tags with names like <my-button> in .html files. The browser will create <my-button>
+ new tags with names like <my-widget> in .html files. The browser will create <my-widget>
  objects referenced in any html file by calling its associated createdCallback() method, passing it 0 args. (The createdCallback() method
  is part of the HTML5 protocol, not a framework enhancement.) Custom tags created in this way are said to be statically created,
- because they were referenced by a .html file, as opposed to a javascript call. Tags created through javascript are said to be
- dynamically or programatically created.
+ because they were referenced by an .html file, as opposed to a javascript call. Tags created through javascript are said to be
+ dynamically or programmatically created.
 
  Use defCustomTag() to define a new custom tag class, associated with a new custom
  html tag type.  The function defCustomTag() returns a constructor object that you can
  use to programmatically create new instances of this class. This works only for programmatic creation. The constructor
  returned by defCustomTag is *not* part of the call chain for statically created tags.
 
- Below is an example that extends the native <button> tag to create a new element type
- called <my-button>. Note the following important things: the name of the new tag must be hyphenated;
+ Below is an example that extends the functionality of the native <button> tag. Note the following important things: the name of the new tag must be hyphenated;
  You must supply the proper parent class, in this case HTMLButton (this is part of HTML5, not part of the framework), AND you must supply the proper tag name
- that is being extended, in this case <button>.
+ that is being extended, in this case <button>. Note also that extending any base dom class *other* than HTMLElement does not seem to
+ result in the creation of a new tag type. Here, since we are using HTMLButton as the dom base class, we do not actually create a new
+ tag called <my-button>. Instead, we have to instantiate MyButton elements using <button is="my-button"> if we wish to do static creation.
 
 
  var MyButton = defCustomTag('my-button', HTMLButton, 'button') # Define a constructor for the new tag.
 
  # This method initializes all newly created tags, whether statically or dynamically created.
  MyButton.prototype.onCreate = function() {
- this.clicked = false
- this.onclick = function() {
- this.clicked = true
- window.master.doDefaultClickThing()
- }
+   this.clicked = false
+   this.onclick = function() {
+     this.clicked = true
+     window.master.doDefaultClickThing()
+   }
  }
 
  # This method further initializes programmatically created tags only.
  MyButton.prototype.afterCreate = function(clickFun) {
- this.onclick = function() {
- this.clicked = true
- clickFun()
- }
+   this.onclick = function() {
+     this.clicked = true
+     clickFun()
+   }
  }
 
  myButton = new MyButton(function() {window.master.doAlternateClickThing()}) # Instantiate a new tag, programmatically, and supply custom click function.
@@ -63,7 +64,9 @@
  passed to the constructor, allowing for further customization of the tag object. In this example, it allows the caller
  to establish a click function other than the default. Note that the onCreate() method is *always* called, and, in those cases of programmatic
  creation of new tag objects, the afterCreate() method is then called after the onCreate() method. Note that the onCreate() method cannot
- accept args, because it must be prepared to handle static creation, and no args are passed in the process of static creation.n
+ accept args, because it must be prepared to handle static creation, and no args are passed in the process of static creation.
+ NOTE: if afterCreate() returns an object, this object will be used as the return value of the constructor, with behavior analogous
+ to the native javascript way of constructing objects.
 
  The last clause instantiates a new MyButton object, initializing it with a custom click function. Note that the onCreate() and afterCreate() methods
  are not called explicitly. Instead, they are called by the constructor MyButton when we say "new MyButton" (this is a framework enhancement).
@@ -170,8 +173,7 @@ function defCustomTag(customElementName, parentClass, extensionType) {
   // initialization args into the constructor and have them be handled by afterCreate().
   var constructor = function() {
     var newObj = new internalConstructor
-    newObj.afterCreate.apply(newObj, arguments)
-    return newObj
+    return newObj.afterCreate.apply(newObj, arguments) || newObj // If afterCreate() returns an object ,that will be the return value of the constructor.
   }
   constructor.prototype = proto
   constructor.tagName   = customElementName.toUpperCase()  // Tell the class the tag name of its instances.

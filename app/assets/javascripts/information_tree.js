@@ -21,10 +21,13 @@ by sending it a nodeSpec to the proper endpoint. The server responds with a node
 are identical-looking json objects. The name nodeSpec indicates a request to create an object with
 certain properties. The name nodeRep indicates that a representation of the now-existing object
 has been sent back to the client.
- */
+*/
+
+// TODO: autosize on blur unless already resized.
+
 
 (function () { // Wrap everything in an anonymous function call to hide some globals.
-  
+
 // ========================================================================
 //                   Global Access Point
 // =========================================================================
@@ -141,15 +144,20 @@ var Ui = function () {
   self.restoreLastDeletedNode = function() {
     alert("Untrash has not yet been implemented");
   }
+
+  self.setAttributes = function (node, attributes) {
+    (node || self.selectedNode).setAttributes(attributes)
+  }
 };
 
 Ui.init = function () {
   informationTree.ui  = new Ui; // Create and register a new Ui object.
+
 }
 
 
 // ========================================================================
-//                   Text Tree
+//                   Information Tree
 // =========================================================================
 var InformationTree = defCustomTag('information-tree', HTMLElement);
 
@@ -291,6 +299,7 @@ TextNode.prototype.afterCreate = function(node) {
   // TODO: how do you handle re-initializing existing memory, as opposed to genning new memory, for instances?
 
   $this.append(this.header)
+
   this.childrenContainer = new NodeChildren;
   $this.append(this.childrenContainer)
 
@@ -344,38 +353,43 @@ TextNode.prototype.dragStop = function(event, helper) {
 // attached to the DOM, the computed width and height are wrong somehow (not sure of details).
 // So, we cache the width and height at create time and then clean it up by resetting at attach time.
 TextNode.prototype.onAttach = function() {
-  this.width = this._width
-  this.height = this._height
+  // The conditional is a kludge: For dragging, the textnode gets shallow-copied and won't have a header.
+  // In that case, we want to ignore it anyway.
+  if (this.header) {
+    this.width = this._width
+    this.height = this._height
+  }
 }
 
 
+// TODO: Rethink all this, especially width/height. Is this what we want?
 Object.defineProperties(TextNode.prototype, {
     content: {
       get: function() {
-        return $(this).children('node-header').children('textarea').val()
+        return $(this.header.content).val()
       },
       set: function(content) {
-        $(this).children('node-header').children('textarea').val(content)
+        $(this.header.content).val(content)
       }
     },
 
     width: {
       get: function() {
-        return $(this).children('node-header').children('textarea').width()
+        return $(this.header.content).width()
       },
       set: function(v) {
         this._width = v // Cache requested width. This is a kludge to fix incorrect width at create time. See onAttach() above.
-        $(this).children('node-header').children('textarea').width(v)
+        $(this.header.content).width(v)
       }
     },
 
     height: {
       get: function() {
-        return $(this).children('node-header').children('textarea').height()
+        return $(this.header.content).height()
       },
       set: function(v) {
         this._height = v // Cache requested height. This is a kludge to fix incorrect width at create time. See onAttach() above.
-        $(this).children('node-header').children('textarea').height(v)
+        $(this.header.content).height(v)
       }
     }
   }
@@ -763,14 +777,15 @@ TextNode.prototype.collapse = function(doRecursive) {
 // =================== Auto-Size
 // Calculate a pleasing size for the content textarea associated with this text node.
 TextNode.prototype.autoSize = function() {
-  this.setAttributes(this.calcAutoSize(this.content.length))
+  this.setAttributes(this.calcAutoSize())
 }
 
 // Calculate a pleasing width and height for a textarea input box that contains n chars.
 // Return the calculated values as a hash.
 // TODO: Get rid of magic numbers, and make calculation take font size into account.
 // TODO: height is not set correctly for large amounts of text. Fix it.
-TextNode.prototype.calcAutoSize = function(n) {
+TextNode.prototype.calcAutoSize = function() {
+  var n = this.content.length
   var maxWidth = 1000.0
   var charWidth  = 8.0
   var charHeight = 15.0
@@ -942,7 +957,6 @@ NodeContent.prototype.afterCreate = function(textNode, options) {
   $this.addClass('node-content'); // Since we are extending a text-area element, we can't put css on the node-content tag--there isn't one in the dom!
   $this.on("click", this.onClick);
   $this.on("blur", this.onBlur)
-  $this.on("blur", this.onResize)
   $this.on("contextmenu", this.onContextMenu);
 
   this.title = options.tooltip;
@@ -954,6 +968,7 @@ NodeContent.prototype.afterCreate = function(textNode, options) {
     drop: this.handleDrop
   })
 }
+
 
 // Handle a left click in the text area.
 NodeContent.prototype.onClick = function (event) {
@@ -995,20 +1010,15 @@ NodeContent.prototype.set_id = function(id) {
 // This event-handler is bound to the object's blur event.
 // It causes the content of the node to change on the server.
 NodeContent.prototype.onBlur = function(e) {
-  var $this = $(this)
-  var node = $this.parent().parent()[0]
-  node.setAttributes({
-    content: node.content})
+  informationTree.ui.setAttributes(this.textNode,
+    {content: this.textNode.content,
+       width: this.textNode.width,
+      height: this.textNode.height})
 }
 
 // This event-handler is bound to the object's blur event.
 // It causes the width and height of the node's text area to change on the server.
 NodeContent.prototype.onResize = function(e) {
-  var $this = $(this)
-  var node = $this.parent().parent()[0]
-  node.setAttributes({
-    width: $this.width(),
-    height: $this.height()})
 }
 
 
