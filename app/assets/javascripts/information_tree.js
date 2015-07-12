@@ -23,8 +23,6 @@ certain properties. The name nodeRep indicates that a representation of the now-
 has been sent back to the client.
 */
 
-// TODO: autosize on blur unless already resized.
-
 
 (function () { // Wrap everything in an anonymous function call to hide some globals.
 
