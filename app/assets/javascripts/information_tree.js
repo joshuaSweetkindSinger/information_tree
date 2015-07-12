@@ -102,11 +102,11 @@ var Ui = function () {
   }
 
   self.addSuccessor = function (node) {
-    (node || self.selectedNode).addSuccessor();
+    (node || self.selectedNode).addSuccessor(null, self.addNodeUiCallback);
   }
 
   self.addPredecessor = function (node) {
-    (node || self.selectedNode).addPredecessor();
+    (node || self.selectedNode).addPredecessor(null, self.addNodeUiCallback);
   }
 
   self.hideButtonPanel = function () {
@@ -134,7 +134,13 @@ var Ui = function () {
   }
 
   self.addChild = function (node) {
-    (node || self.selectedNode).addChild();
+    (node || self.selectedNode).addChild(null, self.addNodeUiCallback);
+  }
+
+  // Callback to the Ui after the server has given us a new node.
+  self.addNodeUiCallback = function (newNode) {
+    newNode.header.content.placeholder = "New Node";
+    $(newNode.header.content).focus()
   }
 
   // TODO: the trash functionality needs to record information about the former parentage
@@ -274,7 +280,7 @@ var TextNode = defCustomTag('text-node', HTMLElement);
 
  // Default json spec for a new node
 TextNode.defaultSpec = {
-  content:'New Node',
+  content:'',
   width:100,
   height:25
   }
@@ -543,8 +549,11 @@ relative to <this>.
 
 mode determines how node is moved relative to <this>, as either a child, successor, or predecessor
 of the node represented by <this>. mode should be a string, one of: 'child', 'successor', 'predecessor'
+
+callback is a function that gets executed after the node has been returned from the server, and only if the
+request was successful.
 */
-TextNode.prototype._addNode = function(node, mode) {
+TextNode.prototype._addNode = function(node, mode, callback) {
   if (!node) {
     node = TextNode.defaultSpec;
   }
@@ -557,7 +566,7 @@ TextNode.prototype._addNode = function(node, mode) {
         return;
       };
 
-      informationTree.tree._addNodeOnClient(node);
+      callback(informationTree.tree._addNodeOnClient(node));
     });
 };
 
@@ -599,12 +608,12 @@ Create a new node on the server or insert an existing one, in either case making
 node represented by this node be its parent. Then effect the same transformation
 on the client side.
 */
-TextNode.prototype.addChild = function(node) {
+TextNode.prototype.addChild = function(node, callback) {
   // null node means we're creating a new node as opposed to moving an existing one.
   // Make sure we are expanded so that the new child node can be seen.
   if (!node) this.expand();
 
-  this._addNode(node, 'add_child');
+  this._addNode(node, 'add_child', callback);
 }
 
 
@@ -613,9 +622,9 @@ Create a new node on the server or insert an existing one, in either case making
 node represented by this node be its predecessor. Then effect the same transformation
 on the client side.
 */
-TextNode.prototype.addSuccessor = function(node) {
+TextNode.prototype.addSuccessor = function(node, callback) {
   this.parent().expand(); // Make sure that our parent is expanded so that the new node can be seen.
-  this._addNode(node, 'add_successor');
+  this._addNode(node, 'add_successor', callback);
 }
 
 
@@ -624,9 +633,9 @@ Create a new node on the server or insert an existing one, in either case making
 node represented by this node be its successor. Then effect the same transformation
 on the client side.
 */
-TextNode.prototype.addPredecessor = function(node) {
+TextNode.prototype.addPredecessor = function(node, callback) {
   this.parent().expand(); // Make sure that our parent is expanded so that the new node can be seen.
-  this._addNode(node, 'add_predecessor');
+  this._addNode(node, 'add_predecessor', callback);
 }
 
 // =========================== Copy
