@@ -152,6 +152,16 @@ var Ui = function () {
   self.setAttributes = function (node, attributes) {
     (node || self.selectedNode).setAttributes(attributes)
   }
+
+  self.save = function (node) {
+    node = node || self.selectedNode;
+    var attributes = {
+      content: node.content,
+      width:   node.width,
+      height:  node.height
+    }
+    self.setAttributes(node, attributes)
+  }
 };
 
 Ui.init = function () {
@@ -281,8 +291,8 @@ var TextNode = defCustomTag('text-node', HTMLElement);
  // Default json spec for a new node
 TextNode.defaultSpec = {
   content:'',
-  width:100,
-  height:25
+  width:500,
+  height:100
   }
 
 // ======= Construction and Initialization
@@ -901,8 +911,8 @@ ButtonPanel.prototype.afterCreate = function() {
   this.expandCollapseRecursiveButton = new ExpandCollapseRecursive
   $this.append(this.expandCollapseRecursiveButton)
 
-  this.autoSizeButton = new AutoSize
-  $this.append(this.autoSizeButton)
+  this.saveButton = new Save
+  $this.append(this.saveButton)
 
   this.addChildButton = new AddChild
   $this.append(this.addChildButton)
@@ -965,6 +975,7 @@ NodeContent.prototype.afterCreate = function(textNode, options) {
   $this.on("click", this.onClick);
   $this.on("blur", this.onBlur)
   $this.on("contextmenu", this.onContextMenu);
+  $this.on("keypress", this.onKeypress)
 
   this.title = options.tooltip;
 
@@ -992,6 +1003,12 @@ NodeContent.prototype.onContextMenu = function(event) {
   return informationTree.ui.clickRightOnNode(this.textNode);
 }
 
+NodeContent.prototype.onKeypress = function(event) {
+  if (event.charCode == 13) { // carriage return keypress
+    informationTree.ui.addSuccessor(this.textNode);
+  }
+}
+
 
 /*
 Handle a drop event. We were just dropped on top of a node.
@@ -1017,10 +1034,11 @@ NodeContent.prototype.set_id = function(id) {
 // This event-handler is bound to the object's blur event.
 // It causes the content of the node to change on the server.
 NodeContent.prototype.onBlur = function(e) {
+  var autosize = this.textNode.calcAutoSize();
   informationTree.ui.setAttributes(this.textNode,
     {content: this.textNode.content,
-       width: this.textNode.width,
-      height: this.textNode.height})
+       width: autosize.width,
+      height: autosize.height})
 }
 
 // This event-handler is bound to the object's blur event.
@@ -1088,18 +1106,18 @@ FollowLink.prototype.afterCreate = function() {
 
 
 // =========================================================================
-//                   AutoSize Button
+//                   Set Size Button
 // =========================================================================
 // Pressing this button automatically resizes the associated content textarea to be a pleasant size
 // for the text.
-var AutoSize = defCustomTag('auto-size', ButtonPanelButton)
+var Save = defCustomTag('save-node', ButtonPanelButton)
 
-AutoSize.prototype.afterCreate = function() {
+Save.prototype.afterCreate = function() {
   ButtonPanelButton.prototype.afterCreate.call(this)
 
   var $this = $(this)
-  $this.html('Autosize')
-  $this.click(function(event) {informationTree.ui.autoSize()})
+  $this.html('Save')
+  $this.click(function(event) {informationTree.ui.save()})
 }
 
 
