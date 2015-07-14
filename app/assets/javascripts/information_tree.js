@@ -1027,8 +1027,15 @@ NodeContent.prototype.onContextMenu = function(event) {
 }
 
 NodeContent.prototype.onKeypress = function(event) {
-  if (event.charCode == 13) { // carriage return keypress
+  // carriage return -- create new successor node
+  if (event.charCode == 13 && !event.altKey && !event.shiftKey && !event.ctrlKey) {
+    event.preventDefault();
     IT.ui.addSuccessor(this.textNode);
+
+  // shift-return -- create new child node
+  } else if (event.charCode == 13 && !event.altKey && event.shiftKey && !event.ctrlKey) {
+    event.preventDefault();
+    IT.ui.addChild(this.textNode);
   }
 }
 
