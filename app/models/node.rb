@@ -42,6 +42,7 @@ class Node < ActiveRecord::Base
     result
   end
 
+  # ========================= Tools for debugging / cleaning db
   # Print a quick and dirty report to stdout that shows nodes with inconsistent
   # links or missing rank. Inconsistent links means that the predecessor/successor links
   # are broken, since these are the only links that can be inconsistent at this point
@@ -73,6 +74,8 @@ class Node < ActiveRecord::Base
     end
   end
 
+
+# ======================================
 
   # Make a backup of the entire information tree.
   def self.back_up

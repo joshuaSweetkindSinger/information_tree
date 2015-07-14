@@ -28,6 +28,7 @@ has been sent back to the client.
 // that takes a nodespec should take the others. Does addNode always add a new node, or sometimes an existing one?
 // If the latter, how did the new node get created? What are the right primitives? Does it always go through the server first?
 // Is there a way to do some things on client side first? What are right primitives for creation and movement of nodes?
+// TODO: fix rank calculation. Do we need predecessor and successor in db?
 
 (function () { // Wrap everything in an anonymous function call to hide some globals.
 
