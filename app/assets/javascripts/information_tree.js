@@ -23,13 +23,20 @@ certain properties. The name nodeRep indicates that a representation of the now-
 has been sent back to the client.
 */
 
+// TODO: Make New Node get deleted on blur if nothing changed.
+// TODO: Think about nodespec, noderep, and node. All of these should be nodespecs and anything
+// that takes a nodespec should take the others. Does addNode always add a new node, or sometimes an existing one?
+// If the latter, how did the new node get created? What are the right primitives? Does it always go through the server first?
+// Is there a way to do some things on client side first? What are right primitives for creation and movement of nodes?
 
 (function () { // Wrap everything in an anonymous function call to hide some globals.
 
 // ========================================================================
 //                   Global Access Point
 // =========================================================================
-window.informationTree = {}
+window.InformationTree = {}; // Create a namespace for the Information Tree package.
+
+var IT = window.InformationTree; // nickname for our namespace
 
 // ========================================================================
 //                   User Interface
@@ -49,7 +56,7 @@ makes these methods more "functional" in the approach, because each ui function 
 to act on. Under normal circumstances, it would be more natural to just associate the functionality as a method on the
 object of interest.
 */
-var Ui = function () {
+IT.Ui = function () {
   var self = this;
 
   self.selectedNode = null // The Ui maintains a "selected node", to which actions are performed.
@@ -60,8 +67,8 @@ var Ui = function () {
   // node has been added to the dom.
   self.initTop = function() {
     self.buttonPanel = new ButtonPanel;
-    $(informationTree.tree).append(self.buttonPanel);
-    self.selectNode(informationTree.tree.top);
+    $(IT.tree).append(self.buttonPanel);
+    self.selectNode(IT.tree.top);
     $(self.buttonPanel).hide();
   }
 
@@ -101,12 +108,32 @@ var Ui = function () {
     (node || self.selectedNode).toggle(false);
   }
 
-  self.addSuccessor = function (node) {
-    (node || self.selectedNode).addSuccessor(null, self.addNodeUiCallback);
+
+  /*
+   Child can be null, in which case a new node will be created.
+   If a new node will be created, then we pass a callback to move focus to the new node
+   after it is added.
+   */
+  self.addChild = function (parent, child) {
+    (parent || self.selectedNode).addChild(child, child ? null : self.addNodeUiCallback);
   }
 
-  self.addPredecessor = function (node) {
-    (node || self.selectedNode).addPredecessor(null, self.addNodeUiCallback);
+  // Callback to the Ui after the server has given us a new node.
+  self.addNodeUiCallback = function (newNode) {
+    newNode.header.content.placeholder = "New Node";
+    $(newNode.header.content).focus()
+  }
+
+  // Add successor as the successor of predecessor. If successor is null, create a new node
+  // and set the focus to it.
+  self.addSuccessor = function (predecessor, successor) {
+    (predecessor || self.selectedNode).addSuccessor(successor, successor ? null : self.addNodeUiCallback);
+  }
+
+  // Add predecessor as the predecessor of successor. If predecessor is null, create a new node
+  // and set the focus to it.
+  self.addPredecessor = function (successor, predecessor) {
+    (successor || self.selectedNode).addPredecessor(predecessor, predecessor ? null : self.addNodeUiCallback);
   }
 
   self.hideButtonPanel = function () {
@@ -133,15 +160,6 @@ var Ui = function () {
     (node || self.selectedNode).toggle(true)
   }
 
-  self.addChild = function (node) {
-    (node || self.selectedNode).addChild(null, self.addNodeUiCallback);
-  }
-
-  // Callback to the Ui after the server has given us a new node.
-  self.addNodeUiCallback = function (newNode) {
-    newNode.header.content.placeholder = "New Node";
-    $(newNode.header.content).focus()
-  }
 
   // TODO: the trash functionality needs to record information about the former parentage
   // and sibling relationships somewhere so that a trashed node can be restored later.
@@ -164,35 +182,34 @@ var Ui = function () {
   }
 };
 
-Ui.init = function () {
-  informationTree.ui  = new Ui; // Create and register a new Ui object.
-
+IT.Ui.init = function () {
+  IT.ui  = new IT.Ui; // Create and register a new Ui object.
 }
 
 
 // ========================================================================
 //                   Information Tree
 // =========================================================================
-var InformationTree = defCustomTag('information-tree', HTMLElement);
+IT.Tree = defCustomTag('information-tree', HTMLElement);
 
 /*
 We do some things onCreate that are independent of the existence of dom objects,
 but which the dom manipulations onAttach will depend on.
 */
-InformationTree.prototype.onCreate = function() {
-  informationTree.tree  = this;   // Register ourselves so that we are globally accessible.
-  Ui.init()                       // Tell the UI class to initialize a ui component.
+IT.Tree.prototype.onCreate = function() {
+  IT.tree  = this;   // Register ourselves so that we are globally accessible.
+  IT.Ui.init()       // Tell the UI class to initialize a ui component.
 }
 
 
-InformationTree.prototype.onAttach = function() {
+IT.Tree.prototype.onAttach = function() {
   this.initTop();
 }
 
 
 // Find the top node of the tree and add it to the dom.
 // Initialize the ui.
-InformationTree.prototype.initTop = function() {
+IT.Tree.prototype.initTop = function() {
   var me = this;
   this.getTopNodeFromServer(function(node) {
     if (node) {
@@ -200,17 +217,17 @@ InformationTree.prototype.initTop = function() {
 
       me.top = new TextNode(node);
       $(me).append(me.top);
-      $(me).click(function() {informationTree.ui.hideButtonPanel()});
-      informationTree.ui.initTop();
+      $(me).click(function() {IT.ui.hideButtonPanel()});
+      IT.ui.initTop();
     }})
 }
 
 
-InformationTree.prototype.topNodePath = function() {
+IT.Tree.prototype.topNodePath = function() {
   return '/nodes/top.json'
 }
 
-InformationTree.prototype.getTopNodeFromServer = function(continuation) {
+IT.Tree.prototype.getTopNodeFromServer = function(continuation) {
   getJsonFromServer("GET", this.topNodePath(), continuation)
 }
 
@@ -220,12 +237,12 @@ Return an array of all the nodes in the text tree that are currently visible.
 Return the nodes in order of descending y-value. This means that every visible node will
 be preceded by its older siblings, all their visible descendants, and by its parent.
 */
-InformationTree.prototype.visibleNodes = function() {
+IT.Tree.prototype.visibleNodes = function() {
   return this.top.visibleNodes([]);
 }
 
 
-InformationTree.prototype.findLowestNodeAbove = function(y) {
+IT.Tree.prototype.findLowestNodeAbove = function(y) {
   var nodes = this.visibleNodes().reverse();
   for(var i = 0; i < nodes.length; i++) {
     var node = nodes[i];
@@ -245,7 +262,7 @@ InformationTree.prototype.findLowestNodeAbove = function(y) {
 /*
 If it currently exists in the dom, return the text node with the specified id.
 */
-InformationTree.prototype.find = function(id) {
+  IT.Tree.prototype.find = function(id) {
   if (!id) return;
 
   var $node = $('#' + id);
@@ -261,7 +278,7 @@ otherwise, assume that node is a complete spec for a new node: instantiate it an
 return the new node. Note that the newly created note is unglommed; that is, it is
 unattached to the text tree.
 */
-InformationTree.prototype._findOrCreate = function(node) {
+  IT.Tree.prototype._findOrCreate = function(node) {
   var foundNode = this.find(node.id);
   return foundNode ? foundNode.update(node) : new TextNode(node);
 }
@@ -273,12 +290,12 @@ with the other information contained in node, and return it.
 If it does not yet exist in the dom, assume that node is a complete spec for a new node:
 instantiate it and return the new node after glomming it to the text tree in its proper position.
 */
-InformationTree.prototype._addNodeOnClient = function(node) {
+  IT.Tree.prototype._addNodeOnClient = function(node) {
   return this._findOrCreate(node)._glom();
 }
 
 
-InformationTree.prototype._addNodesOnClient = function(fetchedNodes) {
+  IT.Tree.prototype._addNodesOnClient = function(fetchedNodes) {
   return fetchedNodes.map(this._addNodeOnClient.bind(this));
 }
 
@@ -338,7 +355,7 @@ This function is called whenever a new drag event is initiated.
 */
 
 TextNode.prototype.dragStart = function() {
-  informationTree.tree.dropTarget = null;
+  IT.tree.dropTarget = null;
 }
 
 
@@ -348,15 +365,15 @@ or let go beneath a node, and do either an addChild() or an addSuccessor() accor
 */
 TextNode.prototype.dragStop = function(event, helper) {
   // There's a drop target: add a child
-  if (informationTree.tree.dropTarget) {
-    informationTree.tree.dropTarget.addChild({id: this.id});
+  if (IT.tree.dropTarget) {
+    IT.ui.addChild(IT.tree.dropTarget, {id: this.id});
     return;
   }
 
   // There's a node above the release position: add a successor
-  var node = informationTree.tree.findLowestNodeAbove(helper.position.top);
+  var node = IT.tree.findLowestNodeAbove(helper.position.top);
   if (node) {
-    node.addSuccessor({id: this.id});
+    IT.ui.addSuccessor(node, {id: this.id});
   }
 };
 
@@ -517,7 +534,7 @@ Search the dom for a TextNode whose id matches the predecessor id of this
 and return it if found.
 */
 TextNode.prototype.predecessor = function() {
-  return informationTree.tree.find(this.predecessor_id);
+  return IT.tree.find(this.predecessor_id);
 };
 
 
@@ -526,7 +543,7 @@ Search the dom for a TextNode whose id matches the predecessor id of this
 and return it if found.
 */
 TextNode.prototype.successor = function() {
-  return informationTree.tree.find(this.successor_id);
+  return IT.tree.find(this.successor_id);
 };
 
 
@@ -535,7 +552,7 @@ Search the dom for a TextNode whose id matches the parent id of this
 and return it if found.
 */
 TextNode.prototype.parent = function() {
-  return informationTree.tree.find(this.parent_id);
+  return IT.tree.find(this.parent_id);
 }
 
 TextNode.prototype.kids = function() {
@@ -544,16 +561,16 @@ TextNode.prototype.kids = function() {
 
 // =========================== Add Node
 /*
-Ask the server to add a child or sibling node, specified by <node>,
+Ask the server to add a child or sibling node, specified by <nodeSpec>,
 to the node represented by <this> text node. After the server
 responds with a success code, effect the same changes on the client-side.
 
-If node is null, create a new default node.
+If nodeSpec is null, create a new default node.
 
-If node is non-null and fully spec'd,
+If nodeSpec is non-null and fully spec'd,
 but without an id, create a new node as specified.
 
-If node is non-null, but just contains an id, use the existing node
+If nodeSpec is non-null, but just contains an id, use the existing node
 with that id for the add operation and move it to the new location (child or sibling)
 relative to <this>.
 
@@ -562,21 +579,27 @@ of the node represented by <this>. mode should be a string, one of: 'child', 'su
 
 callback is a function that gets executed after the node has been returned from the server, and only if the
 request was successful.
+
+NOTES: nodeSpec is a hash that specifies a new node, or names an existing one, but it is *not* a node object.
+       nodeRep is a hash that represents a node on the server side. It contains complete info, but it is not
+          a client-side node object.
+       node is a client-side node object.
 */
-TextNode.prototype._addNode = function(node, mode, callback) {
-  if (!node) {
-    node = TextNode.defaultSpec;
+TextNode.prototype._addNode = function(nodeSpec, mode, callback) {
+  if (!nodeSpec) {
+    nodeSpec = TextNode.defaultSpec;
   }
 
   var me = this;
-  this._addNodeOnServer(node, mode,
-    function(node) {
-      if (node.error) {
-        me._reportAddNodeOnServerError(node, mode);
+  this._addNodeOnServer(nodeSpec, mode,
+    function(nodeRep) {
+      if (nodeRep.error) {
+        me._reportAddNodeOnServerError(nodeRep, mode);
         return;
       };
 
-      callback(informationTree.tree._addNodeOnClient(node));
+      var node = IT.tree._addNodeOnClient(nodeRep);
+      if (callback) callback(node);
     });
 };
 
@@ -650,12 +673,12 @@ TextNode.prototype.addPredecessor = function(node, callback) {
 
 // =========================== Copy
 TextNode.prototype.copy = function() {
-  informationTree.tree.copiedNode = this;
+  IT.tree.copiedNode = this;
 };
 
 // ========================== Paste
 TextNode.prototype.paste = function() {
-  this.addChild({id: informationTree.tree.copiedNode.id});
+  this.addChild({id: IT.tree.copiedNode.id});
 };
 
 // =========================== Trash
@@ -717,13 +740,13 @@ child node to the tree on the client-side;
 Finally call continuation with the array of newly created text nodes from the
 representations that were fetched, or call continuation with [] if none were fetched.
 */
-TextNode.prototype._fetchAndAddChildrenOnClient = function(continuation) {
+TextNode.prototype._fetchAndAddChildrenOnClient = function(callback) {
   this._fetchChildren(
     function(fetchedNodes) {
       if (fetchedNodes) {
-        continuation(informationTree.tree._addNodesOnClient(fetchedNodes));
+        callback(IT.tree._addNodesOnClient(fetchedNodes));
       } else {
-        continuation([]);
+        callback([]);
       }
     });
 }
@@ -736,15 +759,15 @@ to the tree on the client side. It *does* record that the children have been fet
 So it leaves the state of the client-side in a precarious way if things should be aborted here.
 It should only be called by expand(), who knows what it's doing.
 */
-TextNode.prototype._fetchChildren = function(continuation) {
+TextNode.prototype._fetchChildren = function(callback) {
   if (this.childrenFetched) {
-    continuation(false); // Pass false to the continuation to indicate that no children were fetched.
+    callback(false); // Pass false to the continuation to indicate that no children were fetched.
   } else {
     var me = this;
     getJsonFromServer("GET", this._childrenPath(this.id),
       function(fetchedNodes) {
         me.childrenFetched = true;
-        continuation(fetchedNodes);
+        callback(fetchedNodes);
       });
   }
 }
@@ -990,7 +1013,7 @@ NodeContent.prototype.afterCreate = function(textNode, options) {
 
 // Handle a left click in the text area.
 NodeContent.prototype.onClick = function (event) {
-  return informationTree.ui.clickLeftOnNode(this.textNode);
+  return IT.ui.clickLeftOnNode(this.textNode);
 }
 
 
@@ -1000,12 +1023,12 @@ a pointer to the Node parent from the NodeContent object. So we create a delegat
 that will work at click-time.
 */
 NodeContent.prototype.onContextMenu = function(event) {
-  return informationTree.ui.clickRightOnNode(this.textNode);
+  return IT.ui.clickRightOnNode(this.textNode);
 }
 
 NodeContent.prototype.onKeypress = function(event) {
   if (event.charCode == 13) { // carriage return keypress
-    informationTree.ui.addSuccessor(this.textNode);
+    IT.ui.addSuccessor(this.textNode);
   }
 }
 
@@ -1021,7 +1044,7 @@ the cloned helper node that is created as part of the drag.
 NodeContent.prototype.handleDrop = function(event, ui) {
   var textNode = this.textNode;
   if (textNode.id) {
-    informationTree.tree.dropTarget = textNode;
+    IT.tree.dropTarget = textNode;
   }
 };
 
@@ -1035,7 +1058,7 @@ NodeContent.prototype.set_id = function(id) {
 // It causes the content of the node to change on the server.
 NodeContent.prototype.onBlur = function(e) {
   var autosize = this.textNode.calcAutoSize();
-  informationTree.ui.setAttributes(this.textNode,
+  IT.ui.setAttributes(this.textNode,
     {content: this.textNode.content,
        width: autosize.width,
       height: autosize.height})
@@ -1075,7 +1098,7 @@ ExpandCollapse.prototype.afterCreate = function(textNode) {
 
 ExpandCollapse.prototype.toggle = function() {
   $(this).html(this.textNode.state === 'expanded' ? '>' : 'v')
-  informationTree.ui.toggleNodeExpandCollapse(this.textNode);
+  IT.ui.toggleNodeExpandCollapse(this.textNode);
 }
 
 // =========================================================================
@@ -1101,7 +1124,7 @@ FollowLink.prototype.afterCreate = function() {
 
   var $this = $(this)
   $this.html('Follow Link')
-  $this.click(function(event) {informationTree.ui.followLink()})
+  $this.click(function(event) {IT.ui.followLink()})
 }
 
 
@@ -1117,7 +1140,7 @@ Save.prototype.afterCreate = function() {
 
   var $this = $(this)
   $this.html('Save')
-  $this.click(function(event) {informationTree.ui.save()})
+  $this.click(function(event) {IT.ui.save()})
 }
 
 
@@ -1132,7 +1155,7 @@ CopyNode.prototype.afterCreate = function() {
 
   var $this = $(this)
   $this.html('Copy')
-  $this.click(function(event) {informationTree.ui.copy()})
+  $this.click(function(event) {IT.ui.copy()})
 }
 
 // =========================================================================
@@ -1147,7 +1170,7 @@ PasteNode.prototype.afterCreate = function() {
 
   var $this = $(this)
   $this.html('Paste')
-  $this.click(function(event) {informationTree.ui.paste()})
+  $this.click(function(event) {IT.ui.paste()})
 }
 
 // =========================================================================
@@ -1158,7 +1181,7 @@ var ExpandCollapseRecursive = defCustomTag('expand-collapse-recursive', ButtonPa
 ExpandCollapseRecursive.prototype.afterCreate = function() {
   ButtonPanelButton.prototype.afterCreate.call(this)
   $(this).html('Open/Close All');
-  $(this).click(function(event) {informationTree.ui.toggleExpandCollapseAll()})
+  $(this).click(function(event) {IT.ui.toggleExpandCollapseAll()})
 }
 
 
@@ -1175,7 +1198,7 @@ AddChild.prototype.afterCreate = function() {
 
   // Click function adds a new child TextNode to the TextNode associated with this button. This means
   // adding the new node to the TextNode's NodeChildren element.
-  $this.click(function() {informationTree.ui.addChild()})
+  $this.click(function() {IT.ui.addChild()})
 }
 
 // =========================================================================
@@ -1189,7 +1212,7 @@ AddSuccessor.prototype.afterCreate = function() {
   $this.html('+Successor')
 
   // Click function adds a new TextNode after the TextNode associated with this button.
-  $this.click(function() {informationTree.ui.addSuccessor()})
+  $this.click(function() {IT.ui.addSuccessor()})
 }
 
 // =========================================================================
@@ -1203,7 +1226,7 @@ AddPredecessor.prototype.afterCreate = function() {
   $this.html('+Predecessor')
 
   // Click function adds a new TextNode after the TextNode associated with this button.
-  $this.click(function() {informationTree.ui.addPredecessor()})
+  $this.click(function() {IT.ui.addPredecessor()})
 }
 
 // =========================================================================
@@ -1216,7 +1239,7 @@ TrashNode.prototype.onCreate = function() {
   var $this = $(this)
   $this.html('Delete!')
 
-  $this.click(function() {informationTree.ui.trash()});
+  $this.click(function() {IT.ui.trash()});
 }
 
 // =========================================================================
@@ -1233,7 +1256,7 @@ UntrashNode.prototype.afterCreate = function() {
 
   var $this = $(this)
   $this.html('Untrash')
-  $this.click(function(event) {informationTree.ui.restoreLastDeletedNode()})
+  $this.click(function(event) {IT.ui.restoreLastDeletedNode()})
 }
 
 })() // We wrapped everything in an anonymous function call to hide some globals.
