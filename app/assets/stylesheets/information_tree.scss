@@ -50,7 +50,11 @@ button-panel {
   position:absolute;
 }
 
-text-tree {
+information-tree {
+  display:block;
+  border:1px solid black;
+  background:#e0f0ff;
+  margin-left:100px;
 }
 
 text-node {

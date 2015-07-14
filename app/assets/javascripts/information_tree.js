@@ -37,7 +37,16 @@ has been sent back to the client.
 // Client side node primitives: create, update, trash, move, expand.
 // TODO: fix rank calculation. Do we need predecessor and successor in db?
 // TODO: Make the trash node visible in hierarchy: Top has children named User and System. But Trash and Basket under System.
-
+// TODO: There's an ambiguity between node.content and node.header.content. The former returns the text of node.header.content.
+// The latter returns the content dom object, which is a textarea element.
+// TODO: look for refs to stopPropagation() and preventDefault() and make sure they're necessary.
+// TODO: all the various UI dom components should simply defer to the ui controller for their functionality.
+// They should bind event handlers, but then pass the event to the ui controller for actual processing.
+// They are like sockets, with functionality to be plugged in by the ui controller.
+// TODO: hitting return on an empty node should delete the node.
+// TODO: Consider having hit return on a node put you in edit mode for the node, equal to clicking on it.
+// This presupposes we're not always in edit mode.
+// TODO: implement cut/copy/paste, and put cut nodes in "the basket".
 
 (function () { // Wrap everything in an anonymous function call to hide some globals.
 
@@ -80,6 +89,9 @@ IT.Ui = function () {
     $(IT.tree).append(self.buttonPanel);
     self.selectNode(IT.tree.top);
     $(self.buttonPanel).hide();
+    $(IT.tree).click(self.onClick); // TODO: These belong on an information-tree-view object.
+    $(IT.tree).focusout(self.onFocusOut);
+
   }
 
   // Trash the selected node.
@@ -98,10 +110,10 @@ IT.Ui = function () {
   }
 
   // Respond to a right-click on a node. Select the node and pop up the command menu.
-  self.clickRightOnNode = function (node) {
+  self.clickRightOnNode = function (node, event) {
     self.selectNode(node);
     self.buttonPanel.popTo(node);
-    return false;
+    event.preventDefault();
   }
 
 
@@ -125,29 +137,44 @@ IT.Ui = function () {
    after it is added.
    */
   self.addChild = function (parent, child) {
-    (parent || self.selectedNode).addChild(child, child ? null : self.addNodeUiCallback);
+    (parent || self.selectedNode).addChild(child, child ? null : self._addNodeUiCallback);
   }
 
   // Callback to the Ui after the server has given us a new node.
-  self.addNodeUiCallback = function (newNode) {
+  self._addNodeUiCallback = function (newNode) {
     newNode.header.content.placeholder = "New Node";
-    $(newNode.header.content).focus()
+
+    // Hack! For some reason, sometimes, a sequence of blur events occurs that undoes
+    // the focus() below, because the blurs occur after the focus.
+    setTimeout(function() {
+      $(newNode.header.content).focus()
+    },
+    500);
   }
 
   // Add successor as the successor of predecessor. If successor is null, create a new node
   // and set the focus to it.
   self.addSuccessor = function (predecessor, successor) {
-    (predecessor || self.selectedNode).addSuccessor(successor, successor ? null : self.addNodeUiCallback);
+    (predecessor || self.selectedNode).addSuccessor(successor, successor ? null : self._addNodeUiCallback);
   }
 
   // Add predecessor as the predecessor of successor. If predecessor is null, create a new node
   // and set the focus to it.
   self.addPredecessor = function (successor, predecessor) {
-    (successor || self.selectedNode).addPredecessor(predecessor, predecessor ? null : self.addNodeUiCallback);
+    (successor || self.selectedNode).addPredecessor(predecessor, predecessor ? null : self._addNodeUiCallback);
+  }
+
+
+  self.onClick = function(event) {
+    self.hideButtonPanel();
   }
 
   self.hideButtonPanel = function () {
     $(self.buttonPanel).hide()
+  }
+
+  // Debugging. This handler is installed on the information-tree .
+  self.onFocusOut = function(event) {
   }
 
   self.followLink = function (node) {
@@ -190,6 +217,10 @@ IT.Ui = function () {
     }
     self.setAttributes(node, attributes)
   }
+
+  // This does nothing. Use it for testing.
+  self.nop = function() {
+  }
 };
 
 
@@ -218,10 +249,9 @@ IT.Tree.prototype.onAttach = function() {
 IT.Tree.prototype.initTop = function() {
   var me = this;
   this.getTopNodeFromServer(function(node) {
-    $(document).tooltip(); // TODO: is there a way for this not to be here?
+    // $(document).tooltip(); // TODO: is there a way for this not to be here?
     me.top = new TextNode(node);
     $(me).append(me.top);
-    $(me).click(function() {IT.ui.hideButtonPanel()});
     IT.ui.initTop();
   })
 }
@@ -936,6 +966,9 @@ var ButtonPanel = defCustomTag('button-panel', HTMLElement)
 ButtonPanel.prototype.afterCreate = function() {
   var $this = $(this)
 
+  // this.nop = new Nop
+  // $this.append(this.nop)
+
   this.expandCollapseRecursiveButton = new ExpandCollapseRecursive
   $this.append(this.expandCollapseRecursiveButton)
 
@@ -967,7 +1000,7 @@ ButtonPanel.prototype.afterCreate = function() {
   $this.append(this.untrashNodeButton)
 
   // Hide button panel after it is clicked on.
-  $this.click(function() {$this.hide()})
+  $this.click(this.onClick)
 }
 
 /*
@@ -984,6 +1017,10 @@ ButtonPanel.prototype.popTo = function(node) {
       top    = offset.top;
   $(this).offset({left:left-102, top:top}); // TODO: Remove hardcoded constant.
 }
+
+  ButtonPanel.prototype.onClick = function() {
+    $(this).hide()
+  }
 
 
 // =========================================================================
@@ -1028,7 +1065,7 @@ a pointer to the Node parent from the NodeContent object. So we create a delegat
 that will work at click-time.
 */
 NodeContent.prototype.onContextMenu = function(event) {
-  return IT.ui.clickRightOnNode(this.textNode);
+  return IT.ui.clickRightOnNode(this.textNode, event);
 }
 
 NodeContent.prototype.onKeypress = function(event) {
@@ -1123,6 +1160,24 @@ ButtonPanelButton.prototype.afterCreate = function() {
   $(this).addClass('button-panel-button')
 }
 
+// =========================================================================
+//                   Nop Button
+// =========================================================================
+// Pressing this button does nothing but trigger a no-op control flow.
+var Nop = defCustomTag('nop-nop', ButtonPanelButton)
+
+Nop.prototype.afterCreate = function() {
+  ButtonPanelButton.prototype.afterCreate.call(this)
+
+  var $this = $(this)
+  $this.html('Nop')
+  $this.click(this.onClick)
+}
+
+Nop.prototype.onClick = function(event) {
+  IT.ui.nop()
+}
+
 
 // =========================================================================
 //                   FollowLink Button
@@ -1141,7 +1196,7 @@ FollowLink.prototype.afterCreate = function() {
 
 
 // =========================================================================
-//                   Set Size Button
+//                   Save Button
 // =========================================================================
 // Pressing this button automatically resizes the associated content textarea to be a pleasant size
 // for the text.
@@ -1152,7 +1207,11 @@ Save.prototype.afterCreate = function() {
 
   var $this = $(this)
   $this.html('Save')
-  $this.click(function(event) {IT.ui.save()})
+  $this.click(this.onClick)
+}
+
+Save.prototype.onClick = function(event) {
+  IT.ui.save()
 }
 
 
