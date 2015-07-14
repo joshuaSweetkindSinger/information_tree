@@ -28,7 +28,16 @@ has been sent back to the client.
 // that takes a nodespec should take the others. Does addNode always add a new node, or sometimes an existing one?
 // If the latter, how did the new node get created? What are the right primitives? Does it always go through the server first?
 // Is there a way to do some things on client side first? What are right primitives for creation and movement of nodes?
+// Primitives: server side: Node.new() creates a new node on server side. Node.insert(node, insertionPoint) inserts a node at the right place.
+//             server side: Node.getTop(), Node.getTrash(), Node.get(:id) return specific nodesReps.
+//             server side: addNodeOnServer(nodeSpec, insertionPoint) creates a new node on server at insertion point.
+//             server side: getNodeFromServer(ref) returns a nodeRep for the referenced node.
+//             client side: addNodeOnClient(nodeRep) attaches a rep from the server to the client side tree.
+// Server side node primitives: create, read, update, delete, trash, move, children.
+// Client side node primitives: create, update, trash, move, expand.
 // TODO: fix rank calculation. Do we need predecessor and successor in db?
+// TODO: Make the trash node visible in hierarchy: Top has children named User and System. But Trash and Basket under System.
+
 
 (function () { // Wrap everything in an anonymous function call to hide some globals.
 
@@ -183,10 +192,6 @@ IT.Ui = function () {
   }
 };
 
-IT.Ui.init = function () {
-  IT.ui  = new IT.Ui; // Create and register a new Ui object.
-}
-
 
 // ========================================================================
 //                   Information Tree
@@ -198,14 +203,14 @@ We do some things onCreate that are independent of the existence of dom objects,
 but which the dom manipulations onAttach will depend on.
 */
 IT.Tree.prototype.onCreate = function() {
-  IT.tree  = this;   // Register ourselves so that we are globally accessible.
-  IT.Ui.init()       // Tell the UI class to initialize a ui component.
+  IT.tree  = this;      // Register ourselves so that we are globally accessible.
+  IT.ui    = new IT.Ui; // Create and register a new Ui object.
 }
 
 
 IT.Tree.prototype.onAttach = function() {
   this.initTop();
-}
+};
 
 
 // Find the top node of the tree and add it to the dom.
@@ -213,14 +218,12 @@ IT.Tree.prototype.onAttach = function() {
 IT.Tree.prototype.initTop = function() {
   var me = this;
   this.getTopNodeFromServer(function(node) {
-    if (node) {
-      $(document).tooltip(); // TODO: is there a way for this not to be here?
-
-      me.top = new TextNode(node);
-      $(me).append(me.top);
-      $(me).click(function() {IT.ui.hideButtonPanel()});
-      IT.ui.initTop();
-    }})
+    $(document).tooltip(); // TODO: is there a way for this not to be here?
+    me.top = new TextNode(node);
+    $(me).append(me.top);
+    $(me).click(function() {IT.ui.hideButtonPanel()});
+    IT.ui.initTop();
+  })
 }
 
 
@@ -263,7 +266,7 @@ IT.Tree.prototype.findLowestNodeAbove = function(y) {
 /*
 If it currently exists in the dom, return the text node with the specified id.
 */
-  IT.Tree.prototype.find = function(id) {
+IT.Tree.prototype.find = function(id) {
   if (!id) return;
 
   var $node = $('#' + id);
@@ -273,31 +276,32 @@ If it currently exists in the dom, return the text node with the specified id.
 }
 
 /*
-If it currently exists in the dom, return the text node whose id is node.id,
-after updating it with possibly new values from node;
-otherwise, assume that node is a complete spec for a new node: instantiate it and
+If it currently exists in the dom, return the text node whose id is nodeRep.id,
+after updating it with possibly new values from nodeRep;
+otherwise, assume that nodeRep is a complete representation for a new node: instantiate it and
 return the new node. Note that the newly created note is unglommed; that is, it is
 unattached to the text tree.
 */
-  IT.Tree.prototype._findOrCreate = function(node) {
-  var foundNode = this.find(node.id);
-  return foundNode ? foundNode.update(node) : new TextNode(node);
+IT.Tree.prototype._findOrCreate = function(nodeRep) {
+  var foundNode = this.find(nodeRep.id);
+  return foundNode ? foundNode.update(nodeRep) : new TextNode(nodeRep);
 }
+
 
 /*
-If it currently exists in the dom, merely update the text node whose id is node.id
-with the other information contained in node, and return it.
+If it currently exists in the dom, merely update the text node whose id is nodeRep.id
+with the other information contained in nodeRep, and return it.
 
-If it does not yet exist in the dom, assume that node is a complete spec for a new node:
+If it does not yet exist in the dom, assume that nodeRep is a complete spec for a new node:
 instantiate it and return the new node after glomming it to the text tree in its proper position.
 */
-  IT.Tree.prototype._addNodeOnClient = function(node) {
-  return this._findOrCreate(node)._glom();
+IT.Tree.prototype._addNodeOnClient = function(nodeRep) {
+  return this._findOrCreate(nodeRep)._glom();
 }
 
 
-  IT.Tree.prototype._addNodesOnClient = function(fetchedNodes) {
-  return fetchedNodes.map(this._addNodeOnClient.bind(this));
+IT.Tree.prototype._addNodesOnClient = function(fetchedNodeReps) {
+  return fetchedNodeReps.map(this._addNodeOnClient.bind(this));
 }
 
 
