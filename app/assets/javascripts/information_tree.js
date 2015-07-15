@@ -47,6 +47,28 @@ has been sent back to the client.
 // TODO: Consider having hit return on a node put you in edit mode for the node, equal to clicking on it.
 // This presupposes we're not always in edit mode.
 // TODO: implement cut/copy/paste, and put cut nodes in "the basket".
+// TODO: Refactor for layers:
+// Top layer is the UI. It orchestrates all user-initiated action. It handles all events. It introduces
+// ui concepts like cut/paste, the clipboard, the trash, etc. Any data-entry or modification of the
+// tree must be mediated by the ui. The ui consists of a controller and dom elements. The dom elements
+// represent the tree and ui-related decorations such as pop up menus. The tree and its nodes
+// are represented by dom elements, but these dom elements are wrappers on underlying client-side
+// object that are *not* dom elements. These client-side objects represent the fundamental objects
+// that are the nodes of the tree, their relationships to each other, and the tree object itself.
+// These objects, in turn, are backed by server-side cognates.
+//
+// The UI gets its job done as follows. User actions are intercepted by event handlers on dom
+// elements. These dom elements are formally part of the ui layer. Each dom element will most
+// likely handle the event by passing it to the ui controller, which will coordinate all actions,
+// but some events might be handled directly by the dom element. The majority of
+// user-actions entail modification of a node. This achieved by sending a message to the associated
+// client-side node object, which is NOT part of the UI. This is the middle layer, which is the client
+// side model. These client-side objects, in turn, get their job done by making api calls to the server
+// to effect changes on the server side. They also handle responses from the server to update their
+// state, which they forward to their ui representations, so that the ui can render the state
+// change appropriately.
+// UI <--> client-side model <--> server-side api
+// TODO: Refactor header bar.
 
 (function () { // Wrap everything in an anonymous function call to hide some globals.
 

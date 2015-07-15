@@ -1,24 +1,8 @@
 <div class="app-header">
-  <a class="app-header" href=<%=root_path%>>JSS Notes</a>
-
-    <%= link_to 'Interactive',
-                interactive_nodes_path,
-                class:'app-header'
-    %>
-
-
-    <%= link_to 'Information Tree',
-                information_tree_path,
-                class:'app-header'
-    %>
-
   <%= link_to 'Back Up Tree',
               back_up_nodes_path,
               remote: true,
               method: :post,
               class:'app-header'
   %>
-
-  <a class="app-header" data-read-tree="true" href="#">Read Tree</a>
-
 </div>
