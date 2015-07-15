@@ -90,11 +90,11 @@ var IT  = App; // TODO: Get rid of references to this. This is deprecated.
 App.initPage = function() {
   this.treeView   = $('information-tree')[0];
   this.tree       = this.treeView; // TODO: deprecated
-  this.treeView.initTop();
 
   this.controller = new Controller;
   this.ui         = this.controller; // TODO: deprecated
 }
+
 
 // ========================================================================
 //                   User Interface
@@ -117,21 +117,15 @@ object of interest.
 Controller = function () {
   var self = this;
 
-  self.selectedNode = null // The Ui maintains a "selected node", to which actions are performed.
-  self.buttonPanel  = null // The buttonPanel is a pop-up menu that allows the user to take action on the selected node. It gets initialized later on.
+  this.selectedNode = null // The Ui maintains a "selected node", to which actions are performed.
+  this.buttonPanel  = new ButtonPanel;
 
-  // This is called by the information tree object just after it has gotten the "top" node
-  // back from the server. It gives the ui a chance to do further initialization, now that the top
-  // node has been added to the dom.
-  self.initTop = function() {
-    self.buttonPanel = new ButtonPanel;
-    $(IT.tree).append(self.buttonPanel);
-    self.selectNode(IT.tree.top);
+  App.treeView.whenReady(function() {
+    $(App.treeView).append(self.buttonPanel);
     $(self.buttonPanel).hide();
-    $(IT.tree).click(self.onClick); // TODO: These belong on an information-tree-view object.
-    $(IT.tree).focusout(self.onFocusOut);
+    self.selectNode(App.treeView.top);
+  });
 
-  }
 
   // Trash the selected node.
   self.trash = function (node) {
@@ -204,16 +198,8 @@ Controller = function () {
   }
 
 
-  self.onClick = function(event) {
-    self.hideButtonPanel();
-  }
-
   self.hideButtonPanel = function () {
     $(self.buttonPanel).hide()
-  }
-
-  // Debugging. This handler is installed on the information-tree .
-  self.onFocusOut = function(event) {
   }
 
   self.followLink = function (node) {
@@ -266,35 +252,33 @@ IT.Ui = Controller; // TODO: deprecated
 
 
 // ========================================================================
-//                   Information Tree
-// =========================================================================
+//                   Tree View
+// ========================================================================
 var TreeView = defCustomTag('information-tree', HTMLElement);
 IT.Tree = TreeView; // TODO: deprecated
 
+TreeView.prototype.onCreate = function() {
+  var self = this;
+  this.ready = false;
+  $(this).click(this.onClick); // TODO: These belong on an information-tree-view object.
 
-IT.Tree.prototype.onAttach = function() {
+  this.tree = new Tree();
+  this.tree.whenReady(function() {
+    self.top = self.tree.top; // TODO: fix this. tree.top should not be a dom element.
+    $(self).append(self.top);
+    self.ready = true;
+    // $(document).tooltip(); // TODO: is there a way for this not to be here?
+  })
 };
 
-
-// Find the top node of the tree and add it to the dom.
-// Initialize the ui.
-IT.Tree.prototype.initTop = function() {
-  var me = this;
-  this.getTopNodeFromServer(function(node) {
-    // $(document).tooltip(); // TODO: is there a way for this not to be here?
-    me.top = new TextNode(node);
-    $(me).append(me.top);
-    IT.ui.initTop();
-  })
+TreeView.prototype.onClick = function (event) {
+  App.controller.hideButtonPanel();
 }
 
-
-IT.Tree.prototype.topNodePath = function() {
-  return '/nodes/top.json'
-}
-
-IT.Tree.prototype.getTopNodeFromServer = function(continuation) {
-  getJsonFromServer("GET", this.topNodePath(), continuation)
+TreeView.prototype.whenReady = function (callback) {
+  var self = this;
+  when(function() {return self.ready})
+    .do(callback);
 }
 
 
@@ -366,7 +350,34 @@ IT.Tree.prototype._addNodesOnClient = function(fetchedNodeReps) {
   return fetchedNodeReps.map(this._addNodeOnClient.bind(this));
 }
 
+// ========================================================================
+//                   Tree
+// ========================================================================
+var Tree = function() {
+  this.ready = false;
+  var me = this;
+  this.getTopNodeFromServer(function(node) {
+    me.top = new TextNode(node); // TODO: fix this
+    me.ready = true;
+  })
+}
 
+
+Tree.prototype.whenReady = function (callback) {
+  var self = this;
+  when(function() {return self.ready})
+    .do(callback);
+}
+
+
+Tree.prototype.topNodePath = function() {
+  return '/nodes/top.json'
+}
+
+// TODO: put this on Server class.
+Tree.prototype.getTopNodeFromServer = function(callback) {
+  getJsonFromServer("GET", this.topNodePath(), callback)
+}
 // =========================================================================
 //                   Text Node
 // =========================================================================
@@ -1365,5 +1376,4 @@ UntrashNode.prototype.afterCreate = function() {
 $(document).ready(function(){
   App.initPage();
 })
-
 //})() // We wrapped everything in an anonymous function call to hide some globals.

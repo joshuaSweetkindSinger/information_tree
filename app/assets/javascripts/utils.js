@@ -81,3 +81,37 @@ function makeFormStringFromHash (params) {
   }
   return pairs.join('&')
 }
+
+
+// ========================================================================
+//                   Asynchronous Condition-Checking
+// ========================================================================
+/*
+Check periodically until predicate is true, then perform do() action.
+Examples:
+
+when(function() {return mycheck()}).do(something());
+
+when(function() {return mycheck()}, 500).do(something()); // check every 500 milliseconds
+
+whenReady(myObj).do(something()); // Do something() when myObj.ready is true.
+*/
+
+var when = function (predicate,checkInterval) {
+  return new When(predicate, checkInterval);
+}
+
+var When = function (predicate, checkInterval) {
+  this.predicate = predicate;
+  this.checkInterval = checkInterval || 1000;
+}
+
+When.prototype.do = function(callback) {
+  var me = this;
+  var timerHandle = setInterval(function() {
+    if (me.predicate()) {
+      callback();
+      clearInterval(timerHandle);
+    }
+  }, this.checkInterval);
+}
