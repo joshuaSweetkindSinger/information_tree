@@ -202,7 +202,7 @@ Controller = function () {
     setTimeout(function() {
       $(newNode.header.content).focus()
     },
-    500);
+    100);
   }
 
   // Add successor as the successor of predecessor. If successor is null, create a new node
@@ -230,13 +230,24 @@ Controller = function () {
     (node || self.selectedNode).autoSize()
   }
 
-  self.copy = function (node) {
-    (node || self.selectedNode).copy()
+  // Copy node into the copiedNode holding area.
+  self.copyNode = function (node) {
+    self.copiedNode = (node || self.selectedNode);
   }
 
-  self.paste = function (node) {
-    (node || self.selectedNode).paste()
+  // Cut node == copy + delete
+  self.cutNode = function (node) {
+    node = (node || self.selectedNode);
+    self.copyNode(node);
+    self.trash(node);
   }
+
+  // Paste the copiedNode onto node.
+  self.pasteNode = function (node) {
+    (node || self.selectedNode).paste(self.copiedNode)
+  }
+
+
 
   self.toggleExpandCollapseAll = function (node) {
     (node || self.selectedNode).toggle(true)
@@ -389,8 +400,6 @@ Tree.prototype.whenReady = function (callback) {
     .do(callback);
 }
 
-
-// TODO: put this on Server class.
 Tree.prototype.getTop = function() {
   var self = this;
 
@@ -770,14 +779,11 @@ TextNode.prototype.addPredecessor = function(node, callback) {
   this._addNode(node, 'add_predecessor', callback);
 }
 
-// =========================== Copy
-TextNode.prototype.copy = function() {
-  IT.tree.copiedNode = this;
-};
 
 // ========================== Paste
-TextNode.prototype.paste = function() {
-  this.addChild({id: IT.tree.copiedNode.id});
+// Paste node onto ourselves. This means adding it as a child.
+TextNode.prototype.paste = function(node) {
+  this.addChild({id: node.id});
 };
 
 // =========================== Trash
@@ -1142,6 +1148,21 @@ NodeContent.prototype.onKeypress = function(event) {
   } else if (event.charCode == 13 && !event.altKey && event.shiftKey && !event.ctrlKey) {
     event.preventDefault();
     IT.ui.addChild(this.textNode);
+
+  // control-c -- copy this node
+  } else if (event.charCode == 'c'.charCodeAt(0) && !event.altKey && !event.shiftKey && event.ctrlKey) {
+    event.preventDefault();
+    App.controller.copyNode(this.textNode);
+
+  // control-v -- paste the copied node onto this node.
+  } else if (event.charCode == 'v'.charCodeAt(0) && !event.altKey && !event.shiftKey && event.ctrlKey) {
+    event.preventDefault();
+    App.controller.pasteNode(this.textNode);
+
+  // control-x -- cut this node
+  } else if (event.charCode == 'x'.charCodeAt(0) && !event.altKey && !event.shiftKey && event.ctrlKey) {
+    event.preventDefault();
+    App.controller.cutNode(this.textNode);
   }
 }
 
@@ -1290,7 +1311,11 @@ CopyNode.prototype.afterCreate = function() {
 
   var $this = $(this)
   $this.html('Copy')
-  $this.click(function(event) {IT.ui.copy()})
+  $this.click(this.onClick)
+}
+
+CopyNode.prototype.onClick = function (event) {
+  App.controller.copyNode();
 }
 
 // =========================================================================
@@ -1305,8 +1330,14 @@ PasteNode.prototype.afterCreate = function() {
 
   var $this = $(this)
   $this.html('Paste')
-  $this.click(function(event) {IT.ui.paste()})
+  $this.click(this.onClick)
 }
+
+PasteNode.prototype.onClick = function (event) {
+  App.controller.paste();
+}
+// TODO: I think all these buttons could just be instances of a MyButton class.
+// Don't need separate classes for all of them.
 
 // =========================================================================
 //                   Expand / Collapse Recursive Button
@@ -1374,7 +1405,11 @@ TrashNode.prototype.onCreate = function() {
   var $this = $(this)
   $this.html('Delete!')
 
-  $this.click(function() {IT.ui.trash()});
+  $this.click(this.onClick);
+}
+
+TrashNode.prototype.onClick = function (event) {
+  App.controller.trash();
 }
 
 // =========================================================================
