@@ -23,61 +23,78 @@ certain properties. The name nodeRep indicates that a representation of the now-
 has been sent back to the client.
 */
 
-// TODO: Make New Node get deleted on blur if nothing changed.
-// TODO: Think about nodespec, noderep, and node. All of these should be nodespecs and anything
-// that takes a nodespec should take the others. Does addNode always add a new node, or sometimes an existing one?
-// If the latter, how did the new node get created? What are the right primitives? Does it always go through the server first?
-// Is there a way to do some things on client side first? What are right primitives for creation and movement of nodes?
-// Primitives: server side: Node.new() creates a new node on server side. Node.insert(node, insertionPoint) inserts a node at the right place.
-//             server side: Node.getTop(), Node.getTrash(), Node.get(:id) return specific nodesReps.
-//             server side: addNodeOnServer(nodeSpec, insertionPoint) creates a new node on server at insertion point.
-//             server side: getNodeFromServer(ref) returns a nodeRep for the referenced node.
-//             client side: addNodeOnClient(nodeRep) attaches a rep from the server to the client side tree.
-// Server side node primitives: create, read, update, delete, trash, move, children.
-// Client side node primitives: create, update, trash, move, expand.
-// TODO: fix rank calculation. Do we need predecessor and successor in db?
-// TODO: Make the trash node visible in hierarchy: Top has children named User and System. But Trash and Basket under System.
-// TODO: There's an ambiguity between node.content and node.header.content. The former returns the text of node.header.content.
-// The latter returns the content dom object, which is a textarea element.
-// TODO: look for refs to stopPropagation() and preventDefault() and make sure they're necessary.
-// TODO: all the various UI dom components should simply defer to the ui controller for their functionality.
-// They should bind event handlers, but then pass the event to the ui controller for actual processing.
-// They are like sockets, with functionality to be plugged in by the ui controller.
-// TODO: hitting return on an empty node should delete the node.
-// TODO: Consider having hit return on a node put you in edit mode for the node, equal to clicking on it.
-// This presupposes we're not always in edit mode.
-// TODO: implement cut/copy/paste, and put cut nodes in "the basket".
-// TODO: Refactor for layers:
-// Top layer is the UI. It orchestrates all user-initiated action. It handles all events. It introduces
-// ui concepts like cut/paste, the clipboard, the trash, etc. Any data-entry or modification of the
-// tree must be mediated by the ui. The ui consists of a controller and dom elements. The dom elements
-// represent the tree and ui-related decorations such as pop up menus. The tree and its nodes
-// are represented by dom elements, but these dom elements are wrappers on underlying client-side
-// object that are *not* dom elements. These client-side objects represent the fundamental objects
-// that are the nodes of the tree, their relationships to each other, and the tree object itself.
-// These objects, in turn, are backed by server-side cognates.
-//
-// The UI gets its job done as follows. User actions are intercepted by event handlers on dom
-// elements. These dom elements are formally part of the ui layer. Each dom element will most
-// likely handle the event by passing it to the ui controller, which will coordinate all actions,
-// but some events might be handled directly by the dom element. The majority of
-// user-actions entail modification of a node. This achieved by sending a message to the associated
-// client-side node object, which is NOT part of the UI. This is the middle layer, which is the client
-// side model. These client-side objects, in turn, get their job done by making api calls to the server
-// to effect changes on the server side. They also handle responses from the server to update their
-// state, which they forward to their ui representations, so that the ui can render the state
-// change appropriately.
-// UI <--> client-side model <--> server-side api
-// TODO: Refactor header bar.
+/*
+ TODO: Make New Node get deleted on blur if nothing changed.
+ TODO: Think about nodespec, noderep, and node. All of these should be nodespecs and anything
+ that takes a nodespec should take the others. Does addNode always add a new node, or sometimes an existing one?
+ If the latter, how did the new node get created? What are the right primitives? Does it always go through the server first?
+ Is there a way to do some things on client side first? What are right primitives for creation and movement of nodes?
+ Primitives: server side: Node.new() creates a new node on server side. Node.insert(node, insertionPoint) inserts a node at the right place.
+ server side: Node.getTop(), Node.getTrash(), Node.get(:id) return specific nodesReps.
+ server side: addNodeOnServer(nodeSpec, insertionPoint) creates a new node on server at insertion point.
+ server side: getNodeFromServer(ref) returns a nodeRep for the referenced node.
+ client side: addNodeOnClient(nodeRep) attaches a rep from the server to the client side tree.
+ Server side node primitives: create, read, update, delete, trash, move, children.
+ Client side node primitives: create, update, trash, move, expand.
+ TODO: fix rank calculation. Do we need predecessor and successor in db?
+ TODO: Make the trash node visible in hierarchy: Top has children named User and System. But Trash and Basket under System.
+ TODO: There's an ambiguity between node.content and node.header.content. The former returns the text of node.header.content.
+ The latter returns the content dom object, which is a textarea element.
+ TODO: look for refs to stopPropagation() and preventDefault() and make sure they're necessary.
+ TODO: all the various UI dom components should simply defer to the ui controller for their functionality.
+ They should bind event handlers, but then pass the event to the ui controller for actual processing.
+ They are like sockets, with functionality to be plugged in by the ui controller.
+ TODO: hitting return on an empty node should delete the node.
+ TODO: Consider having hit return on a node put you in edit mode for the node, equal to clicking on it.
+ This presupposes we're not always in edit mode.
+ TODO: implement cut/copy/paste, and put cut nodes in "the basket".
+ TODO: Refactor for layers:
+ Top layer is the UI. It orchestrates all user-initiated action. It handles all events. It introduces
+ ui concepts like cut/paste, the clipboard, the trash, etc. Any data-entry or modification of the
+ tree must be mediated by the ui. The ui consists of a controller and dom elements. The dom elements
+ represent the tree and ui-related decorations such as pop up menus. The tree and its nodes
+ are represented by dom elements, but these dom elements are wrappers on underlying client-side
+ object that are *not* dom elements. These client-side objects represent the fundamental objects
+ that are the nodes of the tree, their relationships to each other, and the tree object itself.
+ These objects, in turn, are backed by server-side cognates.
 
-(function () { // Wrap everything in an anonymous function call to hide some globals.
+ The UI gets its job done as follows. User actions are intercepted by event handlers on dom
+ elements. These dom elements are formally part of the ui layer. Each dom element will most
+ likely handle the event by passing it to the ui controller, which will coordinate all actions,
+ but some events might be handled directly by the dom element. The majority of
+ user-actions entail modification of a node. This achieved by sending a message to the associated
+ client-side node object, which is NOT part of the UI. This is the middle layer, which is the client
+ side model. These client-side objects, in turn, get their job done by making api calls to the server
+ to effect changes on the server side. They also handle responses from the server to update their
+ state, which they forward to their ui representations, so that the ui can render the state
+ change appropriately.
+ UI <--> client-side model <--> server-side api
+
+ Main Components:
+ Controller: handles all client-side UI interactions
+ Server: client side object that mediates interactions with the server.
+ Tree: represents the entire tree.
+ Node: Represents a single node in the tree.
+ */
+
+//(function () { // Wrap everything in an anonymous function call to hide some globals.
 
 // ========================================================================
-//                   Global Access Point
+//                   Application Object
 // =========================================================================
-window.InformationTree = {}; // Create a namespace for the Information Tree package.
+window.InformationTreeApp = {}; //
 
-var IT = window.InformationTree; // nickname for our namespace
+var App = window.InformationTreeApp; // nickname for our namespace
+var IT  = App; // TODO: Get rid of references to this. This is deprecated.
+
+App.initPage = function() {
+  this.treeView   = $('information-tree')[0];
+  this.tree       = this.treeView; // TODO: deprecated
+  this.treeView.initTop();
+
+  this.controller = new Controller;
+  this.ui         = this.controller; // TODO: deprecated
+}
 
 // ========================================================================
 //                   User Interface
@@ -97,7 +114,7 @@ makes these methods more "functional" in the approach, because each ui function 
 to act on. Under normal circumstances, it would be more natural to just associate the functionality as a method on the
 object of interest.
 */
-IT.Ui = function () {
+Controller = function () {
   var self = this;
 
   self.selectedNode = null // The Ui maintains a "selected node", to which actions are performed.
@@ -245,24 +262,17 @@ IT.Ui = function () {
   }
 };
 
+IT.Ui = Controller; // TODO: deprecated
+
 
 // ========================================================================
 //                   Information Tree
 // =========================================================================
-IT.Tree = defCustomTag('information-tree', HTMLElement);
-
-/*
-We do some things onCreate that are independent of the existence of dom objects,
-but which the dom manipulations onAttach will depend on.
-*/
-IT.Tree.prototype.onCreate = function() {
-  IT.tree  = this;      // Register ourselves so that we are globally accessible.
-  IT.ui    = new IT.Ui; // Create and register a new Ui object.
-}
+var TreeView = defCustomTag('information-tree', HTMLElement);
+IT.Tree = TreeView; // TODO: deprecated
 
 
 IT.Tree.prototype.onAttach = function() {
-  this.initTop();
 };
 
 
@@ -1352,4 +1362,8 @@ UntrashNode.prototype.afterCreate = function() {
   $this.click(function(event) {IT.ui.restoreLastDeletedNode()})
 }
 
-})() // We wrapped everything in an anonymous function call to hide some globals.
+$(document).ready(function(){
+  App.initPage();
+})
+
+//})() // We wrapped everything in an anonymous function call to hide some globals.
