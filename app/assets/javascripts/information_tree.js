@@ -88,7 +88,8 @@ var App = window.InformationTreeApp; // nickname for our namespace
 var IT  = App; // TODO: Get rid of references to this. This is deprecated.
 
 App.initPage = function() {
-  this.treeView   = $('information-tree')[0];
+  this.server     = new Server;
+  this.treeView   = $('information-tree')[0].init();
   this.tree       = this.treeView; // TODO: deprecated
 
   this.controller = new Controller;
@@ -96,9 +97,28 @@ App.initPage = function() {
 }
 
 
+
+// ========================================================================
+//                   Server API
+// ========================================================================
+var Server = function () {
+
+}
+
+Server.prototype.top = function(callback) {
+  getJsonFromServer("GET", this.topNodePath(), callback)
+}
+
+
+Server.prototype.topNodePath = function() {
+  return '/nodes/top.json'
+}
+
+
+
 // ========================================================================
 //                   User Interface
-// =========================================================================
+// ========================================================================
 /*
 Although everything on the client side is in some sense user-interface, here we are specifically
 designating a Ui object whose methods are those that respond directly to browser events and
@@ -257,7 +277,7 @@ IT.Ui = Controller; // TODO: deprecated
 var TreeView = defCustomTag('information-tree', HTMLElement);
 IT.Tree = TreeView; // TODO: deprecated
 
-TreeView.prototype.onCreate = function() {
+TreeView.prototype.init = function() {
   var self = this;
   this.ready = false;
   $(this).click(this.onClick); // TODO: These belong on an information-tree-view object.
@@ -269,6 +289,8 @@ TreeView.prototype.onCreate = function() {
     self.ready = true;
     // $(document).tooltip(); // TODO: is there a way for this not to be here?
   })
+
+  return this;
 };
 
 TreeView.prototype.onClick = function (event) {
@@ -355,14 +377,12 @@ IT.Tree.prototype._addNodesOnClient = function(fetchedNodeReps) {
 // ========================================================================
 var Tree = function() {
   this.ready = false;
-  var me = this;
-  this.getTopNodeFromServer(function(node) {
-    me.top = new TextNode(node); // TODO: fix this
-    me.ready = true;
-  })
+  this.getTop()
 }
 
-
+/*
+Execute callback when the tree instance is fully initialized.
+ */
 Tree.prototype.whenReady = function (callback) {
   var self = this;
   when(function() {return self.ready})
@@ -370,13 +390,14 @@ Tree.prototype.whenReady = function (callback) {
 }
 
 
-Tree.prototype.topNodePath = function() {
-  return '/nodes/top.json'
-}
-
 // TODO: put this on Server class.
-Tree.prototype.getTopNodeFromServer = function(callback) {
-  getJsonFromServer("GET", this.topNodePath(), callback)
+Tree.prototype.getTop = function() {
+  var self = this;
+
+  App.server.top(function(node) {
+    self.top = new TextNode(node); // TODO: fix this
+    self.ready = true;
+  })
 }
 // =========================================================================
 //                   Text Node
