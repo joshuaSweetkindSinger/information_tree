@@ -96,7 +96,7 @@ Server:     Mediate all api calls to the server.
  TODO: consider creating a single View class, with subclasses representing the different view classes.
  TODO: Should the treeView be holding the droppable target? Or should the UI be holding it? Seems like
        if the ui holds the selectedNode, it should also hold the droppable target. And vice versa,
-       perhaps the treeView should hold both. 
+       perhaps the treeView should hold both.
  */
 
 $(document).ready(function(){
