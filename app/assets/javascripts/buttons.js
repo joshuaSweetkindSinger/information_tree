@@ -216,7 +216,7 @@ AddChild.prototype.afterCreate = function() {
   $this.html('+Child')
 
   // Click function adds a new child NodeView to the NodeView associated with this button. This means
-  // adding the new node to the NodeView's NodeChildren element.
+  // adding the new node to the NodeView's NodeChildrenView element.
   $this.click(function() {App.controller.addChild()})
 }
 

@@ -37,7 +37,7 @@ NodeView.prototype.afterCreate = function(nodeRep) {
 
   $this.append(this.header)
 
-  this.childrenContainer = new NodeChildren;
+  this.childrenContainer = new NodeChildrenView;
   $this.append(this.childrenContainer)
 
   this.update(nodeRep) // Assign properties from node

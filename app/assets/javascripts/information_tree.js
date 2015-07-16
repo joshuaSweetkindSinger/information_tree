@@ -17,9 +17,9 @@ The structure is as follows:
 TextTree: a single node of this type is put in a static html file, which initiates the dynamic
           creation of a text tree when the html file is loaded into the browser, via its custom tag constructor.
           A text tree is made up of TextNodes.
-TextNode: has two child elements, called NodeHeaderView and NodeChildren.
+TextNode: has two child elements, called NodeHeaderView and NodeChildrenView.
 NodeHeaderView: represents content for the node.
-NodeChildren: represents a container for sub-nodes. Its only children are of type TextNode.
+NodeChildrenView: represents a container for sub-nodes. Its only children are of type TextNode.
 
 Text Nodes are stored in the db in the nodes table. When the client-side expands a node, it asks the db for its children,
 which get sent as json, and then the client builds the nodes on the browser.
