@@ -1,3 +1,6 @@
+// ========================================================================
+//                   Asynchronous Server Calls
+// ========================================================================
 var HTTP = {
   is_success_code: function(code) {
     return code >= 200 && code < 300
@@ -82,6 +85,51 @@ function makeFormStringFromHash (params) {
   return pairs.join('&')
 }
 
+var delayed = function (obj) {
+  return ('then' in obj) ? obj : new Delayed(obj)
+}
+
+var Delayed = function (obj) {
+  this.obj = obj;
+}
+
+Delayed.prototype.then = function(callback) {
+  callback(this.obj);
+  return this;
+}
+
+
+
+// Create a json request object. After the request is done,
+// pass the result through the pipeline by calling each of the functions
+// in functionPipe in turn, passing the result of the previous function, if it is not undefined,
+// to the next function in the pipe.
+var JsonRequest = function(verb, url, params) {
+  var self = this;
+  this.pipeline = [];
+
+  getJsonFromServer(verb, url,
+    function(json) {
+      self.pipeline.forEach(function (f) {f(json)});
+      self.pipeline = [];
+      self.result = json;
+  },
+    params)
+}
+
+
+// Run the callback on the json result object when the request is done.
+// If it did not finish successfully, the json object will have a single "error" key.
+JsonRequest.prototype.then = function (callback) {
+  if ('result' in this) {
+    callback.call(this, this.result);
+  } else {
+    this.pipeline.push(callback);
+  }
+
+  return this;
+}
+
 
 // ========================================================================
 //                   Asynchronous Condition-Checking
@@ -97,7 +145,7 @@ when(function() {return mycheck()}, 500).do(something()); // check every 500 mil
 whenReady(myObj).do(something()); // Do something() when myObj.ready is true.
 */
 
-var when = function (predicate,checkInterval) {
+var when = function (predicate, checkInterval) {
   return new When(predicate, checkInterval);
 }
 

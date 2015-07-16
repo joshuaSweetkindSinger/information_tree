@@ -106,7 +106,7 @@ var Server = function () {
 }
 
 Server.prototype.top = function(callback) {
-  getJsonFromServer("GET", this.topNodePath(), callback)
+  return new JsonRequest("GET", this.topNodePath(), callback)
 }
 
 
@@ -387,8 +387,7 @@ IT.Tree.prototype._addNodesOnClient = function(fetchedNodeReps) {
 //                   Tree
 // ========================================================================
 var Tree = function() {
-  this.ready = false;
-  this.getTop()
+  this.top = new TextNode(App.server.top())
 }
 
 /*
@@ -396,18 +395,10 @@ Execute callback when the tree instance is fully initialized.
  */
 Tree.prototype.whenReady = function (callback) {
   var self = this;
-  when(function() {return self.ready})
+  when(function() {return self.top.ready})
     .do(callback);
 }
 
-Tree.prototype.getTop = function() {
-  var self = this;
-
-  App.server.top(function(node) {
-    self.top = new TextNode(node); // TODO: fix this
-    self.ready = true;
-  })
-}
 // =========================================================================
 //                   Text Node
 // =========================================================================
@@ -422,19 +413,29 @@ TextNode.defaultSpec = {
 
 // ======= Construction and Initialization
 /*
-Create a client-side representation of node, which exists on the server.
+Create a client-side representation of nodeRepOrDelayed, which exists on the server.
+The object nodeRepOrDelayed is either a node representation, or a Delayed object
+capturing an asynchronous call to the server, which will ultimately resolve to a nodeRep.
 
 NOTE: afterCreate() is only called via programmatic creation of new objects, as opposed to static creation.
 We put all the logic in our afterCreate() method, because we know we are not doing static creation, and we
 need to pass args, which can only be passed via afterCreate().
  */
-TextNode.prototype.afterCreate = function(node) {
+TextNode.prototype.afterCreate = function(nodeRepOrDelayed) {
+  var self = this;
+  this.ready = false;
+
+  delayed(nodeRepOrDelayed).then(function (nodeRep) {self.init(nodeRep)})
+}
+
+// Initialize ourselves from a node representation.
+TextNode.prototype.init = function (nodeRep) {
   var $this = $(this)
 
   // Create dom-substructures
   // NOTE: These must be created before the properties below are assigned,
   // because some of them get passed into the substructures.
-  this.header = new NodeHeader(this, {tooltip:"Created on " + node.created_at}); // TODO: this is inelegant. should use this.createdAt, but it hasn't been assigned yet, and can't be assigned before header node is created.
+  this.header = new NodeHeader(this, {tooltip:"Created on " + nodeRep.created_at}); // TODO: this is inelegant. should use this.createdAt, but it hasn't been assigned yet, and can't be assigned before header node is created.
   // TODO: how do you handle re-initializing existing memory, as opposed to genning new memory, for instances?
 
   $this.append(this.header)
@@ -442,7 +443,7 @@ TextNode.prototype.afterCreate = function(node) {
   this.childrenContainer = new NodeChildren;
   $this.append(this.childrenContainer)
 
-  this.update(node) // Assign properties from node
+  this.update(nodeRep) // Assign properties from node
 
   // Record client-side state info
   this.childrenFetched = false // True when we have received child node information from the server. See fetch_and_expand()
@@ -454,6 +455,8 @@ TextNode.prototype.afterCreate = function(node) {
     start: this.dragStart,
     stop: this.dragStop
   })
+
+  this.ready = true;
 }
 
 
