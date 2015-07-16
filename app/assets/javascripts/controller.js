@@ -160,5 +160,3 @@ Controller = function () {
   self.nop = function() {
   }
 };
-
-App.controller = Controller; // TODO: deprecated
