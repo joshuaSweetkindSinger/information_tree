@@ -32,7 +32,7 @@ NodeView.prototype.afterCreate = function(nodeRep) {
   // Create dom-substructures
   // NOTE: These must be created before the properties below are assigned,
   // because some of them get passed into the substructures.
-  this.header = new NodeHeader(this, {tooltip:"Created on " + nodeRep.created_at}); // TODO: this is inelegant. should use this.createdAt, but it hasn't been assigned yet, and can't be assigned before header node is created.
+  this.header = new NodeHeaderView(this, {tooltip:"Created on " + nodeRep.created_at}); // TODO: this is inelegant. should use this.createdAt, but it hasn't been assigned yet, and can't be assigned before header node is created.
   // TODO: how do you handle re-initializing existing memory, as opposed to genning new memory, for instances?
 
   $this.append(this.header)
