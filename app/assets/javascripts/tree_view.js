@@ -10,7 +10,7 @@ TreeView.prototype.init = function() {
   $(this).click(this.onClick); // TODO: These belong on an information-tree-view object.
 
   this.tree = (new Tree).then(function() {
-    self.top = self.tree.top; // TODO: fix this. tree.top should not be a dom element.
+    self.top = new NodeView(self.tree.top); // TODO: fix this. tree.top should not be a dom element.
     $(self).append(self.top);
     // $(document).tooltip(); // TODO: is there a way for this not to be here?
   })

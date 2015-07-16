@@ -7,7 +7,7 @@ var Tree = function() {
 
   // Tell the server to get the top node. When we get it, create a client-side NodeView and assign it to
   // member variable 'top'. In the meantime, store the request object on _topRequest.
-  this._delayed = App.server.top().then(function(top) {self.top = new NodeView(top)});
+  this._delayed = App.server.top().then(function(top) {self.top = new Node(top)});
 }
 
 /*

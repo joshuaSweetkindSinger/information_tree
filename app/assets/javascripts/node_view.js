@@ -9,42 +9,25 @@ A NodeView is a client-side dom element that represents a single node in the inf
 // =========================================================================
 var NodeView = defCustomTag('node-view', HTMLElement);
 
-// Default json spec for a new node
-NodeView.defaultSpec = {
-  content:'',
-  width:500,
-  height:100
-}
 
 // ======= Construction and Initialization
 /*
- Create a client-side representation of nodeRepOrDelayed, which exists on the server.
- The object nodeRepOrDelayed is either a node representation, or a Delayed object
- capturing an asynchronous call to the server, which will ultimately resolve to a nodeRep.
+ Create a NodeView object from a Node object. The NodeView object is a wrapper for the Node
+ object and endows the Node object with UI-related functionality. The Node object is not a dom element,
+ but the NodeView object is.
 
  NOTE: afterCreate() is only called via programmatic creation of new objects, as opposed to static creation.
  We put all the logic in our afterCreate() method, because we know we are not doing static creation, and we
  need to pass args, which can only be passed via afterCreate().
  */
-NodeView.prototype.afterCreate = function(nodeRep) {
+NodeView.prototype.afterCreate = function(node) {
   var $this = $(this)
+  this.node = node;
 
-  // Create dom-substructures
-  // NOTE: These must be created before the properties below are assigned,
-  // because some of them get passed into the substructures.
-  this.header = new NodeHeaderView(this, {tooltip:"Created on " + nodeRep.created_at}); // TODO: this is inelegant. should use this.createdAt, but it hasn't been assigned yet, and can't be assigned before header node is created.
-  // TODO: how do you handle re-initializing existing memory, as opposed to genning new memory, for instances?
+  $this.append(this.header = new NodeHeaderView(this, {tooltip:"Created on " + this.node.createdAt}))
+  $this.append(this.childrenContainer = new NodeChildrenView);
 
-  $this.append(this.header)
-
-  this.childrenContainer = new NodeChildrenView;
-  $this.append(this.childrenContainer)
-
-  this.update(nodeRep) // Assign properties from node
-
-  // Record client-side state info
-  this.childrenFetched = false // True when we have received child node information from the server. See fetch_and_expand()
-  this.collapse();             // Note: need to call this method, not just set state, so that child dom element will be hidden.
+  this.collapse();   // Note: need to call this method, not just to set state, but so that child dom element will be hidden.
 
   $this.draggable({
     revert: true,
@@ -53,6 +36,39 @@ NodeView.prototype.afterCreate = function(nodeRep) {
     stop: this.dragStop
   })
 }
+
+// TODO: Rethink all this, especially width/height. Is this what we want?
+Object.defineProperties(NodeView.prototype, {
+    content: {
+      get: function() {
+        return $(this.header.content).val()
+      },
+      set: function(content) {
+        $(this.header.content).val(content)
+      }
+    },
+
+    width: {
+      get: function() {
+        return $(this.header.content).width()
+      },
+      set: function(v) {
+        this._width = v // Cache requested width. This is a kludge to fix incorrect width at create time. See onAttach() above.
+        $(this.header.content).width(v)
+      }
+    },
+
+    height: {
+      get: function() {
+        return $(this.header.content).height()
+      },
+      set: function(v) {
+        this._height = v // Cache requested height. This is a kludge to fix incorrect width at create time. See onAttach() above.
+        $(this.header.content).height(v)
+      }
+    }
+  }
+);
 
 
 /*
@@ -99,66 +115,10 @@ NodeView.prototype.onAttach = function() {
 }
 
 
-// TODO: Rethink all this, especially width/height. Is this what we want?
-Object.defineProperties(NodeView.prototype, {
-    content: {
-      get: function() {
-        return $(this.header.content).val()
-      },
-      set: function(content) {
-        $(this.header.content).val(content)
-      }
-    },
-
-    width: {
-      get: function() {
-        return $(this.header.content).width()
-      },
-      set: function(v) {
-        this._width = v // Cache requested width. This is a kludge to fix incorrect width at create time. See onAttach() above.
-        $(this.header.content).width(v)
-      }
-    },
-
-    height: {
-      get: function() {
-        return $(this.header.content).height()
-      },
-      set: function(v) {
-        this._height = v // Cache requested height. This is a kludge to fix incorrect width at create time. See onAttach() above.
-        $(this.header.content).height(v)
-      }
-    }
-  }
-);
 
 
-/*
- Update ourselves with new information from the server-side rep <node>.
- In principle, this update could involve any of the fields of a node object.
- As of this writing, we are really only interested in updating hierarchy links.
 
- TODO: in future, make this clear and efficient. Probably want to take the node returned
- by the server and just hook it up to a prototype and call it a day, and also find any existing
- dom objects associated with the node and hook those up too. This may require some cleanup though
- for the dom objects.
- */
-NodeView.prototype.update = function(node) {
-  this.set_id(node.id);
 
-  this.type_id        = node.type_id
-  this.parent_id      = node.parent_id;
-  this.predecessor_id = node.predecessor_id;
-  this.successor_id   = node.successor_id;
-  this.rank           = node.rank;
-  this.content        = node.content
-  this.width          = node.width
-  this.height         = node.height
-  this.createdAt      = node.created_at;
-  this.updatedAt      = node.updated_at;
-
-  return this;
-}
 
 NodeView.prototype.set_id = function(id) {
   this.id = id;
