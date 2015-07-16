@@ -1,6 +1,6 @@
 /*
 This file defines client-side functionality for the information-tree sub-app.
-
+TODO: Obsolete documentation. Update this.
 This defines dom tag classes for the node hierarchy of an information tree.
 The structure is as follows:
 TextTree: a single node of this type is put in a static html file, which initiates the dynamic
@@ -364,7 +364,7 @@ unattached to the text tree.
 */
 IT.Tree.prototype._findOrCreate = function(nodeRep) {
   var foundNode = this.find(nodeRep.id);
-  return foundNode ? foundNode.update(nodeRep) : new TextNode(nodeRep);
+  return foundNode ? foundNode.update(nodeRep) : new NodeView(nodeRep);
 }
 
 
@@ -390,9 +390,9 @@ IT.Tree.prototype._addNodesOnClient = function(fetchedNodeReps) {
 var Tree = function() {
   var self = this;
 
-  // Tell the server to get the top node. When we get it, create a client-side TextNode and assign it to
+  // Tell the server to get the top node. When we get it, create a client-side NodeView and assign it to
   // member variable 'top'. In the meantime, store the request object on _topRequest.
-  this._delayed = App.server.top().then(function(top) {self.top = new TextNode(top)});
+  this._delayed = App.server.top().then(function(top) {self.top = new NodeView(top)});
 }
 
 /*
@@ -404,12 +404,12 @@ Tree.prototype.then = function (callback) {
 }
 
 // =========================================================================
-//                   Text Node
+//                   Node View
 // =========================================================================
-var TextNode = defCustomTag('text-node', HTMLElement);
+var NodeView = defCustomTag('node-view', HTMLElement);
 
  // Default json spec for a new node
-TextNode.defaultSpec = {
+NodeView.defaultSpec = {
   content:'',
   width:500,
   height:100
@@ -425,7 +425,7 @@ NOTE: afterCreate() is only called via programmatic creation of new objects, as 
 We put all the logic in our afterCreate() method, because we know we are not doing static creation, and we
 need to pass args, which can only be passed via afterCreate().
  */
-TextNode.prototype.afterCreate = function(nodeRep) {
+NodeView.prototype.afterCreate = function(nodeRep) {
   var $this = $(this)
 
   // Create dom-substructures
@@ -459,7 +459,7 @@ A drag event just started. Erase the last drop target.
 This function is called whenever a new drag event is initiated.
 */
 
-TextNode.prototype.dragStart = function() {
+NodeView.prototype.dragStart = function() {
   IT.tree.dropTarget = null;
 }
 
@@ -468,7 +468,7 @@ TextNode.prototype.dragStart = function() {
 A drag event just ended. Determine whether we were dropped on top of another node,
 or let go beneath a node, and do either an addChild() or an addSuccessor() accordingly.
 */
-TextNode.prototype.dragStop = function(event, helper) {
+NodeView.prototype.dragStop = function(event, helper) {
   // There's a drop target: add a child
   if (IT.tree.dropTarget) {
     IT.ui.addChild(IT.tree.dropTarget, {id: this.id});
@@ -488,8 +488,8 @@ TextNode.prototype.dragStop = function(event, helper) {
 // during which we can pass in args, such as width an height. But, because the node is not yet
 // attached to the DOM, the computed width and height are wrong somehow (not sure of details).
 // So, we cache the width and height at create time and then clean it up by resetting at attach time.
-TextNode.prototype.onAttach = function() {
-  // The conditional is a kludge: For dragging, the textnode gets shallow-copied and won't have a header.
+NodeView.prototype.onAttach = function() {
+  // The conditional is a kludge: For dragging, the nodeView gets shallow-copied and won't have a header.
   // In that case, we want to ignore it anyway.
   if (this.header) {
     this.width = this._width
@@ -499,7 +499,7 @@ TextNode.prototype.onAttach = function() {
 
 
 // TODO: Rethink all this, especially width/height. Is this what we want?
-Object.defineProperties(TextNode.prototype, {
+Object.defineProperties(NodeView.prototype, {
     content: {
       get: function() {
         return $(this.header.content).val()
@@ -542,7 +542,7 @@ by the server and just hook it up to a prototype and call it a day, and also fin
 dom objects associated with the node and hook those up too. This may require some cleanup though
 for the dom objects.
 */
-TextNode.prototype.update = function(node) {
+NodeView.prototype.update = function(node) {
   this.set_id(node.id);
 
   this.type_id        = node.type_id
@@ -559,13 +559,13 @@ TextNode.prototype.update = function(node) {
   return this;
 }
 
-TextNode.prototype.set_id = function(id) {
+NodeView.prototype.set_id = function(id) {
   this.id = id;
   this.header.set_id(id);
   this.childrenContainer.set_id(id);
 }
 
-TextNode.prototype.visibleNodes = function(result) {
+NodeView.prototype.visibleNodes = function(result) {
   result.push(this);
   if (this.state == 'expanded') {
     this.kids().forEach(function(node) {
@@ -582,7 +582,7 @@ TextNode.prototype.visibleNodes = function(result) {
 
 /*
 Attach ourselves to the Text tree. This is done just after a new
-TextNode is created from a rep sent by the server to the client.
+NodeView is created from a rep sent by the server to the client.
 
 We figure out where to attach ourselves by examining our predecessor, successor,
 and parent links. If we have one of the first two links, we know exactly where to attach
@@ -592,7 +592,7 @@ In all cases, make sure that our new parent has had its children downloaded from
 before we glom ourselves to it; otherwise, we create an indeterminate state in which only some
 of the parent's children are represented on the client side.
 */
-TextNode.prototype._glom = function() {
+NodeView.prototype._glom = function() {
   var relative;
   if (relative = this.predecessor()) {
     relative._attachSuccessor(this);
@@ -613,13 +613,13 @@ TextNode.prototype._glom = function() {
 };
 
 
-TextNode.prototype._attachSuccessor = function(successor) {
+NodeView.prototype._attachSuccessor = function(successor) {
   $(this).after(successor);
   return this;
 };
 
 
-TextNode.prototype._attachPredecessor = function(predecessor) {
+NodeView.prototype._attachPredecessor = function(predecessor) {
   $(this).before(predecessor);
   return this;
 };
@@ -628,39 +628,39 @@ TextNode.prototype._attachPredecessor = function(predecessor) {
 /*
 NOTE: This method will only be called by glom() if the parent has no children yet.
 */
-TextNode.prototype._attachChild = function(child) {
+NodeView.prototype._attachChild = function(child) {
   $(this.childrenContainer).append(child);
   return this;
 };
 
 
 /*
-Search the dom for a TextNode whose id matches the predecessor id of this
+Search the dom for a NodeView whose id matches the predecessor id of this
 and return it if found.
 */
-TextNode.prototype.predecessor = function() {
+NodeView.prototype.predecessor = function() {
   return IT.tree.find(this.predecessor_id);
 };
 
 
 /*
-Search the dom for a TextNode whose id matches the predecessor id of this
+Search the dom for a NodeView whose id matches the predecessor id of this
 and return it if found.
 */
-TextNode.prototype.successor = function() {
+NodeView.prototype.successor = function() {
   return IT.tree.find(this.successor_id);
 };
 
 
 /*
-Search the dom for a TextNode whose id matches the parent id of this
+Search the dom for a NodeView whose id matches the parent id of this
 and return it if found.
 */
-TextNode.prototype.parent = function() {
+NodeView.prototype.parent = function() {
   return IT.tree.find(this.parent_id);
 }
 
-TextNode.prototype.kids = function() {
+NodeView.prototype.kids = function() {
   return $(this.childrenContainer).children().get();
 }
 
@@ -690,9 +690,9 @@ NOTES: nodeSpec is a hash that specifies a new node, or names an existing one, b
           a client-side node object.
        node is a client-side node object.
 */
-TextNode.prototype._addNode = function(nodeSpec, mode, callback) {
+NodeView.prototype._addNode = function(nodeSpec, mode, callback) {
   if (!nodeSpec) {
-    nodeSpec = TextNode.defaultSpec;
+    nodeSpec = NodeView.defaultSpec;
   }
 
   var me = this;
@@ -708,7 +708,7 @@ TextNode.prototype._addNode = function(nodeSpec, mode, callback) {
     });
 };
 
-TextNode.prototype._reportAddNodeOnServerError = function(node, mode) {
+NodeView.prototype._reportAddNodeOnServerError = function(node, mode) {
   console.log("Got an error attempting to add this node on the server:", node);
   window.debug = node;
   return;
@@ -727,7 +727,7 @@ Inputs:
   mode: one of 'add_child', 'add_successor', 'add_predecessor'.
   next: This is a continuation function that says what to do after the node is created or inserted.
 */
-TextNode.prototype._addNodeOnServer = function(node, mode, next) {
+NodeView.prototype._addNodeOnServer = function(node, mode, next) {
   getJsonFromServer(
     "POST",
     this._addNodePath(),
@@ -737,7 +737,7 @@ TextNode.prototype._addNodeOnServer = function(node, mode, next) {
 };
 
 
-TextNode.prototype._addNodePath = function() {
+NodeView.prototype._addNodePath = function() {
   return '/nodes/' + this.id + '/add_node.json'
 }
 
@@ -746,7 +746,7 @@ Create a new node on the server or insert an existing one, in either case making
 node represented by this node be its parent. Then effect the same transformation
 on the client side.
 */
-TextNode.prototype.addChild = function(node, callback) {
+NodeView.prototype.addChild = function(node, callback) {
   // null node means we're creating a new node as opposed to moving an existing one.
   // Make sure we are expanded so that the new child node can be seen.
   if (!node) this.expand();
@@ -760,7 +760,7 @@ Create a new node on the server or insert an existing one, in either case making
 node represented by this node be its predecessor. Then effect the same transformation
 on the client side.
 */
-TextNode.prototype.addSuccessor = function(node, callback) {
+NodeView.prototype.addSuccessor = function(node, callback) {
   this.parent().expand(); // Make sure that our parent is expanded so that the new node can be seen.
   this._addNode(node, 'add_successor', callback);
 }
@@ -771,7 +771,7 @@ Create a new node on the server or insert an existing one, in either case making
 node represented by this node be its successor. Then effect the same transformation
 on the client side.
 */
-TextNode.prototype.addPredecessor = function(node, callback) {
+NodeView.prototype.addPredecessor = function(node, callback) {
   this.parent().expand(); // Make sure that our parent is expanded so that the new node can be seen.
   this._addNode(node, 'add_predecessor', callback);
 }
@@ -779,14 +779,14 @@ TextNode.prototype.addPredecessor = function(node, callback) {
 
 // ========================== Paste
 // Paste node onto ourselves. This means adding it as a child.
-TextNode.prototype.paste = function(node) {
+NodeView.prototype.paste = function(node) {
   this.addChild({id: node.id});
 };
 
 // =========================== Trash
 // Ask the server to trash this node from the hierarchy.
 // When the server replies, trash the node from the browser.
-TextNode.prototype.trash = function() {
+NodeView.prototype.trash = function() {
   var me = this
   sendServer(
     "DELETE",
@@ -798,7 +798,7 @@ TextNode.prototype.trash = function() {
     })
 }
 
-TextNode.prototype._trashPath = function(id) {
+NodeView.prototype._trashPath = function(id) {
   return '/nodes/' + id + '/trash.json'
 }
 
@@ -806,7 +806,7 @@ TextNode.prototype._trashPath = function(id) {
 /*
 Get rid of <this> from the text tree.
 */
-TextNode.prototype._trashOnClient = function() {
+NodeView.prototype._trashOnClient = function() {
   $(this).remove()
 }
 
@@ -824,7 +824,7 @@ To do this correctly, we would need to launch all the asynchronous threads but h
 that noticed when the last one finished, only then invoking the show() that would expand the toplevel
 node. Another approach would be to have the server calls block until they are finished.
 */
-TextNode.prototype.expand = function(doRecursive) {
+NodeView.prototype.expand = function(doRecursive) {
   var me = this;
   this._fetchAndAddChildrenOnClient(
     function() {
@@ -842,7 +842,7 @@ child node to the tree on the client-side;
 Finally call continuation with the array of newly created text nodes from the
 representations that were fetched, or call continuation with [] if none were fetched.
 */
-TextNode.prototype._fetchAndAddChildrenOnClient = function(callback) {
+NodeView.prototype._fetchAndAddChildrenOnClient = function(callback) {
   this._fetchChildren(
     function(fetchedNodes) {
       if (fetchedNodes) {
@@ -861,7 +861,7 @@ to the tree on the client side. It *does* record that the children have been fet
 So it leaves the state of the client-side in a precarious way if things should be aborted here.
 It should only be called by expand(), who knows what it's doing.
 */
-TextNode.prototype._fetchChildren = function(callback) {
+NodeView.prototype._fetchChildren = function(callback) {
   if (this.childrenFetched) {
     callback(false); // Pass false to the continuation to indicate that no children were fetched.
   } else {
@@ -875,7 +875,7 @@ TextNode.prototype._fetchChildren = function(callback) {
 }
 
 
-TextNode.prototype._childrenPath = function(id) {
+NodeView.prototype._childrenPath = function(id) {
   return '/nodes/' + id + '/children.json'
 }
 
@@ -886,7 +886,7 @@ which means revealing its children and showing its button panel.
 This is a helper method called by expand(). The parent method takes care
 of ensuring that this node already has its children fetched from the server.
 */
-TextNode.prototype._expand = function() {
+NodeView.prototype._expand = function() {
   if (this.state == 'expanded') return; // Already expanded, so do nothing.
 
   this.state = 'expanded'
@@ -895,7 +895,7 @@ TextNode.prototype._expand = function() {
 
 
 // Collapse this node, which means hiding its children and hiding its button panel.
-TextNode.prototype.collapse = function(doRecursive) {
+NodeView.prototype.collapse = function(doRecursive) {
   this.state = 'collapsed'
   var nodeChildren = $(this).children('node-children')
   nodeChildren.hide('slow')
@@ -907,7 +907,7 @@ TextNode.prototype.collapse = function(doRecursive) {
   }
 }
 
-  TextNode.prototype.toggle = function(doRecursive) {
+  NodeView.prototype.toggle = function(doRecursive) {
   if (this.state == 'expanded') {
     this.collapse(doRecursive)
   } else {
@@ -918,7 +918,7 @@ TextNode.prototype.collapse = function(doRecursive) {
 
 // =================== Auto-Size
 // Calculate a pleasing size for the content textarea associated with this text node.
-TextNode.prototype.autoSize = function() {
+NodeView.prototype.autoSize = function() {
   this.setAttributes(this.calcAutoSize())
 }
 
@@ -926,7 +926,7 @@ TextNode.prototype.autoSize = function() {
 // Return the calculated values as a hash.
 // TODO: Get rid of magic numbers, and make calculation take font size into account.
 // TODO: height is not set correctly for large amounts of text. Fix it.
-TextNode.prototype.calcAutoSize = function() {
+NodeView.prototype.calcAutoSize = function() {
   var n = this.content.length
   var maxWidth = 1000.0
   var charWidth  = 8.0
@@ -951,7 +951,7 @@ TextNode.prototype.calcAutoSize = function() {
 
 // =========================== Follow Link
 // Open up in a new tab (or window) the URL represented by our node's content.
-TextNode.prototype.followLink = function() {
+NodeView.prototype.followLink = function() {
   var url = this.content
   if (url.slice(0,4) == 'http') open(url)
 }
@@ -963,7 +963,7 @@ TextNode.prototype.followLink = function() {
 // on the server first, and then the server replies with a json that represents the changed node.
 // Note: This does not allow you to set attributes affecting topology, e.g.: parent_id, rank.
 // Attributes which can be set are: content, width, height.
-TextNode.prototype.setAttributes = function(options) {
+NodeView.prototype.setAttributes = function(options) {
   var me = this
   getJsonFromServer(
     "PUT",
@@ -981,12 +981,12 @@ TextNode.prototype.setAttributes = function(options) {
   )
 }
 
-TextNode.prototype.setAttributesPath = function(id) {
+NodeView.prototype.setAttributesPath = function(id) {
   return '/nodes/' + id + '/set_attributes.json'
 }
 
 
-TextNode.prototype.setAttributesOnClient = function(jsonNode) {
+NodeView.prototype.setAttributesOnClient = function(jsonNode) {
   if (jsonNode.id != this.id) {
     throw("Mismatching ids: id from server (" + options.id + ") does not match id on client (" + this.id + ").")
   }
@@ -1006,14 +1006,14 @@ TextNode.prototype.setAttributesOnClient = function(jsonNode) {
 NodeHeader is a container for the node's content and buttons.
 */
 var NodeHeader = defCustomTag('node-header', HTMLElement)
-NodeHeader.prototype.afterCreate = function(textNode, options) {
+NodeHeader.prototype.afterCreate = function(nodeView, options) {
   var $this = $(this)
-  this.textNode = textNode
+  this.nodeView = nodeView
 
-  this.expandCollapseButton = new ExpandCollapse(textNode)
+  this.expandCollapseButton = new ExpandCollapse(nodeView)
   $this.append(this.expandCollapseButton)
 
-  this.content = new NodeContent(textNode, options);
+  this.content = new NodeContent(nodeView, options);
   $this.append(this.content)
 }
 
@@ -1097,11 +1097,11 @@ ButtonPanel.prototype.popTo = function(node) {
 
 var NodeContent = defCustomTag('node-content', HTMLTextAreaElement, 'textarea')
 
-NodeContent.prototype.afterCreate = function(textNode, options) {
+NodeContent.prototype.afterCreate = function(nodeView, options) {
   var $this = $(this);
   var self  = this;
 
-  this.textNode = textNode;
+  this.nodeView = nodeView;
 
   $this.addClass('node-content'); // Since we are extending a text-area element, we can't put css on the node-content tag--there isn't one in the dom!
   $this.on("click", this.onClick);
@@ -1122,7 +1122,7 @@ NodeContent.prototype.afterCreate = function(textNode, options) {
 
 // Handle a left click in the text area.
 NodeContent.prototype.onClick = function (event) {
-  return IT.ui.clickLeftOnNode(this.textNode);
+  return IT.ui.clickLeftOnNode(this.nodeView);
 }
 
 
@@ -1132,34 +1132,34 @@ a pointer to the Node parent from the NodeContent object. So we create a delegat
 that will work at click-time.
 */
 NodeContent.prototype.onContextMenu = function(event) {
-  return IT.ui.clickRightOnNode(this.textNode, event);
+  return IT.ui.clickRightOnNode(this.nodeView, event);
 }
 
 NodeContent.prototype.onKeypress = function(event) {
   // carriage return -- create new successor node
   if (event.charCode == 13 && !event.altKey && !event.shiftKey && !event.ctrlKey) {
     event.preventDefault();
-    IT.ui.addSuccessor(this.textNode);
+    IT.ui.addSuccessor(this.nodeView);
 
   // shift-return -- create new child node
   } else if (event.charCode == 13 && !event.altKey && event.shiftKey && !event.ctrlKey) {
     event.preventDefault();
-    IT.ui.addChild(this.textNode);
+    IT.ui.addChild(this.nodeView);
 
   // control-c -- copy this node
   } else if (event.charCode == 'c'.charCodeAt(0) && !event.altKey && !event.shiftKey && event.ctrlKey) {
     event.preventDefault();
-    App.controller.copyNode(this.textNode);
+    App.controller.copyNode(this.nodeView);
 
   // control-v -- paste the copied node onto this node.
   } else if (event.charCode == 'v'.charCodeAt(0) && !event.altKey && !event.shiftKey && event.ctrlKey) {
     event.preventDefault();
-    App.controller.pasteNode(this.textNode);
+    App.controller.pasteNode(this.nodeView);
 
   // control-x -- cut this node
   } else if (event.charCode == 'x'.charCodeAt(0) && !event.altKey && !event.shiftKey && event.ctrlKey) {
     event.preventDefault();
-    App.controller.cutNode(this.textNode);
+    App.controller.cutNode(this.nodeView);
   }
 }
 
@@ -1173,9 +1173,9 @@ We only record this node as the drop target, not the phantom. I believe the phan
 the cloned helper node that is created as part of the drag.
 */
 NodeContent.prototype.handleDrop = function(event, ui) {
-  var textNode = this.textNode;
-  if (textNode.id) {
-    IT.tree.dropTarget = textNode;
+  var nodeView = this.nodeView;
+  if (nodeView.id) {
+    IT.tree.dropTarget = nodeView;
   }
 };
 
@@ -1188,9 +1188,9 @@ NodeContent.prototype.set_id = function(id) {
 // This event-handler is bound to the object's blur event.
 // It causes the content of the node to change on the server.
 NodeContent.prototype.onBlur = function(e) {
-  var autosize = this.textNode.calcAutoSize();
-  IT.ui.setAttributes(this.textNode,
-    {content: this.textNode.content,
+  var autosize = this.nodeView.calcAutoSize();
+  IT.ui.setAttributes(this.nodeView,
+    {content: this.nodeView.content,
        width: autosize.width,
       height: autosize.height})
 }
@@ -1218,8 +1218,8 @@ NodeChildren.prototype.set_id = function(id) {
 // =========================================================================
 var ExpandCollapse = defCustomTag('expand-collapse', HTMLElement)
 
-ExpandCollapse.prototype.afterCreate = function(textNode) {
-  this.textNode = textNode
+ExpandCollapse.prototype.afterCreate = function(nodeView) {
+  this.nodeView = nodeView
 
   $(this).html('>');
 
@@ -1228,8 +1228,8 @@ ExpandCollapse.prototype.afterCreate = function(textNode) {
 
 
 ExpandCollapse.prototype.toggle = function() {
-  $(this).html(this.textNode.state === 'expanded' ? '>' : 'v')
-  IT.ui.toggleNodeExpandCollapse(this.textNode);
+  $(this).html(this.nodeView.state === 'expanded' ? '>' : 'v')
+  IT.ui.toggleNodeExpandCollapse(this.nodeView);
 }
 
 // =========================================================================
@@ -1359,8 +1359,8 @@ AddChild.prototype.afterCreate = function() {
   var $this = $(this)
   $this.html('+Child')
 
-  // Click function adds a new child TextNode to the TextNode associated with this button. This means
-  // adding the new node to the TextNode's NodeChildren element.
+  // Click function adds a new child NodeView to the NodeView associated with this button. This means
+  // adding the new node to the NodeView's NodeChildren element.
   $this.click(function() {IT.ui.addChild()})
 }
 
@@ -1374,7 +1374,7 @@ AddSuccessor.prototype.afterCreate = function() {
   var $this = $(this)
   $this.html('+Successor')
 
-  // Click function adds a new TextNode after the TextNode associated with this button.
+  // Click function adds a new NodeView after the NodeView associated with this button.
   $this.click(function() {IT.ui.addSuccessor()})
 }
 
@@ -1388,7 +1388,7 @@ AddPredecessor.prototype.afterCreate = function() {
   var $this = $(this)
   $this.html('+Predecessor')
 
-  // Click function adds a new TextNode after the TextNode associated with this button.
+  // Click function adds a new NodeView after the NodeView associated with this button.
   $this.click(function() {IT.ui.addPredecessor()})
 }
 

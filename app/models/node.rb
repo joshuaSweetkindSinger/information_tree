@@ -151,6 +151,10 @@ class Node < ActiveRecord::Base
     successor.save!   if successor
     predecessor.save! if predecessor
     save!
+
+    # TODO: this is overly-agressive and will cause performance problems.
+    # To prevent underflow of rank resolution, re-rank children on each splice operation.
+    self.parent.rerank_children
   end
 
 
@@ -201,7 +205,9 @@ class Node < ActiveRecord::Base
 
 
   # Add node to the node hierarchy, to be a new child
-  # of self. It's added onto the beginning of self's set of children, unless last
+  # of self. If node is already in the hierarchy, then its existing parent- and sibling-links
+  # will be detached and re-hooked-up to fit with its new position.
+  # node is added onto the beginning of self's set of children, unless last
   # is true, in which case it is added onto the end.
   def add_child (node, last = false)
     node.insert(SplicePositionParent.new(self, last))
@@ -209,7 +215,7 @@ class Node < ActiveRecord::Base
 
 
   # Add node to the node hierarchy to be the successor
-  # of self. If node is already in the hiearchy, then its existing parent- and sibling-links
+  # of self. If node is already in the hierarchy, then its existing parent- and sibling-links
   # will be detached and re-hooked-up to fit with its new position.
   def add_successor (node)
     node.insert(SplicePositionPredecessor.new(self))
@@ -217,7 +223,7 @@ class Node < ActiveRecord::Base
 
 
   # Add node to the node hierarchy to be the predecessor
-  # of self. If node is already in the hiearchy, then its existing parent- and sibling-links
+  # of self. If node is already in the hierarchy, then its existing parent- and sibling-links
   # will be detached and re-hooked-up to fit with its new position.
   def add_predecessor (node)
     node.insert(SplicePositionSuccessor.new(self))
