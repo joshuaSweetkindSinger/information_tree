@@ -4,7 +4,7 @@
 # NOTE: The Nodes controller plays double duty: it services the nodes sub-app as well as the text-tree
 # sub-app.
 
-#= require expand_collapse_list_items
+#= require /expand_collapse_list_items
 
 # Initialize the page after the DOM is ready.
 $(document).ready( ->

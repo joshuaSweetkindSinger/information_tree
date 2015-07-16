@@ -1,4 +1,10 @@
 /*
+NOTE: This file is NOT part of the information-tree app. It is a remnant
+of an early prototype of the app.
+ */
+
+
+/*
 Functions supporting the expand/collapse interactivity of the outline formed
 by <ul> and <li> items.
  */
