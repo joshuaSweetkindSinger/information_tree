@@ -85,7 +85,7 @@ ExpandCollapse.prototype.afterCreate = function(nodeView) {
 
 ExpandCollapse.prototype.toggle = function() {
   $(this).html(this.nodeView.state === 'expanded' ? '>' : 'v')
-  IT.ui.toggleNodeExpandCollapse(this.nodeView);
+  App.controller.toggleNodeExpandCollapse(this.nodeView);
 }
 
 // =========================================================================
@@ -113,7 +113,7 @@ Nop.prototype.afterCreate = function() {
 }
 
 Nop.prototype.onClick = function(event) {
-  IT.ui.nop()
+  App.controller.nop()
 }
 
 
@@ -129,7 +129,7 @@ FollowLink.prototype.afterCreate = function() {
 
   var $this = $(this)
   $this.html('Follow Link')
-  $this.click(function(event) {IT.ui.followLink()})
+  $this.click(function(event) {App.controller.followLink()})
 }
 
 
@@ -149,7 +149,7 @@ Save.prototype.afterCreate = function() {
 }
 
 Save.prototype.onClick = function(event) {
-  IT.ui.save()
+  App.controller.save()
 }
 
 
@@ -200,7 +200,7 @@ var ExpandCollapseRecursive = defCustomTag('expand-collapse-recursive', ButtonPa
 ExpandCollapseRecursive.prototype.afterCreate = function() {
   ButtonPanelButton.prototype.afterCreate.call(this)
   $(this).html('Open/Close All');
-  $(this).click(function(event) {IT.ui.toggleExpandCollapseAll()})
+  $(this).click(function(event) {App.controller.toggleExpandCollapseAll()})
 }
 
 
@@ -217,7 +217,7 @@ AddChild.prototype.afterCreate = function() {
 
   // Click function adds a new child NodeView to the NodeView associated with this button. This means
   // adding the new node to the NodeView's NodeChildren element.
-  $this.click(function() {IT.ui.addChild()})
+  $this.click(function() {App.controller.addChild()})
 }
 
 // =========================================================================
@@ -231,7 +231,7 @@ AddSuccessor.prototype.afterCreate = function() {
   $this.html('+Successor')
 
   // Click function adds a new NodeView after the NodeView associated with this button.
-  $this.click(function() {IT.ui.addSuccessor()})
+  $this.click(function() {App.controller.addSuccessor()})
 }
 
 // =========================================================================
@@ -245,7 +245,7 @@ AddPredecessor.prototype.afterCreate = function() {
   $this.html('+Predecessor')
 
   // Click function adds a new NodeView after the NodeView associated with this button.
-  $this.click(function() {IT.ui.addPredecessor()})
+  $this.click(function() {App.controller.addPredecessor()})
 }
 
 // =========================================================================
@@ -279,5 +279,5 @@ UntrashNode.prototype.afterCreate = function() {
 
   var $this = $(this)
   $this.html('Untrash')
-  $this.click(function(event) {IT.ui.restoreLastDeletedNode()})
+  $this.click(function(event) {App.controller.restoreLastDeletedNode()})
 }

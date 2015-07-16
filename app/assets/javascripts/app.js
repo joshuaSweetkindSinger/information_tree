@@ -9,7 +9,5 @@ var IT  = App; // TODO: Get rid of references to this. This is deprecated.
 App.initPage = function() {
   this.server     = new Server;
   this.treeView   = $('information-tree')[0].init();
-
   this.controller = new Controller;
-  this.ui         = this.controller; // TODO: deprecated
 }

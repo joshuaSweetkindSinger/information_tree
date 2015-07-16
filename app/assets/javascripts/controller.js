@@ -161,4 +161,4 @@ Controller = function () {
   }
 };
 
-IT.Ui = Controller; // TODO: deprecated
+App.controller = Controller; // TODO: deprecated

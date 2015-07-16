@@ -31,7 +31,7 @@ NodeContent.prototype.afterCreate = function(nodeView, options) {
 
 // Handle a left click in the text area.
 NodeContent.prototype.onClick = function (event) {
-  return IT.ui.clickLeftOnNode(this.nodeView);
+  return App.controller.clickLeftOnNode(this.nodeView);
 }
 
 
@@ -41,19 +41,19 @@ NodeContent.prototype.onClick = function (event) {
  that will work at click-time.
  */
 NodeContent.prototype.onContextMenu = function(event) {
-  return IT.ui.clickRightOnNode(this.nodeView, event);
+  return App.controller.clickRightOnNode(this.nodeView, event);
 }
 
 NodeContent.prototype.onKeypress = function(event) {
   // carriage return -- create new successor node
   if (event.charCode == 13 && !event.altKey && !event.shiftKey && !event.ctrlKey) {
     event.preventDefault();
-    IT.ui.addSuccessor(this.nodeView);
+    App.controller.addSuccessor(this.nodeView);
 
     // shift-return -- create new child node
   } else if (event.charCode == 13 && !event.altKey && event.shiftKey && !event.ctrlKey) {
     event.preventDefault();
-    IT.ui.addChild(this.nodeView);
+    App.controller.addChild(this.nodeView);
 
     // control-c -- copy this node
   } else if (event.charCode == 'c'.charCodeAt(0) && !event.altKey && !event.shiftKey && event.ctrlKey) {
@@ -98,7 +98,7 @@ NodeContent.prototype.set_id = function(id) {
 // It causes the content of the node to change on the server.
 NodeContent.prototype.onBlur = function(e) {
   var autosize = this.nodeView.calcAutoSize();
-  IT.ui.setAttributes(this.nodeView,
+  App.controller.setAttributes(this.nodeView,
     {content: this.nodeView.content,
       width: autosize.width,
       height: autosize.height})

@@ -72,14 +72,14 @@ NodeView.prototype.dragStart = function() {
 NodeView.prototype.dragStop = function(event, helper) {
   // There's a drop target: add a child
   if (App.treeView.dropTarget) {
-    IT.ui.addChild(App.treeView.dropTarget, {id: this.id});
+    App.controller.addChild(App.treeView.dropTarget, {id: this.id});
     return;
   }
 
   // There's a node above the release position: add a successor
   var node = App.treeView.findLowestNodeAbove(helper.position.top);
   if (node) {
-    IT.ui.addSuccessor(node, {id: this.id});
+    App.controller.addSuccessor(node, {id: this.id});
   }
 };
 
