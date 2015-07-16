@@ -21,6 +21,11 @@ by sending it a nodeSpec to the proper endpoint. The server responds with a node
 are identical-looking json objects. The name nodeSpec indicates a request to create an object with
 certain properties. The name nodeRep indicates that a representation of the now-existing object
 has been sent back to the client.
+
+TOPLEVEL OBJECTS:
+Controller: Controls all UI interactions.
+TreeView:   Client-side representation of the information tree.
+Server:     Mediate all api calls to the server.
 */
 
 /*
@@ -140,7 +145,7 @@ Controller = function () {
   this.selectedNode = null // The Ui maintains a "selected node", to which actions are performed.
   this.buttonPanel  = new ButtonPanel;
 
-  App.treeView.whenReady(function() {
+  App.treeView.then(function() {
     $(App.treeView).append(self.buttonPanel);
     $(self.buttonPanel).hide();
     self.selectNode(App.treeView.top);
@@ -290,14 +295,11 @@ IT.Tree = TreeView; // TODO: deprecated
 
 TreeView.prototype.init = function() {
   var self = this;
-  this.ready = false;
   $(this).click(this.onClick); // TODO: These belong on an information-tree-view object.
 
-  this.tree = new Tree();
-  this.tree.whenReady(function() {
+  this.tree = (new Tree).then(function() {
     self.top = self.tree.top; // TODO: fix this. tree.top should not be a dom element.
     $(self).append(self.top);
-    self.ready = true;
     // $(document).tooltip(); // TODO: is there a way for this not to be here?
   })
 
@@ -308,10 +310,9 @@ TreeView.prototype.onClick = function (event) {
   App.controller.hideButtonPanel();
 }
 
-TreeView.prototype.whenReady = function (callback) {
-  var self = this;
-  when(function() {return self.ready})
-    .do(callback);
+TreeView.prototype.then = function (callback) {
+  this.tree.then(callback);
+  return this;
 }
 
 
@@ -387,16 +388,19 @@ IT.Tree.prototype._addNodesOnClient = function(fetchedNodeReps) {
 //                   Tree
 // ========================================================================
 var Tree = function() {
-  this.top = new TextNode(App.server.top())
+  var self = this;
+
+  // Tell the server to get the top node. When we get it, create a client-side TextNode and assign it to
+  // member variable 'top'. In the meantime, store the request object on _topRequest.
+  this._delayed = App.server.top().then(function(top) {self.top = new TextNode(top)});
 }
 
 /*
 Execute callback when the tree instance is fully initialized.
  */
-Tree.prototype.whenReady = function (callback) {
-  var self = this;
-  when(function() {return self.top.ready})
-    .do(callback);
+Tree.prototype.then = function (callback) {
+  this._delayed.then(callback);
+  return this;
 }
 
 // =========================================================================
@@ -421,15 +425,7 @@ NOTE: afterCreate() is only called via programmatic creation of new objects, as 
 We put all the logic in our afterCreate() method, because we know we are not doing static creation, and we
 need to pass args, which can only be passed via afterCreate().
  */
-TextNode.prototype.afterCreate = function(nodeRepOrDelayed) {
-  var self = this;
-  this.ready = false;
-
-  delayed(nodeRepOrDelayed).then(function (nodeRep) {self.init(nodeRep)})
-}
-
-// Initialize ourselves from a node representation.
-TextNode.prototype.init = function (nodeRep) {
+TextNode.prototype.afterCreate = function(nodeRep) {
   var $this = $(this)
 
   // Create dom-substructures
@@ -455,8 +451,6 @@ TextNode.prototype.init = function (nodeRep) {
     start: this.dragStart,
     stop: this.dragStop
   })
-
-  this.ready = true;
 }
 
 
