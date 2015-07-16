@@ -12,7 +12,7 @@ NodeHeaderView.prototype.afterCreate = function(nodeView, options) {
   this.expandCollapseButton = new ExpandCollapse(nodeView)
   $this.append(this.expandCollapseButton)
 
-  this.content = new NodeContent(nodeView, options);
+  this.content = new NodeContentView(nodeView, options);
   $this.append(this.content)
 }
 

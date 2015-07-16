@@ -2,11 +2,11 @@
 // =========================================================================
 //                   Node Content
 // =========================================================================
-// NodeContent holds the text that represents the content of the node.
+// NodeContentView holds the text that represents the content of the node.
 
-var NodeContent = defCustomTag('node-content', HTMLTextAreaElement, 'textarea')
+var NodeContentView = defCustomTag('node-content', HTMLTextAreaElement, 'textarea')
 
-NodeContent.prototype.afterCreate = function(nodeView, options) {
+NodeContentView.prototype.afterCreate = function(nodeView, options) {
   var $this = $(this);
   var self  = this;
 
@@ -30,21 +30,21 @@ NodeContent.prototype.afterCreate = function(nodeView, options) {
 
 
 // Handle a left click in the text area.
-NodeContent.prototype.onClick = function (event) {
+NodeContentView.prototype.onClick = function (event) {
   return App.controller.clickLeftOnNode(this.nodeView);
 }
 
 
 /*
  This somewhat awkward intermediary is necessary because, at create time, we don't have
- a pointer to the Node parent from the NodeContent object. So we create a delegator
+ a pointer to the Node parent from the NodeContentView object. So we create a delegator
  that will work at click-time.
  */
-NodeContent.prototype.onContextMenu = function(event) {
+NodeContentView.prototype.onContextMenu = function(event) {
   return App.controller.clickRightOnNode(this.nodeView, event);
 }
 
-NodeContent.prototype.onKeypress = function(event) {
+NodeContentView.prototype.onKeypress = function(event) {
   // carriage return -- create new successor node
   if (event.charCode == 13 && !event.altKey && !event.shiftKey && !event.ctrlKey) {
     event.preventDefault();
@@ -81,7 +81,7 @@ NodeContent.prototype.onKeypress = function(event) {
  We only record this node as the drop target, not the phantom. I believe the phantom has to do with
  the cloned helper node that is created as part of the drag.
  */
-NodeContent.prototype.handleDrop = function(event, ui) {
+NodeContentView.prototype.handleDrop = function(event, ui) {
   var nodeView = this.nodeView;
   if (nodeView.id) {
     App.treeView.dropTarget = nodeView;
@@ -89,14 +89,14 @@ NodeContent.prototype.handleDrop = function(event, ui) {
 };
 
 
-NodeContent.prototype.set_id = function(id) {
-  this.id = 'NodeContent-' + id;
+NodeContentView.prototype.set_id = function(id) {
+  this.id = 'NodeContentView-' + id;
 }
 
 
 // This event-handler is bound to the object's blur event.
 // It causes the content of the node to change on the server.
-NodeContent.prototype.onBlur = function(e) {
+NodeContentView.prototype.onBlur = function(e) {
   var autosize = this.nodeView.calcAutoSize();
   App.controller.setAttributes(this.nodeView,
     {content: this.nodeView.content,
@@ -106,5 +106,5 @@ NodeContent.prototype.onBlur = function(e) {
 
 // This event-handler is bound to the object's blur event.
 // It causes the width and height of the node's text area to change on the server.
-NodeContent.prototype.onResize = function(e) {
+NodeContentView.prototype.onResize = function(e) {
 }
