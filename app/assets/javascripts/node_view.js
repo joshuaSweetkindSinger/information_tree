@@ -61,7 +61,7 @@ NodeView.prototype.afterCreate = function(nodeRep) {
  */
 
 NodeView.prototype.dragStart = function() {
-  IT.tree.dropTarget = null;
+  App.treeView.dropTarget = null;
 }
 
 
@@ -71,13 +71,13 @@ NodeView.prototype.dragStart = function() {
  */
 NodeView.prototype.dragStop = function(event, helper) {
   // There's a drop target: add a child
-  if (IT.tree.dropTarget) {
-    IT.ui.addChild(IT.tree.dropTarget, {id: this.id});
+  if (App.treeView.dropTarget) {
+    IT.ui.addChild(App.treeView.dropTarget, {id: this.id});
     return;
   }
 
   // There's a node above the release position: add a successor
-  var node = IT.tree.findLowestNodeAbove(helper.position.top);
+  var node = App.treeView.findLowestNodeAbove(helper.position.top);
   if (node) {
     IT.ui.addSuccessor(node, {id: this.id});
   }
@@ -240,7 +240,7 @@ NodeView.prototype._attachChild = function(child) {
  and return it if found.
  */
 NodeView.prototype.predecessor = function() {
-  return IT.tree.find(this.predecessor_id);
+  return App.treeView.find(this.predecessor_id);
 };
 
 
@@ -249,7 +249,7 @@ NodeView.prototype.predecessor = function() {
  and return it if found.
  */
 NodeView.prototype.successor = function() {
-  return IT.tree.find(this.successor_id);
+  return App.treeView.find(this.successor_id);
 };
 
 
@@ -258,7 +258,7 @@ NodeView.prototype.successor = function() {
  and return it if found.
  */
 NodeView.prototype.parent = function() {
-  return IT.tree.find(this.parent_id);
+  return App.treeView.find(this.parent_id);
 }
 
 NodeView.prototype.kids = function() {
@@ -304,7 +304,7 @@ NodeView.prototype._addNode = function(nodeSpec, mode, callback) {
         return;
       };
 
-      var node = IT.tree._addNodeOnClient(nodeRep);
+      var node = App.treeView._addNodeOnClient(nodeRep);
       if (callback) callback(node);
     });
 };
@@ -447,7 +447,7 @@ NodeView.prototype._fetchAndAddChildrenOnClient = function(callback) {
   this._fetchChildren(
     function(fetchedNodes) {
       if (fetchedNodes) {
-        callback(IT.tree._addNodesOnClient(fetchedNodes));
+        callback(App.treeView._addNodesOnClient(fetchedNodes));
       } else {
         callback([]);
       }

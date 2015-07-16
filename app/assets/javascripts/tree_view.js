@@ -3,7 +3,7 @@
 //                   Tree View
 // ========================================================================
 var TreeView = defCustomTag('information-tree', HTMLElement);
-IT.Tree = TreeView; // TODO: deprecated
+App.treeView = TreeView; // TODO: deprecated
 
 TreeView.prototype.init = function() {
   var self = this;
@@ -33,12 +33,12 @@ TreeView.prototype.then = function (callback) {
  Return the nodes in order of descending y-value. This means that every visible node will
  be preceded by its older siblings, all their visible descendants, and by its parent.
  */
-IT.Tree.prototype.visibleNodes = function() {
+App.treeView.prototype.visibleNodes = function() {
   return this.top.visibleNodes([]);
 }
 
 
-IT.Tree.prototype.findLowestNodeAbove = function(y) {
+App.treeView.prototype.findLowestNodeAbove = function(y) {
   var nodes = this.visibleNodes().reverse();
   for(var i = 0; i < nodes.length; i++) {
     var node = nodes[i];
@@ -58,7 +58,7 @@ IT.Tree.prototype.findLowestNodeAbove = function(y) {
 /*
  If it currently exists in the dom, return the text node with the specified id.
  */
-IT.Tree.prototype.find = function(id) {
+App.treeView.prototype.find = function(id) {
   if (!id) return;
 
   var $node = $('#' + id);
@@ -74,7 +74,7 @@ IT.Tree.prototype.find = function(id) {
  return the new node. Note that the newly created note is unglommed; that is, it is
  unattached to the text tree.
  */
-IT.Tree.prototype._findOrCreate = function(nodeRep) {
+App.treeView.prototype._findOrCreate = function(nodeRep) {
   var foundNode = this.find(nodeRep.id);
   return foundNode ? foundNode.update(nodeRep) : new NodeView(nodeRep);
 }
@@ -87,11 +87,11 @@ IT.Tree.prototype._findOrCreate = function(nodeRep) {
  If it does not yet exist in the dom, assume that nodeRep is a complete spec for a new node:
  instantiate it and return the new node after glomming it to the text tree in its proper position.
  */
-IT.Tree.prototype._addNodeOnClient = function(nodeRep) {
+App.treeView.prototype._addNodeOnClient = function(nodeRep) {
   return this._findOrCreate(nodeRep)._glom();
 }
 
 
-IT.Tree.prototype._addNodesOnClient = function(fetchedNodeReps) {
+App.treeView.prototype._addNodesOnClient = function(fetchedNodeReps) {
   return fetchedNodeReps.map(this._addNodeOnClient.bind(this));
 }

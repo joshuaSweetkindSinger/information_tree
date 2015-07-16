@@ -84,7 +84,7 @@ NodeContent.prototype.onKeypress = function(event) {
 NodeContent.prototype.handleDrop = function(event, ui) {
   var nodeView = this.nodeView;
   if (nodeView.id) {
-    IT.tree.dropTarget = nodeView;
+    App.treeView.dropTarget = nodeView;
   }
 };
 
