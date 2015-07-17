@@ -6,7 +6,7 @@
 
 
 var Node = function (nodeRep) {
-  this.children        = [];
+  this._children       = [];
   this.childrenFetched = false // True when we have received child node information from the server. See fetch_and_expand()
   this.update(nodeRep)
 }
@@ -51,4 +51,36 @@ if no args are given.
  */
 Node.prototype.view = function (obj) {
   return arguments.length == 0 ? this.view : this.view = obj;
+}
+
+
+Node.prototype.trash = function() {
+  return App.server.trash(this.id)
+}
+
+// TODO: Refactor so this just always return its children.
+// As it now stands, it will return an array of those children that were fetched.
+// Fetch children if necessary and "return" through async protocol an array of the children fetched.
+Node.prototype.fetchChildren = function () {
+  var self = this;
+
+  return this.childrenFetched ? new PseudoRequest([])
+    : App.server.getNodeChildren(this.id)
+    .success(function(childReps) {
+      return self._children = childReps.map(function (n) {new Node(n)})
+    })
+}
+
+// Set attributes for this node. The attributes to change, and their values,
+// are in options, which is a hash. The hash is sent to the server, to change the values
+// on the server first, and then the server replies with a json that represents the changed node.
+// Note: This does not allow you to set attributes affecting topology, e.g.: parent_id, rank.
+// Attributes which can be set are: content, width, height.
+Node.prototype.setAttributes = function(options) {
+  return App.server.setNodeAttributes(this.id, options)
+    .success(function (nodeRep) {
+      if (nodeRep.error) {
+        console.log("***** Set Attributes: server responded with this error:", nodeRep.error)
+      }
+    })
 }

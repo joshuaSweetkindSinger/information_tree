@@ -37,12 +37,30 @@ Server.prototype.addNodePath = function(id) {
 }
 
 Server.prototype.trash = function (id) {
-  sendServer(
-    "DELETE",
-    this._trashPath(this.id),
-    function(request) {
-      if (HTTP.is_success_code(request.status)) {
-        me._trashOnClient();
-      }
-    })
+  return new Request("DELETE", this.trashPath(id))
+}
+
+Server.prototype.trashPath = function(id) {
+  return '/nodes/' + id + '/trash.json'
+}
+
+/*
+ Get the child nodes of the node with id, in json format
+*/
+Server.prototype.getNodeChildren = function(id) {
+  return new JsonRequest("GET", this.nodeChildrenPath(id))
+}
+
+Server.prototype.nodeChildrenPath = function(id) {
+  return '/nodes/' + id + '/children.json'
+}
+
+
+Server.prototype.setNodeAttributes = function (id, options) {
+  return new JsonRequest("PUT", this.setAttributesPath(id), {node: options})
+}
+
+
+Server.prototype.setAttributesPath = function(id) {
+  return '/nodes/' + id + '/set_attributes.json'
 }

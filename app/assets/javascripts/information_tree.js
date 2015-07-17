@@ -1,4 +1,5 @@
 //= require app
+//= require node
 //= require node_view
 //= require node_header_view
 //= require server
@@ -100,6 +101,24 @@ Server:     Mediate all api calls to the server.
  TODO: Object interfaces should be through methods only. Don't let other objects even read the member variables.
        unless the object in question is functioning as a data object: a hash, a struct.
 TODO: Adding a node is a mess. Clean it up.
+
+TODO: General problem: where does a change event get initiated? In the general case, a change event, such
+as changing the content of a node, might occur on the client side, or on the server side, and, if on the
+client side, it might occur inside a node, or via the controller. The problem of syncing means that the
+node, the nodeView, and the server-side node all need to be updated. The flow should generally be:
+server, node, nodeView. When initiated by the controller, this is how it handles things. But in general
+a change might start at any of these places. How do we create an architecture that completes the chain
+by visiting all relevant parties exactly once?
+
+View as wrapper: using an architecture in which the view is a wrapper, we have nestings like so: view contains
+node contains server-node. With this architecture, all requests start with the view. It does its job by asking
+the node to change, and then it updates itself after a successful node change. The node in turn does its job
+by asking the server-node to change, and then it updates itself after a successful server change. There's a naming
+problem that arises with this architecture. When the nodeView first gets the setContent() message, it initiates
+a wrapper-level change, i.e., by passing the setContent() message to the node, who passes the setContent() message
+to the server. On the way back, the node receives the server's update and then it really has to set its content,
+and then it has to pass a success message back up to the view, and the view then has to really set its content.
+One way to handle this is by having a private method like _setContent() that does the local work.
  */
 
 $(document).ready(function(){

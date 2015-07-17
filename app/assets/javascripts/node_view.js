@@ -47,14 +47,14 @@ NodeView.prototype.onAttach = function() {
   // The conditional is a kludge: For dragging, the nodeView gets shallow-copied and won't have a header.
   // In that case, we want to ignore it anyway.
   if (this.header) {
-    this.update(node)
+    this.update()
   }
 }
 
-Nodeview.prototype.update = function (node) {
+NodeView.prototype.update = function () {
   this.width   = this.node.width
   this.height  = this.node.height
-  this.content = node.content
+  this.content = this.node.content
 }
 
 
@@ -325,24 +325,11 @@ NodeView.prototype.paste = function(node) {
 };
 
 // =========================== Trash
-// Ask the server to trash this node from the hierarchy.
-// When the server replies, trash the node from the browser.
-NodeView.prototype.trash = function() {
-  var me = this
-  App.server.trash(this.node.id)
-    .then(function() {})
-
-}
-
-NodeView.prototype._trashPath = function(id) {
-  return '/nodes/' + id + '/trash.json'
-}
-
 
 /*
- Get rid of <this> from the text tree.
+ Get rid of <this> from the information tree.
  */
-NodeView.prototype._trashOnClient = function() {
+NodeView.prototype.trash = function() {
   $(this).remove()
 }
 
@@ -361,58 +348,15 @@ NodeView.prototype._trashOnClient = function() {
  node. Another approach would be to have the server calls block until they are finished.
  */
 NodeView.prototype.expand = function(doRecursive) {
-  var me = this;
-  this._fetchAndAddChildrenOnClient(
-    function() {
-      me._expand();
+  var self = this;
+  this.node.fetchChildren()
+    .success(function(children) {
+      App.treeView.addNodes(children)
+      self._expand()
       if (doRecursive) {
-        me.kids().forEach(function(node) {node.expand(true)});
+        me.kids().forEach(function(nodeView) {nodeView.expand(true)});
       }
-    });
-}
-
-
-/*
- Fetch our child nodes from the server, if necessary; attach each newly fetched
- child node to the tree on the client-side;
- Finally call continuation with the array of newly created text nodes from the
- representations that were fetched, or call continuation with [] if none were fetched.
- */
-NodeView.prototype._fetchAndAddChildrenOnClient = function(callback) {
-  this._fetchChildren(
-    function(fetchedNodes) {
-      if (fetchedNodes) {
-        callback(App.treeView.addNodes(fetchedNodes));
-      } else {
-        callback([]);
-      }
-    });
-}
-
-
-/*
- Get our child nodes from the server, in json format, and pass this json structure
- to continuation for further processing. This method does *not* attach the fetched nodes
- to the tree on the client side. It *does* record that the children have been fetched.
- So it leaves the state of the client-side in a precarious way if things should be aborted here.
- It should only be called by expand(), who knows what it's doing.
- */
-NodeView.prototype._fetchChildren = function(callback) {
-  if (this.childrenFetched) {
-    callback(false); // Pass false to the continuation to indicate that no children were fetched.
-  } else {
-    var me = this;
-    getJsonFromServer("GET", this._childrenPath(this.id),
-      function(fetchedNodes) {
-        me.childrenFetched = true;
-        callback(fetchedNodes);
-      });
-  }
-}
-
-
-NodeView.prototype._childrenPath = function(id) {
-  return '/nodes/' + id + '/children.json'
+    })
 }
 
 
@@ -443,7 +387,7 @@ NodeView.prototype.collapse = function(doRecursive) {
   }
 }
 
-NodeView.prototype.toggle = function(doRecursive) {
+NodeView.prototype.toggleExpandCollapse = function(doRecursive) {
   if (this.state == 'expanded') {
     this.collapse(doRecursive)
   } else {
@@ -456,6 +400,13 @@ NodeView.prototype.toggle = function(doRecursive) {
 // Calculate a pleasing size for the content textarea associated with this text node.
 NodeView.prototype.autoSize = function() {
   this.setAttributes(this.calcAutoSize())
+}
+
+
+NodeView.prototype.setAttributes = function (nodeRep) {
+  var self = this;
+  this.node.setAttributes(nodeRep)
+    .success(function() {self.update()})
 }
 
 // Calculate a pleasing width and height for a textarea input box that contains n chars.
@@ -485,51 +436,4 @@ NodeView.prototype.calcAutoSize = function() {
   return {width:width, height:height}
 }
 
-// =========================== Follow Link
-// Open up in a new tab (or window) the URL represented by our node's content.
-NodeView.prototype.followLink = function() {
-  var url = this.content
-  if (url.slice(0,4) == 'http') open(url)
-}
-
-// ======================== Set Attributes
-
-// Set attributes for this node. The attributes to change, and their values,
-// are in options, which is a hash. The hash is sent to the server, to change the values
-// on the server first, and then the server replies with a json that represents the changed node.
-// Note: This does not allow you to set attributes affecting topology, e.g.: parent_id, rank.
-// Attributes which can be set are: content, width, height.
-NodeView.prototype.setAttributes = function(options) {
-  var me = this
-  getJsonFromServer(
-    "PUT",
-    this.setAttributesPath(this.id),
-    function(jsonNode) {
-      // We got an error back from the server--punt
-      if (jsonNode.error) {
-        console.log("***** Set Attributes: server responded with this error:", jsonNode.error)
-        return
-      }
-
-      me.setAttributesOnClient(jsonNode)
-    },
-    {node: options}
-  )
-}
-
-NodeView.prototype.setAttributesPath = function(id) {
-  return '/nodes/' + id + '/set_attributes.json'
-}
-
-
-NodeView.prototype.setAttributesOnClient = function(jsonNode) {
-  if (jsonNode.id != this.id) {
-    throw("Mismatching ids: id from server (" + options.id + ") does not match id on client (" + this.id + ").")
-  }
-
-  var $this = $(this)
-  if (jsonNode.content) this.content = jsonNode.content
-  if (jsonNode.width) this.width     = jsonNode.width
-  if (jsonNode.height)this.height    = jsonNode.height
-}
 

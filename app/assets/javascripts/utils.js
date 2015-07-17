@@ -29,6 +29,7 @@ var Request = function(verb, url, params) {
   this.body     = null;
   this.pipeline = []; // Handle chained .then() calls asynchronously.
   this.request  = new XMLHttpRequest()
+  this.result   = this.request
 
   // Handle params
   if (verb == "GET") {
@@ -43,7 +44,6 @@ var Request = function(verb, url, params) {
   // Set up a callback to notify us when response is ready.
   this.request.onreadystatechange = function() {
     if (self.request.readyState == XMLHttpRequest.DONE) {
-      console.log("utils:request:onreadystatechange:this=", this);
       self.done()
     }
   }
@@ -59,22 +59,16 @@ Request.prototype.send = function () {
 
 // Request is done: process the then() pipeline and set result to request to indicate we are done.
 Request.prototype.done = function () {
-  var result = this.setResult()
-  this.pipeline.forEach(function (f) {f(result)});
+  var self = this
+  this.pipeline.forEach(function (callback) {self.doCallback(callback)})
   this.pipeline = [];
 }
 
-// Called when the request is done in order to establish a result value for the request.
-Request.prototype.setResult = function () {
-  return this.result = request;
-}
 
-
-// Run the callback on the json result object when the request is done.
-// If it did not finish successfully, the json object will have a single "error" key.
+// Run the callback on the result object when the request is done.
 Request.prototype.then = function (callback) {
-  if ('result' in this) {
-    callback.call(this, this.result);
+  if (this.isDone()) {
+    this.doCallback(callback)
   } else {
     this.pipeline.push(callback);
   }
@@ -82,9 +76,28 @@ Request.prototype.then = function (callback) {
   return this;
 }
 
+// Note that the return value of the callback will alter
+// the value passed through the remainder of the pipeline.
+Request.prototype.doCallback = function (callback) {
+  var result = callback.call(this, this.result);
+  if (result !== undefined) this.result = result;
+}
+
+Request.prototype.isDone = function() {
+  return this.request.readyState === XMLHttpRequest.DONE
+}
+
 // Return true if code is a success code, else false.
-Request.prototype.isSuccessCode = function (code) {
-  return code >= 200 && code < 300
+Request.prototype.isSuccess = function () {
+  return this.request.status >= 200 && this.request.status < 300
+}
+
+// Run the callback on the result object when the request is done,
+// but only if the request finished successfully.
+Request.prototype.success = function (callback) {
+  return this.then(function(result) {
+    if (this.isSuccess()) this.doCallback(callback);
+  })
 }
 
 // ========================================================================
@@ -98,41 +111,39 @@ Request.prototype.isSuccessCode = function (code) {
 var JsonRequest = function(verb, url, params) {
   Request.call(this, verb, url, params);
 }
+JsonRequest.prototype = Object.create(Request.prototype);
 
 // Called by done() in order to set our result value as a function of the request object.
-JsonRequest.prototype.setResult = function () {
-  if (this.isSuccessCode(this.request.status)) {
+// If it did not finish successfully, the json object will have a single "error" key.
+JsonRequest.prototype.done = function () {
+  if (this.isSuccess()) {
     this.result = JSON.parse(this.request.responseText)
   } else {
     this.result = {error: {status: this.request.status}}
   }
-  return this.result;
+  Request.prototype.done.call(this)
 }
 
 
 
 // ========================================================================
-//                   Delayed Objects
+//                   PseudoRequest Objects
 // ========================================================================
-// Currently not used, I think. This is a wrapper for objects that aren't really
-// asynch, but let's them handle the then() method so that sync and async object
+// This is a wrapper for objects that aren't really
+// async, but let's them handle the then() method so that sync and async object
 // can be handled uniformly.
 
-
-var delayed = function (obj) {
-  return ('then' in obj) ? obj : new Delayed(obj)
+var PseudoRequest = function (obj) {
+  this.result = obj;
 }
+PseudoRequest.prototype = Object.create(Request.prototype);
 
-var Delayed = function (obj) {
-  this.obj = obj;
-}
-
-Delayed.prototype.then = function(callback) {
-  callback(this.obj);
+PseudoRequest.prototype.then = function(callback) {
+  callback.call(this, this.obj);
   return this;
 }
 
-
+PseudoRequest.prototype.isSuccess = function() {return true}
 
 
 // ========================================================================

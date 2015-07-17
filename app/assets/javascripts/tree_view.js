@@ -66,15 +66,15 @@ TreeView.prototype.find = function(id) {
 }
 
 /*
- If it currently exists in the dom, return the text node whose id is nodeRep.id,
- after updating it with possibly new values from nodeRep;
- otherwise, assume that nodeRep is a complete representation for a new node: instantiate it and
- return the new node. Note that the newly created note is unglommed; that is, it is
- unattached to the text tree.
+ If it currently exists in the dom, return the NodeView whose id is node.id,
+ after updating it with possibly new values from node;
+ otherwise, assume that node is a complete representation for a new NodeView: instantiate it and
+ return the new NodeView. Note that the newly created NodeView is unglommed; that is, it is
+ unattached to the information tree.
  */
-TreeView.prototype._findOrCreate = function(nodeRep) {
-  var foundNode = this.find(nodeRep.id);
-  return foundNode ? foundNode.update(nodeRep) : new NodeView(nodeRep);
+TreeView.prototype._findOrCreateNodeView = function(node) {
+  var foundNodeView = this.find(node.id);
+  return foundNodeView ? foundNodeView.update(node) : new NodeView(node);
 }
 
 
@@ -86,11 +86,11 @@ TreeView.prototype._findOrCreate = function(nodeRep) {
  instantiate it and return the new node after glomming it to the text tree in its proper position.
  */
 // TODO: TreeView should not be accepting node Reps and doing find or create. Maybe Tree should do this.
-TreeView.prototype.addNode = function(nodeRep) {
-  return this._findOrCreate(nodeRep)._glom();
+TreeView.prototype.addNode = function(node) {
+  return this._findOrCreateNodeView(node)._glom();
 }
 
 
-TreeView.prototype.addNodes = function(fetchedNodeReps) {
-  return fetchedNodeReps.map(this.addNode.bind(this));
+TreeView.prototype.addNodes = function(nodes) {
+  return nodes.map(this.addNode.bind(this));
 }

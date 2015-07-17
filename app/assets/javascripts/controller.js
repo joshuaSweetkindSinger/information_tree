@@ -29,15 +29,6 @@ Controller = function () {
   });
 
 
-  // Trash the selected node.
-  self.trash = function (node) {
-    node = node || self.selectedNode
-    node.trash();
-    if (node === self.selectedNode) {
-      self.selectedNode = null;   // We just deleted the selected node, so now there is none.
-      $(self.buttonPanel).hide(); // we just deleted the selected node, so hide the button panel.
-    }
-  };
 
   // Respond to a left-click on a node. Select the node and toggle the expanded-collapsed state of that node.
   self.clickLeftOnNode = function (node) {
@@ -60,10 +51,6 @@ Controller = function () {
   }
 
 
-  // Toggle the expanded-collapsed state of node.
-  self.toggleNodeExpandCollapse = function (node) {
-    (node || self.selectedNode).toggle(false);
-  }
 
 
   /*
@@ -102,10 +89,6 @@ Controller = function () {
 
   self.hideButtonPanel = function () {
     $(self.buttonPanel).hide()
-  }
-
-  self.followLink = function (node) {
-    (node || self.selectedNode).followLink()
   }
 
   self.autoSize = function (node) {
@@ -160,3 +143,31 @@ Controller = function () {
   self.nop = function() {
   }
 };
+
+// TODO: make the selected node be a node instead of a nodeview.
+// Trash the selected node.
+Controller.prototype.trash = function (nodeView) {
+  nodeView = nodeView || self.selectedNode
+  nodeView.node.trash()
+    .success(function() {
+      nodeView.trash()
+      if (nodeView === self.selectedNode) {
+        self.selectedNode = null;   // We just deleted the selected node, so now there is none.
+        $(self.buttonPanel).hide(); // we just deleted the selected node, so hide the button panel.
+      }
+    })
+}
+
+
+// Toggle the expanded-collapsed state of node.
+Controller.prototype.toggleNodeExpandCollapse = function (nodeView) {
+  (nodeView || this.selectedNode).toggleExpandCollapse();
+}
+
+
+// Open up in a new tab (or window) the URL represented by our node's content.
+Controller.prototype.followLink = function (nodeView) {
+  nodeView = (nodeView || self.selectedNode)
+  var url = nodeView.content
+  if (url.slice(0,4) == 'http') open(url)
+}
