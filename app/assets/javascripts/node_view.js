@@ -21,8 +21,10 @@ var NodeView = defCustomTag('node-view', HTMLElement);
  need to pass args, which can only be passed via afterCreate().
  */
 NodeView.prototype.afterCreate = function(node) {
-  var $this = $(this)
-  this.node = node;
+  var $this     = $(this)
+  this.id       = node.id
+  this.node     = node
+  node.view(this)
 
   $this.append(this.header = new NodeHeaderView(this, {tooltip:"Created on " + this.node.createdAt}))
   $this.append(this.childrenContainer = new NodeChildrenView);
@@ -37,7 +39,26 @@ NodeView.prototype.afterCreate = function(node) {
   })
 }
 
-// TODO: Rethink all this, especially width/height. Is this what we want?
+// Clean up the width and height after we are attached.
+// The problem here is that width and height are set at create time, which is the only time
+// during which we can pass in args, such as width and height. But, because the node is not yet
+// attached to the DOM, the computed width and height are wrong somehow (not sure of details).
+NodeView.prototype.onAttach = function() {
+  // The conditional is a kludge: For dragging, the nodeView gets shallow-copied and won't have a header.
+  // In that case, we want to ignore it anyway.
+  if (this.header) {
+    this.update(node)
+  }
+}
+
+Nodeview.prototype.update = function (node) {
+  this.width   = this.node.width
+  this.height  = this.node.height
+  this.content = node.content
+}
+
+
+// TODO: Change format to jquery style setter/getter wrapped in a single function for each setter/getter.
 Object.defineProperties(NodeView.prototype, {
     content: {
       get: function() {
@@ -53,7 +74,6 @@ Object.defineProperties(NodeView.prototype, {
         return $(this.header.content).width()
       },
       set: function(v) {
-        this._width = v // Cache requested width. This is a kludge to fix incorrect width at create time. See onAttach() above.
         $(this.header.content).width(v)
       }
     },
@@ -63,7 +83,6 @@ Object.defineProperties(NodeView.prototype, {
         return $(this.header.content).height()
       },
       set: function(v) {
-        this._height = v // Cache requested height. This is a kludge to fix incorrect width at create time. See onAttach() above.
         $(this.header.content).height(v)
       }
     }
@@ -88,61 +107,37 @@ NodeView.prototype.dragStart = function() {
 NodeView.prototype.dragStop = function(event, helper) {
   // There's a drop target: add a child
   if (App.treeView.dropTarget) {
-    App.controller.addChild(App.treeView.dropTarget, {id: this.id});
+    App.controller.addChild(App.treeView.dropTarget, {id: this.node.id});
     return;
   }
 
   // There's a node above the release position: add a successor
   var node = App.treeView.findLowestNodeAbove(helper.position.top);
   if (node) {
-    App.controller.addSuccessor(node, {id: this.id});
+    App.controller.addSuccessor(node, {id: this.node.id});
   }
 };
 
 
-// Clean up the width and height after we are attached.
-// The problem here is that width and height are set at create time, which is the only time
-// during which we can pass in args, such as width an height. But, because the node is not yet
-// attached to the DOM, the computed width and height are wrong somehow (not sure of details).
-// So, we cache the width and height at create time and then clean it up by resetting at attach time.
-NodeView.prototype.onAttach = function() {
-  // The conditional is a kludge: For dragging, the nodeView gets shallow-copied and won't have a header.
-  // In that case, we want to ignore it anyway.
-  if (this.header) {
-    this.width = this._width
-    this.height = this._height
-  }
-}
-
-
-
-
-
-
-
-NodeView.prototype.set_id = function(id) {
-  this.id = id;
-  this.header.set_id(id);
-  this.childrenContainer.set_id(id);
-}
-
-NodeView.prototype.visibleNodes = function(result) {
+NodeView.prototype.visibleNodeViews = function(result) {
   result.push(this);
   if (this.state == 'expanded') {
     this.kids().forEach(function(node) {
-      node.visibleNodes(result);
+      node.visibleNodeViews(result);
     });
   }
   return result;
 }
 
 // =========================================================================
-//                    Text Node
-// Tree Hierarchy Accessors And Manipulation Methods
+//        Tree Hierarchy Accessors And Manipulation Methods
 // =========================================================================
+// TODO: Probably this should be done in the model instead of the view, no?
+// But we need to attach the dom elements to the dom hierarchy. So we must use
+// the views out some point. When?
 
 /*
- Attach ourselves to the Text tree. This is done just after a new
+ Attach ourselves to the information tree view. This is done just after a new
  NodeView is created from a rep sent by the server to the client.
 
  We figure out where to attach ourselves by examining our predecessor, successor,
@@ -174,14 +169,14 @@ NodeView.prototype._glom = function() {
 };
 
 
-NodeView.prototype._attachSuccessor = function(successor) {
-  $(this).after(successor);
+NodeView.prototype._attachSuccessor = function(successorView) {
+  $(this).after(successorView);
   return this;
 };
 
 
-NodeView.prototype._attachPredecessor = function(predecessor) {
-  $(this).before(predecessor);
+NodeView.prototype._attachPredecessor = function(predecessorView) {
+  $(this).before(predecessorView);
   return this;
 };
 
@@ -189,36 +184,36 @@ NodeView.prototype._attachPredecessor = function(predecessor) {
 /*
  NOTE: This method will only be called by glom() if the parent has no children yet.
  */
-NodeView.prototype._attachChild = function(child) {
-  $(this.childrenContainer).append(child);
+NodeView.prototype._attachChild = function(childView) {
+  $(this.childrenContainer).append(childView);
   return this;
 };
 
 
 /*
- Search the dom for a NodeView whose id matches the predecessor id of this
+ Search the dom for a NodeView whose id matches the predecessor id of this.node
  and return it if found.
  */
 NodeView.prototype.predecessor = function() {
-  return App.treeView.find(this.predecessor_id);
+  return App.treeView.find(this.node.predecessor_id);
 };
 
 
 /*
- Search the dom for a NodeView whose id matches the predecessor id of this
+ Search the dom for a NodeView whose id matches the predecessor id of this.node
  and return it if found.
  */
 NodeView.prototype.successor = function() {
-  return App.treeView.find(this.successor_id);
+  return App.treeView.find(this.node.successor_id);
 };
 
 
 /*
- Search the dom for a NodeView whose id matches the parent id of this
+ Search the dom for a NodeView whose id matches the parent id of this.node
  and return it if found.
  */
 NodeView.prototype.parent = function() {
-  return App.treeView.find(this.parent_id);
+  return App.treeView.find(this.node.parent_id);
 }
 
 NodeView.prototype.kids = function() {
@@ -226,6 +221,14 @@ NodeView.prototype.kids = function() {
 }
 
 // =========================== Add Node
+// TODO: Rethink all the taxonomy operations. Probably they should trickle like so:
+// UI initiates based on browser event: asks model to change its taxonomy status, and, when
+// done, asks view to update itself. We have to make an architectural decision about whether
+// view wraps model, or vice versa, or neither. Is the view responsible and delegates parts to the model?
+// That's the easiest to implement, based on prior architecture. Or is the model responsible, receiving
+// requests directly from the controller, and it then updates the view? Or do the model and view just handle
+// their own parts, and we leave it to the controller to be the glue that keeps them in correspondence? This
+// latter is more in keeping with standard mvc.
 /*
  Ask the server to add a child or sibling node, specified by <nodeSpec>,
  to the node represented by <this> text node. After the server
@@ -251,20 +254,23 @@ NodeView.prototype.kids = function() {
  a client-side node object.
  node is a client-side node object.
  */
+// TODO: I think this should be on the controller. Here, the event of adding a new node is being
+// initiated by the NodeView object.
 NodeView.prototype._addNode = function(nodeSpec, mode, callback) {
   if (!nodeSpec) {
     nodeSpec = NodeView.defaultSpec;
   }
 
+  // TODO: Server call should be done by the model, not by a view.
   var me = this;
-  this._addNodeOnServer(nodeSpec, mode,
-    function(nodeRep) {
+  App.server.addNode(this.node.id, nodeSpec, mode)
+    .then(function(nodeRep) {
       if (nodeRep.error) {
         me._reportAddNodeOnServerError(nodeRep, mode);
         return;
       };
 
-      var node = App.treeView._addNodeOnClient(nodeRep);
+      var node = App.treeView.addNode(nodeRep);
       if (callback) callback(node);
     });
 };
@@ -275,32 +281,6 @@ NodeView.prototype._reportAddNodeOnServerError = function(node, mode) {
   return;
 }
 
-
-/*
- Create a new node on the server, or insert an existing one at a new location.
- Attach it to the text node tree at a position relative to the node named by <this>
- as indicated by mode, which must be one of 'add_child', 'add_successor', 'add_predeessor'.
- Then execute the function next() when done.
- Inputs:
- node: if creating a new node, this should be an object that specs out the desired new node.
- If adding an existing node, then this should just be an object with an id whose
- value is the id of the existing node.
- mode: one of 'add_child', 'add_successor', 'add_predecessor'.
- next: This is a continuation function that says what to do after the node is created or inserted.
- */
-NodeView.prototype._addNodeOnServer = function(node, mode, next) {
-  getJsonFromServer(
-    "POST",
-    this._addNodePath(),
-    next,
-    {node: node, mode:mode}
-  );
-};
-
-
-NodeView.prototype._addNodePath = function() {
-  return '/nodes/' + this.id + '/add_node.json'
-}
 
 /*
  Create a new node on the server or insert an existing one, in either case making the
@@ -349,14 +329,9 @@ NodeView.prototype.paste = function(node) {
 // When the server replies, trash the node from the browser.
 NodeView.prototype.trash = function() {
   var me = this
-  sendServer(
-    "DELETE",
-    this._trashPath(this.id),
-    function(request) {
-      if (HTTP.is_success_code(request.status)) {
-        me._trashOnClient();
-      }
-    })
+  App.server.trash(this.node.id)
+    .then(function() {})
+
 }
 
 NodeView.prototype._trashPath = function(id) {
@@ -407,7 +382,7 @@ NodeView.prototype._fetchAndAddChildrenOnClient = function(callback) {
   this._fetchChildren(
     function(fetchedNodes) {
       if (fetchedNodes) {
-        callback(App.treeView._addNodesOnClient(fetchedNodes));
+        callback(App.treeView.addNodes(fetchedNodes));
       } else {
         callback([]);
       }

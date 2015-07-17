@@ -8,7 +8,6 @@
 var Node = function (nodeRep) {
   this.children        = [];
   this.childrenFetched = false // True when we have received child node information from the server. See fetch_and_expand()
-
   this.update(nodeRep)
 }
 
@@ -30,7 +29,7 @@ Node.defaultSpec = {
  dom objects associated with the node and hook those up too. This may require some cleanup though
  for the dom objects.
  */
-NodeView.prototype.update = function(nodeRep) {
+Node.prototype.update = function (nodeRep) {
   this.id             = nodeRep.id;
   this.type_id        = nodeRep.type_id
   this.parent_id      = nodeRep.parent_id;
@@ -44,4 +43,12 @@ NodeView.prototype.update = function(nodeRep) {
   this.updatedAt      = nodeRep.updated_at;
 
   return this;
+}
+
+/*
+Allow a ui-object to attach itself as our view, or return the attached view
+if no args are given.
+ */
+Node.prototype.view = function (obj) {
+  return arguments.length == 0 ? this.view : this.view = obj;
 }

@@ -3,16 +3,14 @@
 //                   Tree View
 // ========================================================================
 var TreeView = defCustomTag('information-tree', HTMLElement);
-App.treeView = TreeView; // TODO: deprecated
 
 TreeView.prototype.init = function() {
   var self = this;
-  $(this).click(this.onClick); // TODO: These belong on an information-tree-view object.
+  $(this).click(this.onClick);
 
   this.tree = (new Tree).then(function() {
-    self.top = new NodeView(self.tree.top); // TODO: fix this. tree.top should not be a dom element.
+    self.top = new NodeView(self.tree.top);
     $(self).append(self.top);
-    // $(document).tooltip(); // TODO: is there a way for this not to be here?
   })
 
   return this;
@@ -33,13 +31,13 @@ TreeView.prototype.then = function (callback) {
  Return the nodes in order of descending y-value. This means that every visible node will
  be preceded by its older siblings, all their visible descendants, and by its parent.
  */
-App.treeView.prototype.visibleNodes = function() {
-  return this.top.visibleNodes([]);
+TreeView.prototype.visibleNodeViews = function() {
+  return this.top.visibleNodeViews([]);
 }
 
 
-App.treeView.prototype.findLowestNodeAbove = function(y) {
-  var nodes = this.visibleNodes().reverse();
+TreeView.prototype.findLowestNodeAbove = function(y) {
+  var nodes = this.visibleNodeViews().reverse();
   for(var i = 0; i < nodes.length; i++) {
     var node = nodes[i];
 
@@ -58,7 +56,7 @@ App.treeView.prototype.findLowestNodeAbove = function(y) {
 /*
  If it currently exists in the dom, return the text node with the specified id.
  */
-App.treeView.prototype.find = function(id) {
+TreeView.prototype.find = function(id) {
   if (!id) return;
 
   var $node = $('#' + id);
@@ -74,7 +72,7 @@ App.treeView.prototype.find = function(id) {
  return the new node. Note that the newly created note is unglommed; that is, it is
  unattached to the text tree.
  */
-App.treeView.prototype._findOrCreate = function(nodeRep) {
+TreeView.prototype._findOrCreate = function(nodeRep) {
   var foundNode = this.find(nodeRep.id);
   return foundNode ? foundNode.update(nodeRep) : new NodeView(nodeRep);
 }
@@ -87,11 +85,12 @@ App.treeView.prototype._findOrCreate = function(nodeRep) {
  If it does not yet exist in the dom, assume that nodeRep is a complete spec for a new node:
  instantiate it and return the new node after glomming it to the text tree in its proper position.
  */
-App.treeView.prototype._addNodeOnClient = function(nodeRep) {
+// TODO: TreeView should not be accepting node Reps and doing find or create. Maybe Tree should do this.
+TreeView.prototype.addNode = function(nodeRep) {
   return this._findOrCreate(nodeRep)._glom();
 }
 
 
-App.treeView.prototype._addNodesOnClient = function(fetchedNodeReps) {
-  return fetchedNodeReps.map(this._addNodeOnClient.bind(this));
+TreeView.prototype.addNodes = function(fetchedNodeReps) {
+  return fetchedNodeReps.map(this.addNode.bind(this));
 }

@@ -49,7 +49,7 @@ Server:     Mediate all api calls to the server.
  server side: Node.getTop(), Node.getTrash(), Node.get(:id) return specific nodesReps.
  server side: addNodeOnServer(nodeSpec, insertionPoint) creates a new node on server at insertion point.
  server side: getNodeFromServer(ref) returns a nodeRep for the referenced node.
- client side: addNodeOnClient(nodeRep) attaches a rep from the server to the client side tree.
+ client side: addNode(nodeRep) attaches a rep from the server to the client side tree.
  Server side node primitives: create, read, update, delete, trash, move, children.
  Client side node primitives: create, update, trash, move, expand.
  TODO: fix rank calculation. Do we need predecessor and successor in db?
@@ -97,6 +97,9 @@ Server:     Mediate all api calls to the server.
  TODO: Should the treeView be holding the droppable target? Or should the UI be holding it? Seems like
        if the ui holds the selectedNode, it should also hold the droppable target. And vice versa,
        perhaps the treeView should hold both.
+ TODO: Object interfaces should be through methods only. Don't let other objects even read the member variables.
+       unless the object in question is functioning as a data object: a hash, a struct.
+TODO: Adding a node is a mess. Clean it up.
  */
 
 $(document).ready(function(){
