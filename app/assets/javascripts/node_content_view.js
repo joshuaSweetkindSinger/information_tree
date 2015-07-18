@@ -98,7 +98,7 @@ NodeContentView.prototype.handleDrop = function(event, ui) {
 NodeContentView.prototype.onBlur = function(e) {
   var autosize = this.nodeView.calcAutoSize();
   App.controller.setAttributes(this.nodeView,
-    {content: this.nodeView.content,
+    {content: $(this).val(),
       width: autosize.width,
       height: autosize.height})
 }

@@ -90,8 +90,8 @@ Controller = function () {
     alert("Untrash has not yet been implemented");
   }
 
-  self.setAttributes = function (node, attributes) {
-    (node || self.selectedNode).setAttributes(attributes)
+  self.setAttributes = function (nodeView, attributes) {
+    (nodeView || self.selectedNode).setAttributes(attributes)
   }
 
   self.save = function (node) {

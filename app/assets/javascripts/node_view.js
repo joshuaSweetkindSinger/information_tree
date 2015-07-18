@@ -384,10 +384,11 @@ NodeView.prototype.autoSize = function() {
 }
 
 
-NodeView.prototype.setAttributes = function (nodeRep) {
+NodeView.prototype.setAttributes = function (nodeUpdate) {
   var self = this;
-  this.node.setAttributes(nodeRep)
-    .success(function() {self.update()})
+  this.node.setAttributes(nodeUpdate)
+    .success(function() {
+      self.update()})
 }
 
 // Calculate a pleasing width and height for a textarea input box that contains n chars.

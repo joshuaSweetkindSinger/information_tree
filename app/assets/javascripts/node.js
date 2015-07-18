@@ -10,8 +10,6 @@ var Node = function (nodeRep) {
   this.childrenFetched = false // True when we have received child node information from the server. See fetch_and_expand()
 
   this.update(nodeRep)
-
-  if (this.error) this.reportError();
 }
 
 
@@ -45,6 +43,8 @@ Node.prototype.update = function (nodeRep) {
   this.height         = nodeRep.height
   this.createdAt      = nodeRep.created_at;
   this.updatedAt      = nodeRep.updated_at;
+
+  if (this.error) this.reportError();
 
   return this;
 }
@@ -123,11 +123,10 @@ Node.prototype.fetchChildren = function () {
 // on the server first, and then the server replies with a json that represents the changed node.
 // Note: This does not allow you to set attributes affecting topology, e.g.: parent_id, rank.
 // Attributes which can be set are: content, width, height.
-Node.prototype.setAttributes = function(options) {
-  return App.server.setNodeAttributes(this.id, options)
+Node.prototype.setAttributes = function(nodeUpdate) {
+  var self = this;
+  return App.server.setNodeAttributes(this.id, nodeUpdate)
     .success(function (nodeRep) {
-      if (nodeRep.error) {
-        console.log("***** Set Attributes: server responded with this error:", nodeRep.error)
-      }
+      return self.update(nodeRep);
     })
 }
