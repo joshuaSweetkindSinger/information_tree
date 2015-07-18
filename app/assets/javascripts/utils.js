@@ -32,14 +32,15 @@ var Request = function(verb, url, params) {
   this.result   = this.request
 
   // Handle params
-  if (verb == "GET") {
-    if (params) this.url = url + "?" +  makeFormStringFromHash(params)
-  } else {
-    this.body = params ? JSON.stringify(params) : null
-    request.setRequestHeader("Content-Type", "application/json")
+  if (params && (verb === "GET")) {
+    this.url = url + "?" +  makeFormStringFromHash(params)
+  } else if (params && verb !== "GET") {
+    this.body = JSON.stringify(params)
   }
 
   this.request.open(this.verb, this.url) // Specify verb and url for request.
+
+  if (this.body) this.request.setRequestHeader("Content-Type", "application/json")
 
   // Set up a callback to notify us when response is ready.
   this.request.onreadystatechange = function() {

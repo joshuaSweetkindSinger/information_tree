@@ -5,24 +5,20 @@
 var TreeView = defCustomTag('information-tree', HTMLElement);
 
 TreeView.prototype.init = function() {
-  var self = this;
   $(this).click(this.onClick);
 
-  this.tree = (new Tree).then(function() {
-    self.top = new NodeView(self.tree.top);
-    $(self).append(self.top);
-  })
+  var self = this;
+  this.initRequest = App.server.top()
+    .success(function(top) {
+      self.top = new NodeView(new Node(top))
+      $(self).append(self.top);
+    });
 
   return this;
 };
 
 TreeView.prototype.onClick = function (event) {
   App.controller.hideButtonPanel();
-}
-
-TreeView.prototype.then = function (callback) {
-  this.tree.then(callback);
-  return this;
 }
 
 
@@ -79,18 +75,18 @@ TreeView.prototype._findOrCreateNodeView = function(node) {
 
 
 /*
- If it currently exists in the dom, merely update the text node whose id is nodeRep.id
- with the other information contained in nodeRep, and return it.
+ If it currently exists in the dom, merely update the nodeView whose id is node.id
+ with the other information contained in node, and return it.
 
- If it does not yet exist in the dom, assume that nodeRep is a complete spec for a new node:
- instantiate it and return the new node after glomming it to the text tree in its proper position.
+ If it does not yet exist in the dom, assume that node is a complete spec for a new NodeView:
+ instantiate it and return the new NodeView after glomming it to the information tree in its proper position.
  */
 // TODO: TreeView should not be accepting node Reps and doing find or create. Maybe Tree should do this.
-TreeView.prototype.addNode = function(node) {
+TreeView.prototype.addNodeView = function(node) {
   return this._findOrCreateNodeView(node)._glom();
 }
 
 
 TreeView.prototype.addNodes = function(nodes) {
-  return nodes.map(this.addNode.bind(this));
+  return nodes.map(this.addNodeView.bind(this));
 }

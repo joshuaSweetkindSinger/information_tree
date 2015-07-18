@@ -22,7 +22,8 @@ Controller = function () {
   this.selectedNode = null // The Ui maintains a "selected node", to which actions are performed.
   this.buttonPanel  = new ButtonPanel;
 
-  App.treeView.then(function() {
+  App.treeView.initRequest
+    .success(function() {
     $(App.treeView).append(self.buttonPanel);
     $(self.buttonPanel).hide();
     self.selectNode(App.treeView.top);
@@ -48,42 +49,6 @@ Controller = function () {
    */
   self.selectNode = function (node) {
     self.selectedNode = node;
-  }
-
-
-
-
-  /*
-   Child can be null, in which case a new node will be created.
-   If a new node will be created, then we pass a callback to move focus to the new node
-   after it is added.
-   */
-  self.addChild = function (parent, child) {
-    (parent || self.selectedNode).addChild(child, child ? null : self._addNodeUiCallback);
-  }
-
-  // Callback to the Ui after the server has given us a new node.
-  self._addNodeUiCallback = function (newNode) {
-    newNode.header.content.placeholder = "New Node";
-
-    // Hack! For some reason, sometimes, a sequence of blur events occurs that undoes
-    // the focus() below, because the blurs occur after the focus.
-    setTimeout(function() {
-        $(newNode.header.content).focus()
-      },
-      100);
-  }
-
-  // Add successor as the successor of predecessor. If successor is null, create a new node
-  // and set the focus to it.
-  self.addSuccessor = function (predecessor, successor) {
-    (predecessor || self.selectedNode).addSuccessor(successor, successor ? null : self._addNodeUiCallback);
-  }
-
-  // Add predecessor as the predecessor of successor. If predecessor is null, create a new node
-  // and set the focus to it.
-  self.addPredecessor = function (successor, predecessor) {
-    (successor || self.selectedNode).addPredecessor(predecessor, predecessor ? null : self._addNodeUiCallback);
   }
 
 
@@ -171,3 +136,51 @@ Controller.prototype.followLink = function (nodeView) {
   var url = nodeView.content
   if (url.slice(0,4) == 'http') open(url)
 }
+
+/*
+ Child can be null, in which case a new node will be created.
+ If a new node will be created, then we move focus to the new node
+ after it is added.
+ */
+Controller.prototype.addChild = function (parent, child) {
+  var self = this;
+  return (parent || self.selectedNode)
+    .addChild(child)
+    .success(function(nodeView) {
+      if (child) self.restoreFocus(nodeView);
+    })
+}
+
+// Add successor as the successor of predecessor. If successor is null, create a new node
+// and set the focus to it.
+Controller.prototype.addSuccessor = function (predecessor, successor) {
+  var self = this;
+  return (predecessor || self.selectedNode)
+    .addSuccessor(successor)
+    .success(function(nodeView) {
+      if (successor) self.restoreFocus(nodeView)
+    })
+}
+
+// Add predecessor as the predecessor of successor. If predecessor is null, create a new node
+// and set the focus to it.
+Controller.prototype.addPredecessor = function (successor, predecessor) {
+  var self = this;
+  return (successor || self.selectedNode)
+    .addPredecessor(predecessor)
+    .success(function(nodeView) {
+      if (predecessor) self.restoreFocus(nodeView)
+    })
+}
+
+// Restore the focus to the specified nodeView, which somehow gets lost on new node creation.
+// Hack! For some reason, sometimes, a sequence of blur events occurs that undoes
+// the focus() to a new Node, because they occur after the focus().
+Controller.prototype.restoreFocus = function (newNode) {
+  var self = this;
+  setTimeout(function() {
+      $(newNode.header.content).focus()
+    },
+    100);
+}
+

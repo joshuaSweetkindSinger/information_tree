@@ -128,7 +128,14 @@ class NodesController < ApplicationController
   # For json format, return the newly created node as a json object.
   def add_node
     at_node = Node.find(params[:id])
-    return render(json: {error: "at_node with id #{id} not found"}) unless at_node
+
+    unless at_node
+      return render(
+        json: {error: "at_node with id #{id} not found"},
+        status: :not_found
+      )
+    end
+
 
     @obj = if params[:node][:id]
              Node.find(params[:node][:id])
@@ -136,7 +143,13 @@ class NodesController < ApplicationController
              Node.new(params[:node])
            end
 
-    return render(json: {error: "@obj node with id #{params[:node][:id]} not found"}) unless @obj
+    unless @obj
+      return render(
+        json: {error: "Unable to find or create node from spec: #{params[:node]}"},
+        status: :not_found
+      )
+    end
+
 
     mode = params[:mode].to_sym
     if ![:add_successor, :add_predecessor, :add_child].include?(mode)

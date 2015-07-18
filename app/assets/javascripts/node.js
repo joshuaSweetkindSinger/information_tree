@@ -8,7 +8,10 @@
 var Node = function (nodeRep) {
   this._children       = [];
   this.childrenFetched = false // True when we have received child node information from the server. See fetch_and_expand()
+
   this.update(nodeRep)
+
+  if (this.error) this.reportError();
 }
 
 
@@ -30,6 +33,7 @@ Node.defaultSpec = {
  for the dom objects.
  */
 Node.prototype.update = function (nodeRep) {
+  this.error          = nodeRep.error // If there was an error on the server, we'll get back this field.
   this.id             = nodeRep.id;
   this.type_id        = nodeRep.type_id
   this.parent_id      = nodeRep.parent_id;
@@ -54,6 +58,48 @@ Node.prototype.view = function (obj) {
 }
 
 
+/*
+ Ask the server to add a child or sibling node, specified by <nodeSpec>,
+ to the node represented by <this> node. After the server
+ responds with a success code, effect the same changes on the client-side.
+
+ If nodeSpec is null, create a new default node.
+
+ If nodeSpec is non-null and fully spec'd,
+ but without an id, create a new node as specified.
+
+ If nodeSpec is non-null, but just contains an id, use the existing node
+ with that id for the add operation and move it to the new location (child or sibling)
+ relative to <this>.
+
+ mode determines how node is moved relative to <this>, as either a child, successor, or predecessor
+ of the node represented by <this>. mode should be a string, one of: 'child', 'successor', 'predecessor'
+
+ callback is a function that gets executed after the node has been returned from the server, and only if the
+ request was successful.
+
+ NOTES: nodeSpec is a hash that specifies a new node, or names an existing one, but it is *not* a node object.
+ nodeRep is a hash that represents a node on the server side. It contains complete info, but it is not
+ a client-side node object.
+ node is a client-side node object.
+ */
+Node.prototype.add = function (nodeSpec, mode) {
+  if (!nodeSpec) nodeSpec = Node.defaultSpec;
+
+  var self = this;
+  return App.server.addNode(this.id, nodeSpec, mode)
+    .then(function(nodeRep) {
+      return new Node(nodeRep)
+    })
+}
+
+Node.prototype.reportError = function() {
+  console.log("Got an error attempting to add this node on the server:", nodeSpec);
+  window.debug = nodeSpec;
+  return;
+}
+
+
 Node.prototype.trash = function() {
   return App.server.trash(this.id)
 }
@@ -67,7 +113,8 @@ Node.prototype.fetchChildren = function () {
   return this.childrenFetched ? new PseudoRequest([])
     : App.server.getNodeChildren(this.id)
     .success(function(childReps) {
-      return self._children = childReps.map(function (n) {new Node(n)})
+      self.childrenFetched = true;
+      return self._children = childReps.map(function (n) {return new Node(n)})
     })
 }
 

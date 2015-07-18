@@ -5,7 +5,6 @@
 //= require server
 //= require controller
 //= require tree_view
-//= require tree
 //= require buttons
 //= require node_content_view
 //= require node_children_view
@@ -119,6 +118,12 @@ a wrapper-level change, i.e., by passing the setContent() message to the node, w
 to the server. On the way back, the node receives the server's update and then it really has to set its content,
 and then it has to pass a success message back up to the view, and the view then has to really set its content.
 One way to handle this is by having a private method like _setContent() that does the local work.
+
+TODO: Node creation and taxonomy alteration are currently munged into a single operation called add(),
+which can accept either a new node or an existing node. Perhaps it is better to break out the creation
+operation and treat it separate. Newly created nodes would inherit a default parent of Limbo, for example,
+and then would get assigned to the hierarchy after creation. Then the reassignment operation wouldn't need
+logic to handle creation as well.
  */
 
 $(document).ready(function(){

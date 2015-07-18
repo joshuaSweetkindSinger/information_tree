@@ -10,7 +10,11 @@ NodeContentView.prototype.afterCreate = function(nodeView, options) {
   var $this = $(this);
   var self  = this;
 
-  this.nodeView = nodeView;
+  this.nodeView    = nodeView;
+  this.id          = 'NodeContentView-' + nodeView.node.id;
+  this.placeholder = "New Node";
+
+
 
   $this.addClass('node-content'); // Since we are extending a text-area element, we can't put css on the node-content tag--there isn't one in the dom!
   $this.on("click", this.onClick);
@@ -87,11 +91,6 @@ NodeContentView.prototype.handleDrop = function(event, ui) {
     App.treeView.dropTarget = nodeView;
   }
 };
-
-
-NodeContentView.prototype.set_id = function(id) {
-  this.id = 'NodeContentView-' + id;
-}
 
 
 // This event-handler is bound to the object's blur event.

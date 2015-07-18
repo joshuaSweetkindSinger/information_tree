@@ -230,8 +230,8 @@ NodeView.prototype.kids = function() {
 // their own parts, and we leave it to the controller to be the glue that keeps them in correspondence? This
 // latter is more in keeping with standard mvc.
 /*
- Ask the server to add a child or sibling node, specified by <nodeSpec>,
- to the node represented by <this> text node. After the server
+ Ask the server to alter the existing tree by moving a child or sibling node, specified by <nodeSpec>,
+ to the node represented by <this> NodeView, creating the new node if necessary. After the server
  responds with a success code, effect the same changes on the client-side.
 
  If nodeSpec is null, create a new default node.
@@ -246,40 +246,21 @@ NodeView.prototype.kids = function() {
  mode determines how node is moved relative to <this>, as either a child, successor, or predecessor
  of the node represented by <this>. mode should be a string, one of: 'child', 'successor', 'predecessor'
 
- callback is a function that gets executed after the node has been returned from the server, and only if the
- request was successful.
+ The return value is a request object that captures the asynchronous computation.
 
  NOTES: nodeSpec is a hash that specifies a new node, or names an existing one, but it is *not* a node object.
  nodeRep is a hash that represents a node on the server side. It contains complete info, but it is not
  a client-side node object.
  node is a client-side node object.
  */
-// TODO: I think this should be on the controller. Here, the event of adding a new node is being
-// initiated by the NodeView object.
-NodeView.prototype._addNode = function(nodeSpec, mode, callback) {
-  if (!nodeSpec) {
-    nodeSpec = NodeView.defaultSpec;
-  }
 
-  // TODO: Server call should be done by the model, not by a view.
-  var me = this;
-  App.server.addNode(this.node.id, nodeSpec, mode)
-    .then(function(nodeRep) {
-      if (nodeRep.error) {
-        me._reportAddNodeOnServerError(nodeRep, mode);
-        return;
-      };
-
-      var node = App.treeView.addNode(nodeRep);
-      if (callback) callback(node);
-    });
+NodeView.prototype._add = function(nodeSpec, mode) {
+  return this.node
+    .add(nodeSpec, mode)
+    .success(function(node) {
+        return App.treeView.addNodeView(node);
+    })
 };
-
-NodeView.prototype._reportAddNodeOnServerError = function(node, mode) {
-  console.log("Got an error attempting to add this node on the server:", node);
-  window.debug = node;
-  return;
-}
 
 
 /*
@@ -287,12 +268,12 @@ NodeView.prototype._reportAddNodeOnServerError = function(node, mode) {
  node represented by this node be its parent. Then effect the same transformation
  on the client side.
  */
-NodeView.prototype.addChild = function(node, callback) {
+NodeView.prototype.addChild = function(node) {
   // null node means we're creating a new node as opposed to moving an existing one.
   // Make sure we are expanded so that the new child node can be seen.
   if (!node) this.expand();
 
-  this._addNode(node, 'add_child', callback);
+  return this._add(node, 'add_child');
 }
 
 
@@ -301,9 +282,9 @@ NodeView.prototype.addChild = function(node, callback) {
  node represented by this node be its predecessor. Then effect the same transformation
  on the client side.
  */
-NodeView.prototype.addSuccessor = function(node, callback) {
+NodeView.prototype.addSuccessor = function(node) {
   this.parent().expand(); // Make sure that our parent is expanded so that the new node can be seen.
-  this._addNode(node, 'add_successor', callback);
+  return this._add(node, 'add_successor');
 }
 
 
@@ -312,16 +293,16 @@ NodeView.prototype.addSuccessor = function(node, callback) {
  node represented by this node be its successor. Then effect the same transformation
  on the client side.
  */
-NodeView.prototype.addPredecessor = function(node, callback) {
+NodeView.prototype.addPredecessor = function(node) {
   this.parent().expand(); // Make sure that our parent is expanded so that the new node can be seen.
-  this._addNode(node, 'add_predecessor', callback);
+  return this._add(node, 'add_predecessor');
 }
 
 
 // ========================== Paste
 // Paste node onto ourselves. This means adding it as a child.
 NodeView.prototype.paste = function(node) {
-  this.addChild({id: node.id});
+  return this.addChild({id: node.id});
 };
 
 // =========================== Trash
