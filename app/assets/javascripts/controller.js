@@ -124,38 +124,42 @@ Controller.prototype.followLink = function (nodeView) {
 }
 
 /*
- Child can be null, in which case a new node will be created.
- If a new node will be created, then we move focus to the new node
+ childSpec can either be an object with an id key referencing an existing node or null.
+ If null, a new node will be created. If a new node will be created, then we move focus to the new node
  after it is added.
+ In any case, make the node referenced by childSpec be a child of parent.
  */
-Controller.prototype.addChild = function (parent, child) {
+Controller.prototype.addChild = function (parent, childSpec) {
+  console.log("Controller.addChild:", parent, childSpec)
   var self = this;
   return (parent || self.selectedNode)
-    .addChild(child)
+    .addChild(childSpec)
     .success(function(nodeView) {
-      if (!child) self.restoreFocus(nodeView);
+      if (!childSpec) self.restoreFocus(nodeView);
     })
 }
 
-// Add successor as the successor of predecessor. If successor is null, create a new node
+// successorSpec can either be an object with an id key referencing an existing node or null.
+// Add successorSpec as the successor of predecessor. If successorSpec is null, create a new node
 // and set the focus to it.
-Controller.prototype.addSuccessor = function (predecessor, successor) {
+Controller.prototype.addSuccessor = function (predecessor, successorSpec) {
   var self = this;
   return (predecessor || self.selectedNode)
-    .addSuccessor(successor)
+    .addSuccessor(successorSpec)
     .success(function(nodeView) {
-      if (!successor) self.restoreFocus(nodeView)
+      if (!successorSpec) self.restoreFocus(nodeView)
     })
 }
 
-// Add predecessor as the predecessor of successor. If predecessor is null, create a new node
+// predecessorSpec can either be an object with an id key referencing an existing node or null.
+// Add predecessorSpec as the predecessor of successor. If predecessorSpec is null, create a new node
 // and set the focus to it.
-Controller.prototype.addPredecessor = function (successor, predecessor) {
+Controller.prototype.addPredecessor = function (successor, predecessorSpec) {
   var self = this;
   return (successor || self.selectedNode)
-    .addPredecessor(predecessor)
+    .addPredecessor(predecessorSpec)
     .success(function(nodeView) {
-      if (!predecessor) self.restoreFocus(nodeView)
+      if (!predecessorSpec) self.restoreFocus(nodeView)
     })
 }
 

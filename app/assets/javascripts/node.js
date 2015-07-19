@@ -54,7 +54,7 @@ Allow a ui-object to attach itself as our view, or return the attached view
 if no args are given.
  */
 Node.prototype.view = function (obj) {
-  return arguments.length == 0 ? this.view : this.view = obj;
+  return arguments.length == 0 ? this._view : this._view = obj;
 }
 
 

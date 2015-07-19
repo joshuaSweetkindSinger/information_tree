@@ -124,6 +124,13 @@ which can accept either a new node or an existing node. Perhaps it is better to 
 operation and treat it separate. Newly created nodes would inherit a default parent of Limbo, for example,
 and then would get assigned to the hierarchy after creation. Then the reassignment operation wouldn't need
 logic to handle creation as well.
+
+TODO: Currently we have the TreeView handling glomming of NodeViews onto the tree. But can't the NodeView
+handle this task itself at create time? Maybe it should just check the parent, predecessor, successor links
+of its node and glom itself at create time.
+
+TODO: When the server comes back with a node rep, do we create a new node from that every time, or do
+we sometimes update an existing node? How do we decide?
  */
 
 $(document).ready(function(){

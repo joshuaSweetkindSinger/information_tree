@@ -21,13 +21,14 @@ var NodeView = defCustomTag('node-view', HTMLElement);
  need to pass args, which can only be passed via afterCreate().
  */
 NodeView.prototype.afterCreate = function(node) {
-  var $this     = $(this)
-  this.id       = node.id
-  this.node     = node
-  node.view(this)
+  this.node = node; // This must precede everything, since many initializes depend on the values in this.node.
+  this.id   = node.id
 
-  $this.append(this.header = new NodeHeaderView(this, {tooltip:"Created on " + this.node.createdAt}))
+  var $this  = $(this)
+  $this.append(this.header = new NodeHeaderView(this, {tooltip:"Created on " + node.createdAt}))
   $this.append(this.childrenContainer = new NodeChildrenView);
+
+  this.update(node) // This needs to follow the header and container appends above; it invokes setters that depend upon them.
 
   this.collapse();   // Note: need to call this method, not just to set state, but so that child dom element will be hidden.
 
@@ -47,11 +48,20 @@ NodeView.prototype.onAttach = function() {
   // The conditional is a kludge: For dragging, the nodeView gets shallow-copied and won't have a header.
   // In that case, we want to ignore it anyway.
   if (this.header) {
-    this.update()
+    this.width   = this.node.width
+    this.height  = this.node.height
   }
 }
 
-NodeView.prototype.update = function () {
+/*
+Update ourselves to reflect the info in node. If node is not specified,
+use existing this.node. If it is specified, replace this.node with the new node.
+*/
+NodeView.prototype.update = function (node) {
+  if (node) this.node = node;
+
+  if (this.node.id != this.id) throw ("Attempt to update from node with different id: Our id is " + this.id + " but node's is " + node.id);
+
   this.width   = this.node.width
   this.height  = this.node.height
   this.content = this.node.content
@@ -62,6 +72,16 @@ NodeView.prototype.update = function () {
 
 // TODO: Change format to jquery style setter/getter wrapped in a single function for each setter/getter.
 Object.defineProperties(NodeView.prototype, {
+    node: {
+      get: function() {
+        return this._node;
+      },
+      set: function(node) {
+        this._node = node;
+        node.view(this);
+      }
+    },
+
     content: {
       get: function() {
         return $(this.header.content).val()
@@ -151,6 +171,8 @@ NodeView.prototype.visibleNodeViews = function(result) {
  of the parent's children are represented on the client side.
  */
 NodeView.prototype._glom = function() {
+  console.log("NodeView.glom:", this);
+  console.log("NodeView.glom.node:", this.node);
   var relative;
   if (relative = this.predecessor()) {
     relative._attachSuccessor(this);
@@ -251,8 +273,6 @@ NodeView.prototype.kids = function() {
  The return value is a request object that captures the asynchronous computation.
 
  NOTES: nodeSpec is a hash that specifies a new node, or names an existing one, but it is *not* a node object.
- nodeRep is a hash that represents a node on the server side. It contains complete info, but it is not
- a client-side node object.
  node is a client-side node object.
  */
 
@@ -270,12 +290,12 @@ NodeView.prototype._add = function(nodeSpec, mode) {
  node represented by this node be its parent. Then effect the same transformation
  on the client side.
  */
-NodeView.prototype.addChild = function(node) {
+NodeView.prototype.addChild = function(nodeSpec) {
   // null node means we're creating a new node as opposed to moving an existing one.
   // Make sure we are expanded so that the new child node can be seen.
-  if (!node) this.expand();
+  if (!nodeSpec) this.expand();
 
-  return this._add(node, 'add_child');
+  return this._add(nodeSpec, 'add_child');
 }
 
 
@@ -284,9 +304,9 @@ NodeView.prototype.addChild = function(node) {
  node represented by this node be its predecessor. Then effect the same transformation
  on the client side.
  */
-NodeView.prototype.addSuccessor = function(node) {
+NodeView.prototype.addSuccessor = function(nodeSpec) {
   this.parent().expand(); // Make sure that our parent is expanded so that the new node can be seen.
-  return this._add(node, 'add_successor');
+  return this._add(nodeSpec, 'add_successor');
 }
 
 
@@ -295,9 +315,9 @@ NodeView.prototype.addSuccessor = function(node) {
  node represented by this node be its successor. Then effect the same transformation
  on the client side.
  */
-NodeView.prototype.addPredecessor = function(node) {
+NodeView.prototype.addPredecessor = function(nodeSpec) {
   this.parent().expand(); // Make sure that our parent is expanded so that the new node can be seen.
-  return this._add(node, 'add_predecessor');
+  return this._add(nodeSpec, 'add_predecessor');
 }
 
 
@@ -385,7 +405,11 @@ NodeView.prototype.autoSize = function() {
   this.setAttributes(this.calcAutoSize())
 }
 
-
+/*
+Make changes to self that are spec'd in the data object nodeUpdate.
+nodeUpdate need not be a complete nodeSpec. It may simply contain a few key/values
+to be changed within this.node, the rest remaining the same.
+ */
 NodeView.prototype.setAttributes = function (nodeUpdate) {
   var self = this;
   this.node.setAttributes(nodeUpdate)
