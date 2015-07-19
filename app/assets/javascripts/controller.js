@@ -36,20 +36,6 @@ Controller = function () {
     self.selectNode(node);
   }
 
-  // Respond to a right-click on a node. Select the node and pop up the command menu.
-  self.clickRightOnNode = function (node, event) {
-    self.selectNode(node);
-    self.buttonPanel.popTo(node);
-    event.preventDefault();
-  }
-
-
-  /*
-   Select the specified node.
-   */
-  self.selectNode = function (node) {
-    self.selectedNode = node;
-  }
 
 
   self.hideButtonPanel = function () {
@@ -112,13 +98,13 @@ Controller = function () {
 // TODO: make the selected node be a node instead of a nodeview.
 // Trash the selected node.
 Controller.prototype.trash = function (nodeView) {
-  nodeView = nodeView || self.selectedNode
+  nodeView = nodeView || this.selectedNode
   nodeView.node.trash()
     .success(function() {
       nodeView.trash()
-      if (nodeView === self.selectedNode) {
-        self.selectedNode = null;   // We just deleted the selected node, so now there is none.
-        $(self.buttonPanel).hide(); // we just deleted the selected node, so hide the button panel.
+      if (nodeView === this.selectedNode) {
+        this.selectedNode = null;   // We just deleted the selected node, so now there is none.
+        $(this.buttonPanel).hide(); // we just deleted the selected node, so hide the button panel.
       }
     })
 }
@@ -147,7 +133,7 @@ Controller.prototype.addChild = function (parent, child) {
   return (parent || self.selectedNode)
     .addChild(child)
     .success(function(nodeView) {
-      if (child) self.restoreFocus(nodeView);
+      if (!child) self.restoreFocus(nodeView);
     })
 }
 
@@ -158,7 +144,7 @@ Controller.prototype.addSuccessor = function (predecessor, successor) {
   return (predecessor || self.selectedNode)
     .addSuccessor(successor)
     .success(function(nodeView) {
-      if (successor) self.restoreFocus(nodeView)
+      if (!successor) self.restoreFocus(nodeView)
     })
 }
 
@@ -169,7 +155,7 @@ Controller.prototype.addPredecessor = function (successor, predecessor) {
   return (successor || self.selectedNode)
     .addPredecessor(predecessor)
     .success(function(nodeView) {
-      if (predecessor) self.restoreFocus(nodeView)
+      if (!predecessor) self.restoreFocus(nodeView)
     })
 }
 
@@ -177,10 +163,22 @@ Controller.prototype.addPredecessor = function (successor, predecessor) {
 // Hack! For some reason, sometimes, a sequence of blur events occurs that undoes
 // the focus() to a new Node, because they occur after the focus().
 Controller.prototype.restoreFocus = function (newNode) {
-  var self = this;
   setTimeout(function() {
       $(newNode.header.content).focus()
     },
     100);
 }
 
+// Respond to a right-click on a node. Select the node and pop up the command menu.
+Controller.prototype.clickRightOnNode = function (nodeView, event) {
+  this.selectNode(nodeView);
+  this.buttonPanel.popTo(nodeView);
+  event.preventDefault();
+}
+
+/*
+ Select the specified node.
+ */
+Controller.prototype.selectNode = function (nodeView) {
+  this.selectedNode = nodeView;
+}

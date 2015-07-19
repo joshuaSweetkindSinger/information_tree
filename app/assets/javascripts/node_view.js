@@ -55,6 +55,8 @@ NodeView.prototype.update = function () {
   this.width   = this.node.width
   this.height  = this.node.height
   this.content = this.node.content
+
+  return this;
 }
 
 
