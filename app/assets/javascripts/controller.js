@@ -46,27 +46,9 @@ Controller = function () {
     (node || self.selectedNode).autoSize()
   }
 
-  // Copy node into the copiedNode holding area.
-  self.copyNode = function (node) {
-    self.copiedNode = (node || self.selectedNode);
-  }
-
-  // Cut node == copy + delete
-  self.cutNode = function (node) {
-    node = (node || self.selectedNode);
-    self.copyNode(node);
-    self.trash(node);
-  }
-
-  // Paste the copiedNode onto node.
-  self.pasteNode = function (node) {
-    (node || self.selectedNode).paste(self.copiedNode)
-  }
-
-
 
   self.toggleExpandCollapseAll = function (node) {
-    (node || self.selectedNode).toggle(true)
+    (node || self.selectedNode).toggleExpandCollapse(true)
   }
 
 
@@ -184,4 +166,24 @@ Controller.prototype.clickRightOnNode = function (nodeView, event) {
  */
 Controller.prototype.selectNode = function (nodeView) {
   this.selectedNode = nodeView;
+}
+
+
+// Cut node == copy + delete
+Controller.prototype.cutNode = function (node) {
+  node = (node || this.selectedNode);
+  this.copyNode(node);
+  this.trash(node);
+}
+
+
+// Copy node into the copiedNode holding area.
+Controller.prototype.copyNode = function (node) {
+  this.copiedNode = (node || this.selectedNode);
+}
+
+
+// Paste the copiedNode onto node.
+Controller.prototype.pasteNode = function (node) {
+  (node || this.selectedNode).paste(this.copiedNode)
 }

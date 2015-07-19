@@ -134,6 +134,9 @@ we sometimes update an existing node? How do we decide?
 
 TODO: Don't automatically send set_attributes on blur event. Calculate first what, if anything has changed,
 and only send change request for the attributes that have changed.
+
+TODO: There are annoying flashes when a node is saved. Probably because of the round-trip to server, and maybe
+because of the timing of when they are added to the dom.
  */
 
 $(document).ready(function(){

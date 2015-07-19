@@ -30,7 +30,7 @@ ButtonPanel.prototype.afterCreate = function() {
   this.addPredecessorButton = new AddPredecessor
   $this.append(this.addPredecessorButton)
 
-  this.copyButton = new CopyNode
+  this.copyButton = new CutNode
   $this.append(this.copyButton)
 
   this.pasteButton = new PasteNode
@@ -154,21 +154,21 @@ Save.prototype.onClick = function(event) {
 
 
 // =========================================================================
-//                   Copy Button
+//                   Cut Button
 // =========================================================================
 // Pressing this button copies the selected node to the copy buffer for later pasting.
-var CopyNode = defCustomTag('copy-node', ButtonPanelButton)
+var CutNode = defCustomTag('copy-node', ButtonPanelButton)
 
-CopyNode.prototype.afterCreate = function() {
+CutNode.prototype.afterCreate = function() {
   ButtonPanelButton.prototype.afterCreate.call(this)
 
   var $this = $(this)
-  $this.html('Copy')
+  $this.html('Cut')
   $this.click(this.onClick)
 }
 
-CopyNode.prototype.onClick = function (event) {
-  App.controller.copyNode();
+CutNode.prototype.onClick = function (event) {
+  App.controller.cutNode();
 }
 
 // =========================================================================
@@ -187,7 +187,7 @@ PasteNode.prototype.afterCreate = function() {
 }
 
 PasteNode.prototype.onClick = function (event) {
-  App.controller.paste();
+  App.controller.pasteNode();
 }
 // TODO: I think all these buttons could just be instances of a MyButton class.
 // Don't need separate classes for all of them.

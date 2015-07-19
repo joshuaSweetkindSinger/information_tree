@@ -355,7 +355,7 @@ NodeView.prototype.expand = function(doRecursive) {
       App.treeView.addNodes(children)
       self._expand()
       if (doRecursive) {
-        me.kids().forEach(function(nodeView) {nodeView.expand(true)});
+        self.kids().forEach(function(nodeView) {nodeView.expand(true)});
       }
     })
 }
