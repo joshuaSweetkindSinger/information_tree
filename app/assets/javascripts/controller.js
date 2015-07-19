@@ -118,7 +118,7 @@ Controller.prototype.toggleNodeExpandCollapse = function (nodeView) {
 
 // Open up in a new tab (or window) the URL represented by our node's content.
 Controller.prototype.followLink = function (nodeView) {
-  nodeView = (nodeView || self.selectedNode)
+  nodeView = (nodeView || this.selectedNode)
   var url = nodeView.content
   if (url.slice(0,4) == 'http') open(url)
 }
