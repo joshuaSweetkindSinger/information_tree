@@ -131,6 +131,9 @@ of its node and glom itself at create time.
 
 TODO: When the server comes back with a node rep, do we create a new node from that every time, or do
 we sometimes update an existing node? How do we decide?
+
+TODO: Don't automatically send set_attributes on blur event. Calculate first what, if anything has changed,
+and only send change request for the attributes that have changed.
  */
 
 $(document).ready(function(){

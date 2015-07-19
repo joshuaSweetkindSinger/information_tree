@@ -31,7 +31,7 @@ Node.defaultSpec = {
  for the dom objects.
  */
 Node.prototype.update = function (nodeRep) {
-  this.error          = nodeRep.error // If there was an error on the server, we'll get back this field.
+  this.error          = nodeRep.error
   this.id             = nodeRep.id;
   this.type_id        = nodeRep.type_id
   this.parent_id      = nodeRep.parent_id;
@@ -88,15 +88,16 @@ Node.prototype.add = function (nodeSpec, mode) {
 
   var self = this;
   return App.server.addNode(this.id, nodeSpec, mode)
-    .then(function(nodeRep) {
+    .success(function(nodeRep) {
       return new Node(nodeRep)
+    })
+    .failure(function(error) {
+      console.log("Got an error attempting to add a node on server. parent = ", self, "; spec = ", nodeSpec, "; mode = ", mode, "; error = ", error);
     })
 }
 
 Node.prototype.reportError = function() {
-  console.log("Got an error attempting to add this node on the server:", nodeSpec);
-  window.debug = nodeSpec;
-  return;
+  console.log("Got an error attempting to make changes to node on server: ", this)
 }
 
 

@@ -171,8 +171,6 @@ NodeView.prototype.visibleNodeViews = function(result) {
  of the parent's children are represented on the client side.
  */
 NodeView.prototype._glom = function() {
-  console.log("NodeView.glom:", this);
-  console.log("NodeView.glom.node:", this.node);
   var relative;
   if (relative = this.predecessor()) {
     relative._attachSuccessor(this);

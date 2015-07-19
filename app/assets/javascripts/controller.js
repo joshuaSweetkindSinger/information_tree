@@ -130,7 +130,6 @@ Controller.prototype.followLink = function (nodeView) {
  In any case, make the node referenced by childSpec be a child of parent.
  */
 Controller.prototype.addChild = function (parent, childSpec) {
-  console.log("Controller.addChild:", parent, childSpec)
   var self = this;
   return (parent || self.selectedNode)
     .addChild(childSpec)

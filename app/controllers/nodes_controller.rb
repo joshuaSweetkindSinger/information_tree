@@ -145,7 +145,8 @@ class NodesController < ApplicationController
 
     unless @obj
       return render(
-        json: {error: "Unable to find or create node from spec: #{params[:node]}"},
+        json: {error: "Unable to find or create node from spec",
+               spec: params[:node]},
         status: :not_found
       )
     end

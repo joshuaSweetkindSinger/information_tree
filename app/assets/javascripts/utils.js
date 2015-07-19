@@ -101,6 +101,13 @@ Request.prototype.success = function (callback) {
   })
 }
 
+// Run the callback on the result object when the request is done,
+// but only if the request failed to finish successfully.
+Request.prototype.failure = function (callback) {
+  return this.then(function(result) {
+    if (!this.isSuccess()) this.doCallback(callback);
+  })
+}
 // ========================================================================
 //                 Json Request
 // ========================================================================

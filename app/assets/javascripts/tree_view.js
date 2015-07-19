@@ -83,11 +83,7 @@ TreeView.prototype._findOrCreateNodeView = function(node) {
  */
 // TODO: TreeView should not be accepting node Reps and doing find or create. Maybe Tree should do this.
 TreeView.prototype.addNodeView = function(node) {
-  console.log("addNodeView:node:", node);
-  var nodeView = this._findOrCreateNodeView(node);
-  console.log("addNodeView:nodeView.node", nodeView.node);
-
-  return nodeView._glom();
+  return this._findOrCreateNodeView(node)._glom();
 }
 
 

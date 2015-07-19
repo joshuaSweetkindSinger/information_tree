@@ -91,6 +91,8 @@ class Node < ActiveRecord::Base
   # ===================================== Instance Methods
 
   # Insert ourselves into the node hierarchy at position, which is a SplicePosition instance.
+  # NOTE: self is *not* the insertion point; it is the node being inserted.
+  #       splice_position is the insertion point.
   #
   # This method fixes all the predecessor and successor links, calculates the rank of node,
   # and causes node to be saved to the db if it was not already in the db, along with mods
@@ -104,8 +106,12 @@ class Node < ActiveRecord::Base
       _splice!(splice_position)
       self.rank = calc_rank()
       save!
-      self
     end
+
+    # TODO: this is overly-agressive and will cause performance problems.
+    # To prevent underflow of rank resolution, re-rank children on each splice operation.
+    self.parent.rerank_children
+    self
   end
 
 
@@ -151,10 +157,6 @@ class Node < ActiveRecord::Base
     successor.save!   if successor
     predecessor.save! if predecessor
     save!
-
-    # TODO: this is overly-agressive and will cause performance problems.
-    # To prevent underflow of rank resolution, re-rank children on each splice operation.
-    self.parent.rerank_children
   end
 
 
