@@ -26,7 +26,7 @@ ViewNode.prototype.afterCreate = function(node) {
 
   var $this  = $(this)
   $this.append(this._header = new ViewNodeHeader(this, {tooltip:"Created on " + node.createdAt}))
-  $this.append(this.childrenContainer = new ViewNodeChildren);
+  $this.append(this._childrenContainer = new ViewNodeChildren);
 
   this.update(node) // This needs to follow the _header and container appends above; it invokes setters that depend upon them.
 
@@ -178,7 +178,7 @@ ViewNode.prototype._attachPredecessor = function(predecessorView) {
  NOTE: This method will only be called by glom() if the parent has no children yet.
  */
 ViewNode.prototype._attachChild = function(childView) {
-  $(this.childrenContainer).append(childView);
+  $(this._childrenContainer).append(childView);
   return this;
 };
 
@@ -210,7 +210,7 @@ ViewNode.prototype.parent = function() {
 }
 
 ViewNode.prototype.kids = function() {
-  return $(this.childrenContainer).children().get();
+  return $(this._childrenContainer).children().get();
 }
 
 // =========================== Add Node
