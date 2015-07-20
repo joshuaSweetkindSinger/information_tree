@@ -8,7 +8,7 @@
 // =========================================================================
 //                   Ui Node
 // =========================================================================
-var UiNode = defCustomTag('ui-node', UiNode);
+var UiNode = defCustomTag('ui-node', ViewNode);
 
 // ======= Construction and Initialization
 /*
@@ -21,7 +21,7 @@ var UiNode = defCustomTag('ui-node', UiNode);
  need to pass args, which can only be passed via afterCreate().
  */
 UiNode.prototype.afterCreate = function(node) {
-  UiNode.prototype.afterCreate.call(this, node);
+  ViewNode.prototype.afterCreate.call(this, node);
 
   $(this).draggable({
     revert: true,

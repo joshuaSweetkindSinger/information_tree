@@ -141,9 +141,6 @@ because of the timing of when they are added to the dom.
 
 TODO: The controller doesn't want to know about the internals of the ViewNode. The ViewNode should present an api
 to the controller.
-
-TODO: Rename ViewNode to ViewNode.
-TODO: Create UiNode, which wraps ViewNode.
  */
 
 $(document).ready(function(){

@@ -144,20 +144,15 @@ function defCustomTag(customElementName, parentClass, extensionType) {
 
   // Create the new custom class's prototype, and define default do-nothing methods
   var proto = Object.create(parentClass.prototype)
-  proto.onCreate = function(){}
-  proto.afterCreate = function(){}
-  proto.onAttach = function(){}
-  proto.onDetach = function(){}
-  proto.onChanged = function(name, oldValue, newValue){}
 
   // onCreate(), onAttach(), and onDetach() are framework enhancements. Call them if they are defined; otherwise, ignore.
   // NOTE: we *have* to define the callbacks below before registering the new element, or they won't be recognized at all.
   // That's why we create the aliases onCreate(), etc., so that a programmer can use defCustomTag and then later define, for example, its onCreate() method.
-  proto.createdCallback  = function() {return this.onCreate()}
-  proto.attachedCallback = function() {return this.onAttach()}
-  proto.detachedCallback = function() {return this.onDetach()}
+  proto.createdCallback  = function() {if (this.onCreate) return this.onCreate()}
+  proto.attachedCallback = function() {if (this.onAttach) return this.onAttach()}
+  proto.detachedCallback = function() {if (this.onDetach) return this.onDetach()}
   proto.attributeChangedCallback = function(name, oldValue, newValue) {
-    return this.onChanged(name, oldValue, newValue)
+    if (this.onChanged) return this.onChanged(name, oldValue, newValue)
   }
 
   // Register the new custom tag class. This returns a constructor for it, whose prototype is proto.
@@ -173,7 +168,9 @@ function defCustomTag(customElementName, parentClass, extensionType) {
   // initialization args into the constructor and have them be handled by afterCreate().
   var constructor = function() {
     var newObj = new internalConstructor
-    return newObj.afterCreate.apply(newObj, arguments) || newObj // If afterCreate() returns an object ,that will be the return value of the constructor.
+    if (newObj.afterCreate) {
+      return newObj.afterCreate.apply(newObj, arguments) || newObj // If afterCreate() returns an object ,that will be the return value of the constructor.
+    }
   }
   constructor.prototype = proto
   constructor.tagName   = customElementName.toUpperCase()  // Tell the class the tag name of its instances.

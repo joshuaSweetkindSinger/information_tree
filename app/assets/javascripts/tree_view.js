@@ -10,7 +10,7 @@ TreeView.prototype.init = function() {
   var self = this;
   this.initRequest = App.server.top()
     .success(function(top) {
-      self.top = new ViewNode(new Node(top))
+      self.top = new UiNode(new Node(top))
       $(self).append(self.top);
     });
 
@@ -68,9 +68,9 @@ TreeView.prototype.find = function(id) {
  return the new ViewNode. Note that the newly created ViewNode is unglommed; that is, it is
  unattached to the information tree.
  */
-TreeView.prototype._findOrCreateNodeView = function(node) {
-  var foundNodeView = this.find(node.id);
-  return foundNodeView ? foundNodeView.update(node) : new ViewNode(node);
+TreeView.prototype._findOrCreateUiNode = function(node) {
+  var foundUiNode = this.find(node.id);
+  return foundUiNode ? foundUiNode.update(node) : new UiNode(node);
 }
 
 
@@ -82,11 +82,11 @@ TreeView.prototype._findOrCreateNodeView = function(node) {
  instantiate it and return the new ViewNode after glomming it to the information tree in its proper position.
  */
 // TODO: TreeView should not be accepting node Reps and doing find or create. Maybe Tree should do this.
-TreeView.prototype.addNodeView = function(node) {
-  return this._findOrCreateNodeView(node)._glom();
+TreeView.prototype.addUiNode = function(node) {
+  return this._findOrCreateUiNode(node)._glom();
 }
 
 
-TreeView.prototype.addNodes = function(nodes) {
-  return nodes.map(this.addNodeView.bind(this));
+TreeView.prototype.addUiNodes = function(nodes) {
+  return nodes.map(this.addUiNode.bind(this));
 }

@@ -249,7 +249,7 @@ ViewNode.prototype._add = function(nodeSpec, mode) {
   return this.node
     .add(nodeSpec, mode)
     .success(function(node) {
-        return App.treeView.addNodeView(node);
+        return App.treeView.addUiNode(node);
     })
 };
 
@@ -323,7 +323,7 @@ ViewNode.prototype.expand = function(doRecursive) {
   var self = this;
   this.node.fetchChildren()
     .success(function(children) {
-      App.treeView.addNodes(children)
+      App.treeView.addUiNodes(children)
       self._expand()
       if (doRecursive) {
         self.kids().forEach(function(nodeView) {nodeView.expand(true)});
