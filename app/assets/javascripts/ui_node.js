@@ -52,7 +52,7 @@ UiNode.prototype.afterCreate = function(node) {
  */
 
 UiNode.prototype.dragStart = function() {
-  App.treeView.dropTarget = null;
+  App.uiTree.dropTarget = null;
 }
 
 
@@ -62,13 +62,13 @@ UiNode.prototype.dragStart = function() {
  */
 UiNode.prototype.dragStop = function(event, helper) {
   // There's a drop target: add a child
-  if (App.treeView.dropTarget) {
-    App.controller.addChild(App.treeView.dropTarget, {id: this.node.id});
+  if (App.uiTree.dropTarget) {
+    App.controller.addChild(App.uiTree.dropTarget, {id: this.node.id});
     return;
   }
 
   // There's a node above the release position: add a successor
-  var node = App.treeView.findLowestNodeAbove(helper.position.top);
+  var node = App.uiTree.findLowestNodeAbove(helper.position.top);
   if (node) {
     App.controller.addSuccessor(node, {id: this.node.id});
   }
@@ -139,7 +139,7 @@ UiNode.prototype.onKeypress = function(event) {
  */
 UiNode.prototype.handleDrop = function(event, ui) {
   if (this.id) {
-    App.treeView.dropTarget = this;
+    App.uiTree.dropTarget = this;
   }
 };
 

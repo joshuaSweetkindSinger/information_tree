@@ -22,11 +22,11 @@ Controller = function () {
   this.selectedNode = null // The Ui maintains a "selected node", to which actions are performed.
   this.buttonPanel  = new ButtonPanel;
 
-  App.treeView.initRequest
+  App.uiTree.initRequest
     .success(function() {
-    $(App.treeView).append(self.buttonPanel);
+    $(App.uiTree).append(self.buttonPanel);
     $(self.buttonPanel).hide();
-    self.selectNode(App.treeView.top);
+    self.selectNode(App.uiTree.top);
   });
 };
 

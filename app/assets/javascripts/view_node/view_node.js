@@ -192,7 +192,7 @@ ViewNode.prototype._attachChild = function(childView) {
  and return it if found.
  */
 ViewNode.prototype.predecessor = function() {
-  return App.treeView.find(this.node.predecessor_id);
+  return App.uiTree.find(this.node.predecessor_id);
 };
 
 
@@ -201,7 +201,7 @@ ViewNode.prototype.predecessor = function() {
  and return it if found.
  */
 ViewNode.prototype.successor = function() {
-  return App.treeView.find(this.node.successor_id);
+  return App.uiTree.find(this.node.successor_id);
 };
 
 
@@ -210,7 +210,7 @@ ViewNode.prototype.successor = function() {
  and return it if found.
  */
 ViewNode.prototype.parent = function() {
-  return App.treeView.find(this.node.parent_id);
+  return App.uiTree.find(this.node.parent_id);
 }
 
 ViewNode.prototype.kids = function() {
@@ -249,15 +249,15 @@ ViewNode.prototype.kids = function() {
  node is a client-side node object.
 
  NOTE: this method does NOT directly create a new ViewNode. It can't, because ViewNode is not a toplevel class.
- We need to create a wrapper class, of which this class has no knowledge. So, instead, it contacts the treeView
- object, which is a UI-level object, and asks the treeView to create a ui-level node of the proper class.
+ We need to create a wrapper class, of which this class has no knowledge. So, instead, it contacts the uiTree
+ object, which is a UI-level object, and asks the uiTree to create a ui-level node of the proper class.
  */
 
 ViewNode.prototype._add = function(nodeSpec, mode) {
   return this.node
     .add(nodeSpec, mode)
     .success(function(node) {
-        return App.treeView.addUiNode(node);
+        return App.uiTree.addUiNode(node);
     })
 };
 
@@ -331,7 +331,7 @@ ViewNode.prototype.expand = function(doRecursive) {
   var self = this;
   this.node.fetchChildren()
     .success(function(children) {
-      App.treeView.addUiNodes(children)
+      App.uiTree.addUiNodes(children)
       self._expand()
       if (doRecursive) {
         self.kids().forEach(function(nodeView) {nodeView.expand(true)});
