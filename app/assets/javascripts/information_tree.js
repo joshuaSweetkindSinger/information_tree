@@ -1,13 +1,13 @@
 //= require app
 //= require node
-//= require node_view
-//= require node_header_view
+//= require view_node/view_node
+//= require view_node/view_node_header
 //= require server
 //= require controller
 //= require tree_view
 //= require buttons
-//= require node_content_view
-//= require node_children_view
+//= require view_node/view_node_content
+//= require view_node/view_node_children
 
 /*
 This file defines client-side functionality for the information-tree sub-app.
@@ -17,9 +17,9 @@ The structure is as follows:
 TextTree: a single node of this type is put in a static html file, which initiates the dynamic
           creation of a text tree when the html file is loaded into the browser, via its custom tag constructor.
           A text tree is made up of TextNodes.
-TextNode: has two child elements, called NodeHeaderView and NodeChildrenView.
-NodeHeaderView: represents content for the node.
-NodeChildrenView: represents a container for sub-nodes. Its only children are of type TextNode.
+TextNode: has two child elements, called ViewNodeHeader and ViewNodeChildren.
+ViewNodeHeader: represents content for the node.
+ViewNodeChildren: represents a container for sub-nodes. Its only children are of type TextNode.
 
 Text Nodes are stored in the db in the nodes table. When the client-side expands a node, it asks the db for its children,
 which get sent as json, and then the client builds the nodes on the browser.

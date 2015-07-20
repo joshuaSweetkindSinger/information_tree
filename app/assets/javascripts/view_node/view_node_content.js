@@ -2,16 +2,16 @@
 // =========================================================================
 //                   Node Content
 // =========================================================================
-// NodeContentView holds the text that represents the content of the node.
+// ViewNodeContent holds the text that represents the content of the node.
 
-var NodeContentView = defCustomTag('node-content', HTMLTextAreaElement, 'textarea')
+var ViewNodeContent = defCustomTag('node-content', HTMLTextAreaElement, 'textarea')
 
-NodeContentView.prototype.afterCreate = function(nodeView, options) {
+ViewNodeContent.prototype.afterCreate = function(nodeView, options) {
   var $this = $(this);
   var self  = this;
 
   this.nodeView    = nodeView;
-  this.id          = 'NodeContentView-' + nodeView.node.id;
+  this.id          = 'ViewNodeContent-' + nodeView.node.id;
   this.placeholder = "New Node";
 
 
@@ -34,21 +34,21 @@ NodeContentView.prototype.afterCreate = function(nodeView, options) {
 
 
 // Handle a left click in the text area.
-NodeContentView.prototype.onClick = function (event) {
+ViewNodeContent.prototype.onClick = function (event) {
   return App.controller.clickLeftOnNode(this.nodeView);
 }
 
 
 /*
  This somewhat awkward intermediary is necessary because, at create time, we don't have
- a pointer to the Node parent from the NodeContentView object. So we create a delegator
+ a pointer to the Node parent from the ViewNodeContent object. So we create a delegator
  that will work at click-time.
  */
-NodeContentView.prototype.onContextMenu = function(event) {
+ViewNodeContent.prototype.onContextMenu = function(event) {
   return App.controller.clickRightOnNode(this.nodeView, event);
 }
 
-NodeContentView.prototype.onKeypress = function(event) {
+ViewNodeContent.prototype.onKeypress = function(event) {
   // carriage return -- create new successor node
   if (event.charCode == 13 && !event.altKey && !event.shiftKey && !event.ctrlKey) {
     event.preventDefault();
@@ -95,7 +95,7 @@ NodeContentView.prototype.onKeypress = function(event) {
  We only record this node as the drop target, not the phantom. I believe the phantom has to do with
  the cloned helper node that is created as part of the drag.
  */
-NodeContentView.prototype.handleDrop = function(event, ui) {
+ViewNodeContent.prototype.handleDrop = function(event, ui) {
   var nodeView = this.nodeView;
   if (nodeView.id) {
     App.treeView.dropTarget = nodeView;
@@ -105,6 +105,6 @@ NodeContentView.prototype.handleDrop = function(event, ui) {
 
 // This event-handler is bound to the object's blur event.
 // It causes the content of the node to change on the server.
-NodeContentView.prototype.onBlur = function(e) {
+ViewNodeContent.prototype.onBlur = function(e) {
   App.controller.blurNode(this.nodeView);
 }

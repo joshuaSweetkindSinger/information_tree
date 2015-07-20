@@ -216,7 +216,7 @@ AddChild.prototype.afterCreate = function() {
   $this.html('+Child')
 
   // Click function adds a new child ViewNode to the ViewNode associated with this button. This means
-  // adding the new node to the ViewNode's NodeChildrenView element.
+  // adding the new node to the ViewNode's ViewNodeChildren element.
   $this.click(function() {App.controller.addChild()})
 }
 

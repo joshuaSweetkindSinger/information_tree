@@ -25,8 +25,8 @@ ViewNode.prototype.afterCreate = function(node) {
   this.id   = node.id
 
   var $this  = $(this)
-  $this.append(this.header = new NodeHeaderView(this, {tooltip:"Created on " + node.createdAt}))
-  $this.append(this.childrenContainer = new NodeChildrenView);
+  $this.append(this.header = new ViewNodeHeader(this, {tooltip:"Created on " + node.createdAt}))
+  $this.append(this.childrenContainer = new ViewNodeChildren);
 
   this.update(node) // This needs to follow the header and container appends above; it invokes setters that depend upon them.
 
