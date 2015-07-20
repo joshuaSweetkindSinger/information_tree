@@ -3,7 +3,7 @@
 //= require ui_node
 //= require server
 //= require controller
-//= require tree_view
+//= require ui_tree
 //= require buttons
 
 /*
@@ -32,7 +32,7 @@ has been sent back to the client.
 
 TOPLEVEL OBJECTS:
 Controller: Controls all UI interactions.
-TreeView:   Client-side representation of the information tree.
+UiTree:   Client-side representation of the information tree.
 Server:     Mediate all api calls to the server.
 */
 
@@ -122,7 +122,7 @@ operation and treat it separate. Newly created nodes would inherit a default par
 and then would get assigned to the hierarchy after creation. Then the reassignment operation wouldn't need
 logic to handle creation as well.
 
-TODO: Currently we have the TreeView handling glomming of NodeViews onto the tree. But can't the ViewNode
+TODO: Currently we have the UiTree handling glomming of NodeViews onto the tree. But can't the ViewNode
 handle this task itself at create time? Maybe it should just check the parent, predecessor, successor links
 of its node and glom itself at create time.
 
@@ -134,9 +134,6 @@ and only send change request for the attributes that have changed.
 
 TODO: There are annoying flashes when a node is saved. Probably because of the round-trip to server, and maybe
 because of the timing of when they are added to the dom.
-
-TODO: The controller doesn't want to know about the internals of the ViewNode. The ViewNode should present an api
-to the controller.
 
 TODO: Rename treeView to UiTree.
  */
