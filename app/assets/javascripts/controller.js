@@ -29,21 +29,8 @@ Controller = function () {
     self.selectNode(App.treeView.top);
   });
 
-
-
-  // Respond to a left-click on a node. Select the node and toggle the expanded-collapsed state of that node.
-  self.clickLeftOnNode = function (node) {
-    self.selectNode(node);
-  }
-
-
-
   self.hideButtonPanel = function () {
     $(self.buttonPanel).hide()
-  }
-
-  self.autoSize = function (node) {
-    (node || self.selectedNode).autoSize()
   }
 
 
@@ -62,20 +49,43 @@ Controller = function () {
     (nodeView || self.selectedNode).setAttributes(attributes)
   }
 
-  self.save = function (node) {
-    node = node || self.selectedNode;
-    var attributes = {
-      content: node.content,
-      width:   node.width,
-      height:  node.height
-    }
-    self.setAttributes(node, attributes)
-  }
 
   // This does nothing. Use it for testing.
   self.nop = function() {
   }
 };
+
+// Respond to a left-click on a node. Select the node and toggle the expanded-collapsed state of that node.
+Controller.prototype.clickLeftOnNode = function (node) {
+  this.selectNode(node);
+}
+
+// Respond to a right-click on a node. Select the node and pop up the command menu.
+Controller.prototype.clickRightOnNode = function (nodeView, event) {
+  this.selectNode(nodeView);
+  this.buttonPanel.popTo(nodeView);
+  event.preventDefault();
+}
+
+// Handle a blur action on a node. This usually means saving any changes to the node to the server.
+Controller.prototype.blurNode = function (nodeView) {
+  nodeView = nodeView || this.selectedNode
+  if (nodeView.content != nodeView.node.content) this.autoSizeNode(nodeView)
+  this.saveNode(nodeView)
+}
+
+
+Controller.prototype.autoSizeNode = function (nodeView) {
+  (nodeView || this.selectedNode).autoSize()
+}
+
+/*
+ Select the specified node.
+ */
+Controller.prototype.selectNode = function (nodeView) {
+  this.selectedNode = nodeView;
+}
+
 
 // TODO: make the selected node be a node instead of a nodeview.
 // Trash the selected node.
@@ -154,19 +164,7 @@ Controller.prototype.restoreFocus = function (newNode) {
     100);
 }
 
-// Respond to a right-click on a node. Select the node and pop up the command menu.
-Controller.prototype.clickRightOnNode = function (nodeView, event) {
-  this.selectNode(nodeView);
-  this.buttonPanel.popTo(nodeView);
-  event.preventDefault();
-}
 
-/*
- Select the specified node.
- */
-Controller.prototype.selectNode = function (nodeView) {
-  this.selectedNode = nodeView;
-}
 
 
 // Cut node == copy + delete
@@ -187,3 +185,16 @@ Controller.prototype.copyNode = function (node) {
 Controller.prototype.pasteNode = function (node) {
   (node || this.selectedNode).paste(this.copiedNode)
 }
+
+
+Controller.prototype.saveNode = function (nodeView) {
+  nodeView = nodeView || this.selectedNode;
+  var attributes = {
+    content: nodeView.content,
+    width:   nodeView.width,
+    height:  nodeView.height
+  }
+  this.setAttributes(nodeView, attributes)
+}
+
+

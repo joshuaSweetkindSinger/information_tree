@@ -400,7 +400,9 @@ NodeView.prototype.toggleExpandCollapse = function(doRecursive) {
 // =================== Auto-Size
 // Calculate a pleasing size for the content textarea associated with this text node.
 NodeView.prototype.autoSize = function() {
-  this.setAttributes(this.calcAutoSize())
+  var autoSize = this.calcAutoSize()
+  this.width = autoSize.width
+  this.height = autoSize.height
 }
 
 /*

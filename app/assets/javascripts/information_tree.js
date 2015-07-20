@@ -137,6 +137,12 @@ and only send change request for the attributes that have changed.
 
 TODO: There are annoying flashes when a node is saved. Probably because of the round-trip to server, and maybe
 because of the timing of when they are added to the dom.
+
+TODO: The controller doesn't want to know about the internals of the NodeView. The NodeView should present an api
+to the controller.
+
+TODO: Rename NodeView to ViewNode.
+TODO: Create UiNode, which wraps ViewNode.
  */
 
 $(document).ready(function(){

@@ -149,7 +149,7 @@ Save.prototype.afterCreate = function() {
 }
 
 Save.prototype.onClick = function(event) {
-  App.controller.save()
+  App.controller.saveNode()
 }
 
 

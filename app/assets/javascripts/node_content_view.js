@@ -73,6 +73,16 @@ NodeContentView.prototype.onKeypress = function(event) {
   } else if (event.charCode == 'x'.charCodeAt(0) && !event.altKey && !event.shiftKey && event.ctrlKey) {
     event.preventDefault();
     App.controller.cutNode(this.nodeView);
+
+  // control-s -- save this node
+  }  else if (event.charCode == 's'.charCodeAt(0) && !event.altKey && !event.shiftKey && event.ctrlKey) {
+    event.preventDefault();
+    App.controller.saveNode(this.nodeView);
+
+  // control-a -- autosize this node
+  }  else if (event.charCode == 'a'.charCodeAt(0) && !event.altKey && !event.shiftKey && event.ctrlKey) {
+    event.preventDefault();
+    App.controller.autoSizeNode(this.nodeView);
   }
 }
 
@@ -96,14 +106,5 @@ NodeContentView.prototype.handleDrop = function(event, ui) {
 // This event-handler is bound to the object's blur event.
 // It causes the content of the node to change on the server.
 NodeContentView.prototype.onBlur = function(e) {
-  var autosize = this.nodeView.calcAutoSize();
-  App.controller.setAttributes(this.nodeView,
-    {content: $(this).val(),
-      width: autosize.width,
-      height: autosize.height})
-}
-
-// This event-handler is bound to the object's blur event.
-// It causes the width and height of the node's text area to change on the server.
-NodeContentView.prototype.onResize = function(e) {
+  App.controller.blurNode(this.nodeView);
 }
