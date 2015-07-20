@@ -154,3 +154,15 @@ UiNode.prototype.onBlur = function(e) {
 UiNode.prototype.focus = function () {
   $(this._header.content).focus()
 }
+
+UiNode.prototype.isContentDirty = function () {
+  return this.content != this.node.content
+}
+
+UiNode.prototype.isSizeDirty = function () {
+  return (this.width != this.node.width) || (this.height != this.node.height)
+}
+
+UiNode.prototype.isDirty = function () {
+  return this.isContentDirty() || this.isSizeDirty()
+}

@@ -126,16 +126,10 @@ TODO: Currently we have the UiTree handling glomming of NodeViews onto the tree.
 handle this task itself at create time? Maybe it should just check the parent, predecessor, successor links
 of its node and glom itself at create time.
 
-TODO: When the server comes back with a node rep, do we create a new node from that every time, or do
-we sometimes update an existing node? How do we decide?
-
-TODO: Don't automatically send set_attributes on blur event. Calculate first what, if anything has changed,
-and only send change request for the attributes that have changed.
 
 TODO: There are annoying flashes when a node is saved. Probably because of the round-trip to server, and maybe
 because of the timing of when they are added to the dom.
 
-TODO: Rename treeView to UiTree.
  */
 
 $(document).ready(function(){
