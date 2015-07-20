@@ -1,14 +1,10 @@
 //= require app
 //= require node
 //= require ui_node
-//= require view_node/view_node
-//= require view_node/view_node_header
 //= require server
 //= require controller
 //= require tree_view
 //= require buttons
-//= require view_node/view_node_content
-//= require view_node/view_node_children
 
 /*
 This file defines client-side functionality for the information-tree sub-app.
@@ -141,6 +137,8 @@ because of the timing of when they are added to the dom.
 
 TODO: The controller doesn't want to know about the internals of the ViewNode. The ViewNode should present an api
 to the controller.
+
+TODO: Rename treeView to UiTree.
  */
 
 $(document).ready(function(){

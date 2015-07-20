@@ -57,19 +57,19 @@ Controller.prototype.autoSizeNode = function (uiNode) {
 /*
  Select the specified node.
  */
-Controller.prototype.selectNode = function (nodeView) {
-  this.selectedNode = nodeView;
+Controller.prototype.selectNode = function (uiNode) {
+  this.selectedNode = uiNode;
 }
 
 
 // TODO: make the selected node be a node instead of a nodeview.
 // Trash the selected node.
-Controller.prototype.trash = function (nodeView) {
-  nodeView = nodeView || this.selectedNode
-  nodeView.node.trash()
+Controller.prototype.trash = function (uiNode) {
+  uiNode = uiNode || this.selectedNode
+  uiNode.node.trash()
     .success(function() {
-      nodeView.trash()
-      if (nodeView === this.selectedNode) {
+      uiNode.trash()
+      if (uiNode === this.selectedNode) {
         this.selectedNode = null;   // We just deleted the selected node, so now there is none.
         $(this.buttonPanel).hide(); // we just deleted the selected node, so hide the button panel.
       }
@@ -78,98 +78,93 @@ Controller.prototype.trash = function (nodeView) {
 
 
 // Toggle the expanded-collapsed state of node.
-Controller.prototype.toggleNodeExpandCollapse = function (nodeView) {
-  (nodeView || this.selectedNode).toggleExpandCollapse();
+Controller.prototype.toggleNodeExpandCollapse = function (uiNode) {
+  (uiNode || this.selectedNode).toggleExpandCollapse();
 }
 
 
 // Open up in a new tab (or window) the URL represented by our node's content.
-Controller.prototype.followLink = function (nodeView) {
-  nodeView = (nodeView || this.selectedNode)
-  var url = nodeView.content
+Controller.prototype.followLink = function (uiNode) {
+  uiNode = (uiNode || this.selectedNode)
+  var url = uiNode.content
   if (url.slice(0,4) == 'http') open(url)
 }
 
 /*
- childSpec can either be an object with an id key referencing an existing node or null.
- If null, a new node will be created. If a new node will be created, then we move focus to the new node
+ Make the node referenced by childSpec be a child of parentUiNode, creating the child if necessary.
+ childSpec can either be an object with an id key referencing an existing node, or null.
+ If null, a new UiNode will be created. If a new node will be created, then we move focus to the new node
  after it is added.
- In any case, make the node referenced by childSpec be a child of parent.
  */
-Controller.prototype.addChild = function (parent, childSpec) {
+Controller.prototype.addChild = function (parentUiNode, childSpec) {
   var self = this;
-  return (parent || self.selectedNode)
+  return (parentUiNode || self.selectedNode)
     .addChild(childSpec)
-    .success(function(nodeView) {
-      if (!childSpec) self.restoreFocus(nodeView);
+    .success(function(uiNode) {
+      if (!childSpec) self.restoreFocus(uiNode);
     })
 }
 
 // successorSpec can either be an object with an id key referencing an existing node or null.
 // Add successorSpec as the successor of predecessor. If successorSpec is null, create a new node
 // and set the focus to it.
-Controller.prototype.addSuccessor = function (predecessor, successorSpec) {
+Controller.prototype.addSuccessor = function (predecessorUiNode, successorSpec) {
   var self = this;
-  return (predecessor || self.selectedNode)
+  return (predecessorUiNode || self.selectedNode)
     .addSuccessor(successorSpec)
-    .success(function(nodeView) {
-      if (!successorSpec) self.restoreFocus(nodeView)
+    .success(function(uiNode) {
+      if (!successorSpec) self.restoreFocus(uiNode)
     })
 }
 
 // predecessorSpec can either be an object with an id key referencing an existing node or null.
 // Add predecessorSpec as the predecessor of successor. If predecessorSpec is null, create a new node
 // and set the focus to it.
-Controller.prototype.addPredecessor = function (successor, predecessorSpec) {
+Controller.prototype.addPredecessor = function (successorUiNode, predecessorSpec) {
   var self = this;
-  return (successor || self.selectedNode)
+  return (successorUiNode || self.selectedNode)
     .addPredecessor(predecessorSpec)
-    .success(function(nodeView) {
-      if (!predecessorSpec) self.restoreFocus(nodeView)
+    .success(function(uiNode) {
+      if (!predecessorSpec) self.restoreFocus(uiNode)
     })
 }
 
 // Restore the focus to the specified viewNode, which somehow gets lost on new node creation.
 // Hack! For some reason, sometimes, a sequence of blur events occurs that undoes
 // the focus() to a new Node, because they occur after the focus().
-Controller.prototype.restoreFocus = function (newNode) {
-  setTimeout(function() {
-      $(newNode._header.content).focus()
-    },
-    100);
+Controller.prototype.restoreFocus = function (uiNode) {
+  setTimeout(function() {uiNode.focus()}, 100);
 }
 
 
-
-
 // Cut node == copy + delete
-Controller.prototype.cutNode = function (node) {
-  node = (node || this.selectedNode);
-  this.copyNode(node);
-  this.trash(node);
+Controller.prototype.cutNode = function (uiNode) {
+  uiNode = (uiNode || this.selectedNode);
+  this.copyNode(uiNode);
+  this.trash(uiNode);
 }
 
 
 // Copy node into the copiedNode holding area.
-Controller.prototype.copyNode = function (node) {
-  this.copiedNode = (node || this.selectedNode);
+Controller.prototype.copyNode = function (uiNode) {
+  this.copiedNode = (uiNode || this.selectedNode);
 }
 
 
 // Paste the copiedNode onto node.
-Controller.prototype.pasteNode = function (node) {
-  (node || this.selectedNode).paste(this.copiedNode)
+Controller.prototype.pasteNode = function (uiNode) {
+  (uiNode || this.selectedNode).paste(this.copiedNode)
 }
 
 
-Controller.prototype.saveNode = function (nodeView) {
-  nodeView = nodeView || this.selectedNode;
+Controller.prototype.saveNode = function (uiNode) {
+  uiNode = uiNode || this.selectedNode;
   var attributes = {
-    content: nodeView.content,
-    width:   nodeView.width,
-    height:  nodeView.height
+    content: uiNode.content,
+    width:   uiNode.width,
+    height:  uiNode.height
   }
-  this.setAttributes(nodeView, attributes)
+  this.setAttributes(uiNode, attributes)
 }
 
 
@@ -178,8 +173,8 @@ Controller.prototype.hideButtonPanel = function () {
 }
 
 
-Controller.prototype.toggleExpandCollapseAll = function (node) {
-  (node || this.selectedNode).toggleExpandCollapse(true)
+Controller.prototype.toggleExpandCollapseAll = function (uiNode) {
+  (uiNode || this.selectedNode).toggleExpandCollapse(true)
 }
 
 
@@ -189,8 +184,8 @@ Controller.prototype.restoreLastDeletedNode = function() {
   alert("Untrash has not yet been implemented");
 }
 
-Controller.prototype.setAttributes = function (nodeView, attributes) {
-  (nodeView || this.selectedNode).setAttributes(attributes)
+Controller.prototype.setAttributes = function (uiNode, attributes) {
+  (uiNode || this.selectedNode).setAttributes(attributes)
 }
 
 

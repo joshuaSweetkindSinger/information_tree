@@ -1,3 +1,7 @@
+//= require view_node/view_node_header
+//= require view_node/view_node_content
+//= require view_node/view_node_children
+
 /*
 This file defines the NodeView class.
 
@@ -243,6 +247,10 @@ ViewNode.prototype.kids = function() {
 
  NOTES: nodeSpec is a hash that specifies a new node, or names an existing one, but it is *not* a node object.
  node is a client-side node object.
+
+ NOTE: this method does NOT directly create a new ViewNode. It can't, because ViewNode is not a toplevel class.
+ We need to create a wrapper class, of which this class has no knowledge. So, instead, it contacts the treeView
+ object, which is a UI-level object, and asks the treeView to create a ui-level node of the proper class.
  */
 
 ViewNode.prototype._add = function(nodeSpec, mode) {

@@ -149,3 +149,8 @@ UiNode.prototype.handleDrop = function(event, ui) {
 UiNode.prototype.onBlur = function(e) {
   App.controller.blurNode(this);
 }
+
+// Put browser focus on this node, for data entry.
+UiNode.prototype.focus = function () {
+  $(this._header.content).focus()
+}
