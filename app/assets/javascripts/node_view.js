@@ -424,22 +424,22 @@ NodeView.prototype.setAttributes = function (nodeUpdate) {
 NodeView.prototype.calcAutoSize = function() {
   var n = this.content.length
   var maxWidth = 1000.0
-  var charWidth  = 8.0
-  var charHeight = 15.0
-  var margin     = 10.0
-  var width = 0
-  var height = 0
+  var charWidth  = 6.5
+  var charHeight = 20.0
+  var scrollBarWidth = 20;
+  var width = 0.0
+  var height = 0.0
+  var widthInChars = 0.0;
+  var heightInChars= 0.0;
   if (n < 60) {
-    width  = n * charWidth
-    height = 1 * charHeight + margin
+    widthInChars  = n;
+    heightInChars = 1;
   } else {
-    var squareSideChars = Math.sqrt(n) // The number of chars on a side, assuming a square region with charWidth = charHeight
-    var distortedWidthChars = 1.5 * squareSideChars * charHeight / charWidth // square it up in char units by taking width/height pixels into account, and make width 1.5 longer for good measure.
-    width = Math.min(maxWidth, distortedWidthChars * charWidth) // Want the width to be 1.5 the height in pixels for smaller bits of text.
-    var widthInChars = width / charWidth
-    var heightInChars = n / widthInChars
-    height = heightInChars * charHeight + margin
+    widthInChars  = Math.min(maxWidth, Math.sqrt(3 * n  * charHeight / charWidth))
+    heightInChars = n / widthInChars;
   }
+  width  = widthInChars * charWidth + scrollBarWidth;
+  height = heightInChars * charHeight;
 
   return {width:width, height:height}
 }
