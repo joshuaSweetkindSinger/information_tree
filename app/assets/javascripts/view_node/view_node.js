@@ -5,7 +5,7 @@ A NodeView is a client-side dom element that represents a single node in the inf
 */
 
 // =========================================================================
-//                   Node View
+//                   View Node
 // =========================================================================
 var ViewNode = defCustomTag('node-view', HTMLElement);
 
@@ -31,13 +31,6 @@ ViewNode.prototype.afterCreate = function(node) {
   this.update(node) // This needs to follow the header and container appends above; it invokes setters that depend upon them.
 
   this.collapse();   // Note: need to call this method, not just to set state, but so that child dom element will be hidden.
-
-  $this.draggable({
-    revert: true,
-    helper: "clone",
-    start: this.dragStart,
-    stop: this.dragStop
-  })
 }
 
 // Clean up the width and height after we are attached.
@@ -45,7 +38,7 @@ ViewNode.prototype.afterCreate = function(node) {
 // during which we can pass in args, such as width and height. But, because the node is not yet
 // attached to the DOM, the computed width and height are wrong somehow (not sure of details).
 ViewNode.prototype.onAttach = function() {
-  // The conditional is a kludge: For dragging, the nodeView gets shallow-copied and won't have a header.
+  // The conditional is a kludge: For dragging, the viewNode gets shallow-copied and won't have a header.
   // In that case, we want to ignore it anyway.
   if (this.header) {
     this.width   = this.node.width
@@ -112,40 +105,18 @@ Object.defineProperties(ViewNode.prototype, {
 );
 
 
-/*
- A drag event just started. Erase the last drop target.
- This function is called whenever a new drag event is initiated.
- */
-
-ViewNode.prototype.dragStart = function() {
-  App.treeView.dropTarget = null;
-}
-
 
 /*
- A drag event just ended. Determine whether we were dropped on top of another node,
- or let go beneath a node, and do either an addChild() or an addSuccessor() accordingly.
+Return the list of expanded ViewNodes, in descending vertical order.
+In other words, the Top node is returned first, and then then node beneath it,
+and so on. Only expanded nodes are in the list, i.e., those that are rendered somewhere
+in the display area.
  */
-ViewNode.prototype.dragStop = function(event, helper) {
-  // There's a drop target: add a child
-  if (App.treeView.dropTarget) {
-    App.controller.addChild(App.treeView.dropTarget, {id: this.node.id});
-    return;
-  }
-
-  // There's a node above the release position: add a successor
-  var node = App.treeView.findLowestNodeAbove(helper.position.top);
-  if (node) {
-    App.controller.addSuccessor(node, {id: this.node.id});
-  }
-};
-
-
-ViewNode.prototype.visibleNodeViews = function(result) {
+ViewNode.prototype.expandedViewNodes = function(result) {
   result.push(this);
   if (this.state == 'expanded') {
     this.kids().forEach(function(node) {
-      node.visibleNodeViews(result);
+      node.expandedViewNodes(result);
     });
   }
   return result;

@@ -7,7 +7,7 @@
 var ViewNodeHeader = defCustomTag('node-header', HTMLElement)
 ViewNodeHeader.prototype.afterCreate = function(nodeView, options) {
   var $this = $(this)
-  this.nodeView = nodeView
+  this.viewNode = nodeView
   this.id = 'ViewNodeHeader-' + nodeView.node.id;
 
   this.expandCollapseButton = new ExpandCollapse(nodeView)

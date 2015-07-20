@@ -27,13 +27,13 @@ TreeView.prototype.onClick = function (event) {
  Return the nodes in order of descending y-value. This means that every visible node will
  be preceded by its older siblings, all their visible descendants, and by its parent.
  */
-TreeView.prototype.visibleNodeViews = function() {
-  return this.top.visibleNodeViews([]);
+TreeView.prototype.expandedViewNodes = function() {
+  return this.top.expandedViewNodes([]);
 }
 
 
 TreeView.prototype.findLowestNodeAbove = function(y) {
-  var nodes = this.visibleNodeViews().reverse();
+  var nodes = this.expandedViewNodes().reverse();
   for(var i = 0; i < nodes.length; i++) {
     var node = nodes[i];
 
@@ -75,7 +75,7 @@ TreeView.prototype._findOrCreateNodeView = function(node) {
 
 
 /*
- If it currently exists in the dom, merely update the nodeView whose id is node.id
+ If it currently exists in the dom, merely update the viewNode whose id is node.id
  with the other information contained in node, and return it.
 
  If it does not yet exist in the dom, assume that node is a complete spec for a new ViewNode:

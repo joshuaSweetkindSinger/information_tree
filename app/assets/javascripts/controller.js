@@ -154,7 +154,7 @@ Controller.prototype.addPredecessor = function (successor, predecessorSpec) {
     })
 }
 
-// Restore the focus to the specified nodeView, which somehow gets lost on new node creation.
+// Restore the focus to the specified viewNode, which somehow gets lost on new node creation.
 // Hack! For some reason, sometimes, a sequence of blur events occurs that undoes
 // the focus() to a new Node, because they occur after the focus().
 Controller.prototype.restoreFocus = function (newNode) {
