@@ -28,55 +28,30 @@ Controller = function () {
     $(self.buttonPanel).hide();
     self.selectNode(App.treeView.top);
   });
-
-  self.hideButtonPanel = function () {
-    $(self.buttonPanel).hide()
-  }
-
-
-  self.toggleExpandCollapseAll = function (node) {
-    (node || self.selectedNode).toggleExpandCollapse(true)
-  }
-
-
-  // TODO: the trash functionality needs to record information about the former parentage
-  // and sibling relationships somewhere so that a trashed node can be restored later.
-  self.restoreLastDeletedNode = function() {
-    alert("Untrash has not yet been implemented");
-  }
-
-  self.setAttributes = function (nodeView, attributes) {
-    (nodeView || self.selectedNode).setAttributes(attributes)
-  }
-
-
-  // This does nothing. Use it for testing.
-  self.nop = function() {
-  }
 };
 
 // Respond to a left-click on a node. Select the node and toggle the expanded-collapsed state of that node.
-Controller.prototype.clickLeftOnNode = function (node) {
-  this.selectNode(node);
+Controller.prototype.clickLeftOnNode = function (uiNode) {
+  this.selectNode(uiNode);
 }
 
 // Respond to a right-click on a node. Select the node and pop up the command menu.
-Controller.prototype.clickRightOnNode = function (nodeView, event) {
-  this.selectNode(nodeView);
-  this.buttonPanel.popTo(nodeView);
+Controller.prototype.clickRightOnNode = function (uiNode, event) {
+  this.selectNode(uiNode);
+  this.buttonPanel.popTo(uiNode);
   event.preventDefault();
 }
 
 // Handle a blur action on a node. This usually means saving any changes to the node to the server.
-Controller.prototype.blurNode = function (nodeView) {
-  nodeView = nodeView || this.selectedNode
-  if (nodeView.content != nodeView.node.content) this.autoSizeNode(nodeView)
-  this.saveNode(nodeView)
+Controller.prototype.blurNode = function (uiNode) {
+  uiNode = uiNode || this.selectedNode
+  if (uiNode.content != uiNode.node.content) this.autoSizeNode(uiNode)
+  this.saveNode(uiNode)
 }
 
 
-Controller.prototype.autoSizeNode = function (nodeView) {
-  (nodeView || this.selectedNode).autoSize()
+Controller.prototype.autoSizeNode = function (uiNode) {
+  (uiNode || this.selectedNode).autoSize()
 }
 
 /*
@@ -159,7 +134,7 @@ Controller.prototype.addPredecessor = function (successor, predecessorSpec) {
 // the focus() to a new Node, because they occur after the focus().
 Controller.prototype.restoreFocus = function (newNode) {
   setTimeout(function() {
-      $(newNode.header.content).focus()
+      $(newNode._header.content).focus()
     },
     100);
 }
@@ -198,3 +173,27 @@ Controller.prototype.saveNode = function (nodeView) {
 }
 
 
+Controller.prototype.hideButtonPanel = function () {
+  $(this.buttonPanel).hide()
+}
+
+
+Controller.prototype.toggleExpandCollapseAll = function (node) {
+  (node || this.selectedNode).toggleExpandCollapse(true)
+}
+
+
+// TODO: the trash functionality needs to record information about the former parentage
+// and sibling relationships somewhere so that a trashed node can be restored later.
+Controller.prototype.restoreLastDeletedNode = function() {
+  alert("Untrash has not yet been implemented");
+}
+
+Controller.prototype.setAttributes = function (nodeView, attributes) {
+  (nodeView || this.selectedNode).setAttributes(attributes)
+}
+
+
+// This does nothing. Use it for testing.
+Controller.prototype.nop = function() {
+}

@@ -4,7 +4,7 @@
 /*
  ViewNodeHeader is a container for the node view's content and buttons.
  */
-var ViewNodeHeader = defCustomTag('node-header', HTMLElement)
+var ViewNodeHeader = defCustomTag('node-_header', HTMLElement)
 ViewNodeHeader.prototype.afterCreate = function(nodeView, options) {
   var $this = $(this)
   this.viewNode = nodeView

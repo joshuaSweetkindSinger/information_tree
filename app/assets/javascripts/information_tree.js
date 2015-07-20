@@ -55,7 +55,7 @@ Server:     Mediate all api calls to the server.
  Client side node primitives: create, update, trash, move, expand.
  TODO: fix rank calculation. Do we need predecessor and successor in db?
  TODO: Make the trash node visible in hierarchy: Top has children named User and System. But Trash and Basket under System.
- TODO: There's an ambiguity between node.content and node.header.content. The former returns the text of node.header.content.
+ TODO: There's an ambiguity between node.content and node._header.content. The former returns the text of node._header.content.
  The latter returns the content dom object, which is a textarea element.
  TODO: look for refs to stopPropagation() and preventDefault() and make sure they're necessary.
  TODO: all the various UI dom components should simply defer to the ui controller for their functionality.

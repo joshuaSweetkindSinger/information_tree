@@ -31,7 +31,7 @@ UiNode.prototype.afterCreate = function(node) {
   })
 
   // Attach handlers to content element
-  $content = $(this.header.content);
+  $content = $(this._header.content);
   $content.on("click", this.onClick.bind(this));
   $content.on("blur", this.onBlur.bind(this))
   $content.on("contextmenu", this.onContextMenu.bind(this));

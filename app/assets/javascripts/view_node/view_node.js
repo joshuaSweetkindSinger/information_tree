@@ -25,10 +25,10 @@ ViewNode.prototype.afterCreate = function(node) {
   this.id   = node.id
 
   var $this  = $(this)
-  $this.append(this.header = new ViewNodeHeader(this, {tooltip:"Created on " + node.createdAt}))
+  $this.append(this._header = new ViewNodeHeader(this, {tooltip:"Created on " + node.createdAt}))
   $this.append(this.childrenContainer = new ViewNodeChildren);
 
-  this.update(node) // This needs to follow the header and container appends above; it invokes setters that depend upon them.
+  this.update(node) // This needs to follow the _header and container appends above; it invokes setters that depend upon them.
 
   this.collapse();   // Note: need to call this method, not just to set state, but so that child dom element will be hidden.
 }
@@ -38,9 +38,9 @@ ViewNode.prototype.afterCreate = function(node) {
 // during which we can pass in args, such as width and height. But, because the node is not yet
 // attached to the DOM, the computed width and height are wrong somehow (not sure of details).
 ViewNode.prototype.onAttach = function() {
-  // The conditional is a kludge: For dragging, the viewNode gets shallow-copied and won't have a header.
+  // The conditional is a kludge: For dragging, the viewNode gets shallow-copied and won't have a _header.
   // In that case, we want to ignore it anyway.
-  if (this.header) {
+  if (this._header) {
     this.width   = this.node.width
     this.height  = this.node.height
   }
@@ -77,28 +77,28 @@ Object.defineProperties(ViewNode.prototype, {
 
     content: {
       get: function() {
-        return $(this.header.content).val()
+        return $(this._header.content).val()
       },
       set: function(content) {
-        $(this.header.content).val(content)
+        $(this._header.content).val(content)
       }
     },
 
     width: {
       get: function() {
-        return $(this.header.content).width()
+        return $(this._header.content).width()
       },
       set: function(v) {
-        $(this.header.content).width(v)
+        $(this._header.content).width(v)
       }
     },
 
     height: {
       get: function() {
-        return $(this.header.content).height()
+        return $(this._header.content).height()
       },
       set: function(v) {
-        $(this.header.content).height(v)
+        $(this._header.content).height(v)
       }
     }
   }
