@@ -215,8 +215,8 @@ AddChild.prototype.afterCreate = function() {
   var $this = $(this)
   $this.html('+Child')
 
-  // Click function adds a new child NodeView to the NodeView associated with this button. This means
-  // adding the new node to the NodeView's NodeChildrenView element.
+  // Click function adds a new child ViewNode to the ViewNode associated with this button. This means
+  // adding the new node to the ViewNode's NodeChildrenView element.
   $this.click(function() {App.controller.addChild()})
 }
 
@@ -230,7 +230,7 @@ AddSuccessor.prototype.afterCreate = function() {
   var $this = $(this)
   $this.html('+Successor')
 
-  // Click function adds a new NodeView after the NodeView associated with this button.
+  // Click function adds a new ViewNode after the ViewNode associated with this button.
   $this.click(function() {App.controller.addSuccessor()})
 }
 
@@ -244,7 +244,7 @@ AddPredecessor.prototype.afterCreate = function() {
   var $this = $(this)
   $this.html('+Predecessor')
 
-  // Click function adds a new NodeView after the NodeView associated with this button.
+  // Click function adds a new ViewNode after the ViewNode associated with this button.
   $this.click(function() {App.controller.addPredecessor()})
 }
 

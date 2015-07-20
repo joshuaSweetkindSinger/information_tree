@@ -10,7 +10,7 @@ TreeView.prototype.init = function() {
   var self = this;
   this.initRequest = App.server.top()
     .success(function(top) {
-      self.top = new NodeView(new Node(top))
+      self.top = new ViewNode(new Node(top))
       $(self).append(self.top);
     });
 
@@ -62,15 +62,15 @@ TreeView.prototype.find = function(id) {
 }
 
 /*
- If it currently exists in the dom, return the NodeView whose id is node.id,
+ If it currently exists in the dom, return the ViewNode whose id is node.id,
  after updating it with possibly new values from node;
- otherwise, assume that node is a complete representation for a new NodeView: instantiate it and
- return the new NodeView. Note that the newly created NodeView is unglommed; that is, it is
+ otherwise, assume that node is a complete representation for a new ViewNode: instantiate it and
+ return the new ViewNode. Note that the newly created ViewNode is unglommed; that is, it is
  unattached to the information tree.
  */
 TreeView.prototype._findOrCreateNodeView = function(node) {
   var foundNodeView = this.find(node.id);
-  return foundNodeView ? foundNodeView.update(node) : new NodeView(node);
+  return foundNodeView ? foundNodeView.update(node) : new ViewNode(node);
 }
 
 
@@ -78,8 +78,8 @@ TreeView.prototype._findOrCreateNodeView = function(node) {
  If it currently exists in the dom, merely update the nodeView whose id is node.id
  with the other information contained in node, and return it.
 
- If it does not yet exist in the dom, assume that node is a complete spec for a new NodeView:
- instantiate it and return the new NodeView after glomming it to the information tree in its proper position.
+ If it does not yet exist in the dom, assume that node is a complete spec for a new ViewNode:
+ instantiate it and return the new ViewNode after glomming it to the information tree in its proper position.
  */
 // TODO: TreeView should not be accepting node Reps and doing find or create. Maybe Tree should do this.
 TreeView.prototype.addNodeView = function(node) {
