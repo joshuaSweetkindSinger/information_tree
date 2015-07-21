@@ -18,31 +18,8 @@ class Node < ActiveRecord::Base
   end
 
   # ===================================== Class Methods
-  def self.top
-    result = where("type_id = #{TOP_TYPE_ID}").first
-    result || _make_top_node
-  end
 
-  def self._make_top_node
-    result = Node.new(content:'Top', rank:0, width:100, height:50)
-    result.type_id = TOP_TYPE_ID
-    result.save!
-    result
-  end
 
-  # Return the trash node.
-  def self.trash
-    result = where("type_id = #{TRASH_TYPE_ID}").first
-    result || _make_trash_node
-  end
-
-  # Make the trash node.
-  def self._make_trash_node
-    result = Node.new(content:'Trash', rank:0, width:100, height:50)
-    result.type_id = TRASH_TYPE_ID
-    result.save!
-    result
-  end
 
   # ========================= Tools for debugging / cleaning db
   # Print a quick and dirty report to stdout that shows nodes with inconsistent
@@ -246,7 +223,7 @@ class Node < ActiveRecord::Base
   # Remove self and children from the node hierarchy, patching up predecessor/successor links.
   # This moves the node and its children to the "trash" node. It doesn't really delete them.
   def trash
-    Node.trash.add_child(self)
+    Trash.trash.add_child(self)
   end
 
 

@@ -93,13 +93,13 @@ class NodesController < ApplicationController
 
   # ======================================== Controller Actions beyond basic crud
   def interactive
-    @obj = Node.top # Get specified node, or top node if none specified.
+    @obj = Top.top
   end
 
 
   # /nodes/top
   def top
-    @obj = Node.top
+    @obj = Top.top
     respond_to do |format|
       format.html {render 'show'}
       format.json {render json: @obj}
