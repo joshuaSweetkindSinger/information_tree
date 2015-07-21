@@ -12,8 +12,8 @@ var ButtonPanel = defCustomTag('button-panel', HTMLElement)
 ButtonPanel.prototype.afterCreate = function() {
   var $this = $(this)
 
-  this.nop = new Nop
-  $this.append(this.nop)
+//  this.nop = new Nop
+//  $this.append(this.nop)
 
   this.expandCollapseRecursiveButton = new ExpandCollapseRecursive
   $this.append(this.expandCollapseRecursiveButton)
@@ -113,11 +113,16 @@ ButtonPanelButton.prototype.afterCreate = function(label) {
 
 /*
 If status is true, then enabled the button; otherwise, disable it so that it can't be clicked on.
+PROGRAMMER's NOTE: the jquery on() method seems to accommodate adding the same handler multiple times.
+That is, it doesn't notice whether a handler is already attached. If you attempt to attach the same handler,
+twice, jquery will let you do that, and will fire the handler twice. Therefore, to make sure we don't get
+the same handler attached multiple times, we clear the click handler at the beginning of the method.
 */
 ButtonPanelButton.prototype.enable = function (status) {
+  $(this).off('click')
+
   if (!status) {
     $(this).addClass('button-panel-button-disabled')
-    $(this).off('click')
   } else {
     $(this).removeClass('button-panel-button-disabled')
     $(this).on('click', this.onClick)
@@ -257,7 +262,7 @@ AddPredecessor.prototype.onClick = function (event) {
 // =========================================================================
 var TrashNode = defCustomTag('trash-node', ButtonPanelButton)
 TrashNode.prototype.onCreate = function() {
-  ButtonPanelButton.prototype.afterCreate.call(this, 'Delete!')
+  ButtonPanelButton.prototype.afterCreate.call(this, 'Trash!')
 }
 
 TrashNode.prototype.onClick = function (event) {

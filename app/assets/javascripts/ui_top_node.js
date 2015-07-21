@@ -22,11 +22,6 @@ var UiTopNode = defCustomTag('ui-top-node', UiNode);
  */
 UiTopNode.prototype.afterCreate = function(node) {
   UiNode.prototype.afterCreate.call(this, node);
-
-  // Modify handlers to content element from their defaults given by UiNode parent class.
-  var $content = $(this._header.content);
-  $content.on("contextmenu", this.onContextMenu.bind(this));
-  $content.on("keypress", this.onKeypress.bind(this))
 }
 
 /*

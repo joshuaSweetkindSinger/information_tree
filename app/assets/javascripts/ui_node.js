@@ -22,7 +22,19 @@ var UiNode = defCustomTag('ui-node', ViewNode);
  */
 UiNode.prototype.afterCreate = function(node) {
   ViewNode.prototype.afterCreate.call(this, node);
+  this.bindEventHandlers();
+}
 
+/*
+Note: the jquery on() method will bind the same handler multiple times if you're not careful.
+Adding event bindings in a derived class can be dicey when you have class inheritance and each
+level calls the super, because that can result in multiple bindings to the same browser event.
+If your derived class is adding a new event binding, there's no problem,
+but if instead you want to override an event handler that has already been bound by the parent class,
+then instead just override the specific event handler method, e.g., override onClick()
+to instantiate your on click handler. You don't need to bind it, because the parent class here is already binding it.
+ */
+UiNode.prototype.bindEventHandlers = function () {
   $(this).draggable({
     revert: true,
     helper: "clone",

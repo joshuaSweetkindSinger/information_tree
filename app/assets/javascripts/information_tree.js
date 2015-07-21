@@ -124,6 +124,10 @@ links, but we never update them.
 
 TODO: whenever a node is trashed, delete all nodes older than 30 days. This entails adding a deletion_date field to the model,
 because every deleted node has its updated_at field refreshed whenever a new node is deleted (because all nodes get re-ranked).
+Now that the trash node is its own class, we might be able to handle deletion of nodes > 30 days old without creating
+a deletion_date field. Instead, we just don't re-rank the nodes in trash, which will result in the nodes in trash keeping
+their deletion dates in updated_at, since there would be no reason to update them. We can use a different ranking method
+for the trash node, because we never do insertions, just additions to the top of the list.
  */
 
 $(document).ready(function(){
