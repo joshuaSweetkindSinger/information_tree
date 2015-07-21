@@ -254,7 +254,7 @@ Controller.prototype.keyPressedOnNode = function (uiNode, event) {
     event.preventDefault();
     this.addSuccessor(uiNode);
 
-    // shift-return -- create new child node of uiNode
+  // shift-return -- create new child node of uiNode
   } else if (event.charCode == 13 && !event.altKey && event.shiftKey && !event.ctrlKey) {
     event.preventDefault();
     this.addChild(uiNode);
@@ -264,7 +264,12 @@ Controller.prototype.keyPressedOnNode = function (uiNode, event) {
     event.preventDefault();
     this.copyNode(uiNode);
 
-    // control-v -- paste the copied node onto uiNode.
+  // control-f -- follow link
+  } else if (event.charCode == 'f'.charCodeAt(0) && !event.altKey && !event.shiftKey && event.ctrlKey) {
+    event.preventDefault();
+    this.followLink(uiNode);
+
+  // control-v -- paste the copied node onto uiNode.
   } else if (event.charCode == 'v'.charCodeAt(0) && !event.altKey && !event.shiftKey && event.ctrlKey) {
     event.preventDefault();
     this.pasteNode(uiNode);
