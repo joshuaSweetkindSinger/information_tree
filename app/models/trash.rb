@@ -11,5 +11,17 @@ class Trash < Node
     result.type_id = TRASH_TYPE_ID
     result.save!
     result
-    end
+  end
+
+  # =========================================================================
+  #                   Instance Methods
+  # =========================================================================
+
+  def add_successor
+    raise "Cannot add a successor to the trash node--only children"
+  end
+
+  def add_predecessor
+    raise "Cannot add a predecessor to the trash node--only children"
+  end
 end

@@ -1,6 +1,7 @@
 //= require view_node/view_node_header
 //= require view_node/view_node_content
 //= require view_node/view_node_children
+//= require node
 
 /*
 This file defines the NodeView class.

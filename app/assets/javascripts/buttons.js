@@ -12,8 +12,8 @@ var ButtonPanel = defCustomTag('button-panel', HTMLElement)
 ButtonPanel.prototype.afterCreate = function() {
   var $this = $(this)
 
-  // this.nop = new Nop
-  // $this.append(this.nop)
+  this.nop = new Nop
+  $this.append(this.nop)
 
   this.expandCollapseRecursiveButton = new ExpandCollapseRecursive
   $this.append(this.expandCollapseRecursiveButton)
@@ -30,8 +30,8 @@ ButtonPanel.prototype.afterCreate = function() {
   this.addPredecessorButton = new AddPredecessor
   $this.append(this.addPredecessorButton)
 
-  this.copyButton = new CutNode
-  $this.append(this.copyButton)
+  this.cutButton = new CutNode
+  $this.append(this.cutButton)
 
   this.pasteButton = new PasteNode
   $this.append(this.pasteButton)
@@ -56,12 +56,23 @@ ButtonPanel.prototype.afterCreate = function() {
  in the wrong place in the dom. Not sure why. But if you show the panel before setting the offset,
  then everything works okay.
  */
-ButtonPanel.prototype.popTo = function(node) {
+// TODO: the isTopNode flag is inelegant and won't scale well. Find a better way.
+ButtonPanel.prototype.popTo = function(node, isTopNode) {
   $(this).show(); // I'm not sure why, but showing this before doing new offset avoids a bug. See documentation above.
   var offset = $(node).offset();
-  var left   = offset.left,
-    top    = offset.top;
+  var left   = offset.left;
+  var top    = offset.top;
   $(this).offset({left:left-102, top:top}); // TODO: Remove hardcoded constant.
+
+  /* TODO: All this knowledge is in the wrong place. A node should know what options are valid on it and
+    tell that to the popup menu. Hardcoding that knowledge in the popup is not DRY.
+  */
+
+  // These options are active only if we're not dealing with the top node.
+  this.addPredecessorButton.enable(!isTopNode);
+  this.addSuccessorButton.enable(!isTopNode);
+  this.cutButton.enable(!isTopNode);
+  this.trashNodeButton.enable(!isTopNode);
 }
 
 ButtonPanel.prototype.onClick = function() {
@@ -94,8 +105,23 @@ ExpandCollapse.prototype.toggle = function() {
 // Base class for button panel  buttons.
 var ButtonPanelButton = defCustomTag('button-panel-button', HTMLElement)
 
-ButtonPanelButton.prototype.afterCreate = function() {
+ButtonPanelButton.prototype.afterCreate = function(label) {
   $(this).addClass('button-panel-button')
+  $(this).html(label)
+  $(this).click(this.onClick)
+}
+
+/*
+If status is true, then enabled the button; otherwise, disable it so that it can't be clicked on.
+*/
+ButtonPanelButton.prototype.enable = function (status) {
+  if (!status) {
+    $(this).addClass('button-panel-button-disabled')
+    $(this).off('click')
+  } else {
+    $(this).removeClass('button-panel-button-disabled')
+    $(this).on('click', this.onClick)
+  }
 }
 
 // =========================================================================
@@ -105,11 +131,8 @@ ButtonPanelButton.prototype.afterCreate = function() {
 var Nop = defCustomTag('nop-nop', ButtonPanelButton)
 
 Nop.prototype.afterCreate = function() {
-  ButtonPanelButton.prototype.afterCreate.call(this)
+  ButtonPanelButton.prototype.afterCreate.call(this, 'Nop')
 
-  var $this = $(this)
-  $this.html('Nop')
-  $this.click(this.onClick)
 }
 
 Nop.prototype.onClick = function(event) {
@@ -125,13 +148,12 @@ Nop.prototype.onClick = function(event) {
 var FollowLink = defCustomTag('follow-link', ButtonPanelButton)
 
 FollowLink.prototype.afterCreate = function() {
-  ButtonPanelButton.prototype.afterCreate.call(this)
-
-  var $this = $(this)
-  $this.html('Follow Link')
-  $this.click(function(event) {App.controller.followLink()})
+  ButtonPanelButton.prototype.afterCreate.call(this, 'Follow Link')
 }
 
+FollowLink.prototype.onClick = function (event) {
+  App.controller.followLink()
+}
 
 // =========================================================================
 //                   Save Button
@@ -141,11 +163,7 @@ FollowLink.prototype.afterCreate = function() {
 var Save = defCustomTag('save-node', ButtonPanelButton)
 
 Save.prototype.afterCreate = function() {
-  ButtonPanelButton.prototype.afterCreate.call(this)
-
-  var $this = $(this)
-  $this.html('Save')
-  $this.click(this.onClick)
+  ButtonPanelButton.prototype.afterCreate.call(this, 'Save')
 }
 
 Save.prototype.onClick = function(event) {
@@ -160,11 +178,7 @@ Save.prototype.onClick = function(event) {
 var CutNode = defCustomTag('copy-node', ButtonPanelButton)
 
 CutNode.prototype.afterCreate = function() {
-  ButtonPanelButton.prototype.afterCreate.call(this)
-
-  var $this = $(this)
-  $this.html('Cut')
-  $this.click(this.onClick)
+  ButtonPanelButton.prototype.afterCreate.call(this, 'Cut')
 }
 
 CutNode.prototype.onClick = function (event) {
@@ -179,18 +193,13 @@ CutNode.prototype.onClick = function (event) {
 var PasteNode = defCustomTag('paste-node', ButtonPanelButton)
 
 PasteNode.prototype.afterCreate = function() {
-  ButtonPanelButton.prototype.afterCreate.call(this)
-
-  var $this = $(this)
-  $this.html('Paste')
-  $this.click(this.onClick)
+  ButtonPanelButton.prototype.afterCreate.call(this, 'Paste')
 }
 
 PasteNode.prototype.onClick = function (event) {
   App.controller.pasteNode();
 }
-// TODO: I think all these buttons could just be instances of a MyButton class.
-// Don't need separate classes for all of them.
+
 
 // =========================================================================
 //                   Expand / Collapse Recursive Button
@@ -198,9 +207,11 @@ PasteNode.prototype.onClick = function (event) {
 var ExpandCollapseRecursive = defCustomTag('expand-collapse-recursive', ButtonPanelButton)
 
 ExpandCollapseRecursive.prototype.afterCreate = function() {
-  ButtonPanelButton.prototype.afterCreate.call(this)
-  $(this).html('Open/Close All');
-  $(this).click(function(event) {App.controller.toggleExpandCollapseAll()})
+  ButtonPanelButton.prototype.afterCreate.call(this, 'Open/Close All')
+}
+
+ExpandCollapseRecursive.prototype.onClick = function (event) {
+  App.controller.toggleExpandCollapseAll()
 }
 
 
@@ -210,14 +221,11 @@ ExpandCollapseRecursive.prototype.afterCreate = function() {
 var AddChild = defCustomTag('add-child', ButtonPanelButton)
 
 AddChild.prototype.afterCreate = function() {
-  ButtonPanelButton.prototype.afterCreate.call(this)
+  ButtonPanelButton.prototype.afterCreate.call(this, '+Child')
+}
 
-  var $this = $(this)
-  $this.html('+Child')
-
-  // Click function adds a new child ViewNode to the ViewNode associated with this button. This means
-  // adding the new node to the ViewNode's ViewNodeChildren element.
-  $this.click(function() {App.controller.addChild()})
+AddChild.prototype.onClick = function (event) {
+  App.controller.addChild()
 }
 
 // =========================================================================
@@ -225,13 +233,11 @@ AddChild.prototype.afterCreate = function() {
 // =========================================================================
 var AddSuccessor = defCustomTag('add-successor', ButtonPanelButton)
 AddSuccessor.prototype.afterCreate = function() {
-  ButtonPanelButton.prototype.afterCreate.call(this)
+  ButtonPanelButton.prototype.afterCreate.call(this, '+Successor')
+}
 
-  var $this = $(this)
-  $this.html('+Successor')
-
-  // Click function adds a new ViewNode after the ViewNode associated with this button.
-  $this.click(function() {App.controller.addSuccessor()})
+AddSuccessor.prototype.onClick = function (event) {
+  App.controller.addSuccessor()
 }
 
 // =========================================================================
@@ -239,13 +245,11 @@ AddSuccessor.prototype.afterCreate = function() {
 // =========================================================================
 var AddPredecessor = defCustomTag('add-predecessor', ButtonPanelButton)
 AddPredecessor.prototype.afterCreate = function() {
-  ButtonPanelButton.prototype.afterCreate.call(this)
+  ButtonPanelButton.prototype.afterCreate.call(this, '+Predecessor')
+}
 
-  var $this = $(this)
-  $this.html('+Predecessor')
-
-  // Click function adds a new ViewNode after the ViewNode associated with this button.
-  $this.click(function() {App.controller.addPredecessor()})
+AddPredecessor.prototype.onClick = function (event) {
+  App.controller.addPredecessor()
 }
 
 // =========================================================================
@@ -253,12 +257,7 @@ AddPredecessor.prototype.afterCreate = function() {
 // =========================================================================
 var TrashNode = defCustomTag('trash-node', ButtonPanelButton)
 TrashNode.prototype.onCreate = function() {
-  ButtonPanelButton.prototype.afterCreate.call(this)
-
-  var $this = $(this)
-  $this.html('Delete!')
-
-  $this.click(this.onClick);
+  ButtonPanelButton.prototype.afterCreate.call(this, 'Delete!')
 }
 
 TrashNode.prototype.onClick = function (event) {
@@ -275,9 +274,9 @@ TrashNode.prototype.onClick = function (event) {
 var UntrashNode = defCustomTag('untrash-node', ButtonPanelButton)
 
 UntrashNode.prototype.afterCreate = function() {
-  ButtonPanelButton.prototype.afterCreate.call(this)
+  ButtonPanelButton.prototype.afterCreate.call(this, 'Untrash')
+}
 
-  var $this = $(this)
-  $this.html('Untrash')
-  $this.click(function(event) {App.controller.restoreLastDeletedNode()})
+UntrashNode.prototype.onClick = function (event) {
+  App.controller.restoreLastDeletedNode()
 }

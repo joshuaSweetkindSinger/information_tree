@@ -1,3 +1,5 @@
+//= require buttons
+
 // ========================================================================
 //                   User Interface
 // ========================================================================
@@ -31,14 +33,21 @@ Controller = function () {
 };
 
 // Respond to a left-click on a node. Select the node and toggle the expanded-collapsed state of that node.
-Controller.prototype.clickLeftOnNode = function (uiNode) {
+Controller.prototype.clickedLeftOnNode = function (uiNode) {
   this.selectNode(uiNode);
 }
 
 // Respond to a right-click on a node. Select the node and pop up the command menu.
-Controller.prototype.clickRightOnNode = function (uiNode, event) {
+Controller.prototype.clickedRightOnNode = function (uiNode, event) {
   this.selectNode(uiNode);
   this.buttonPanel.popTo(uiNode);
+  event.preventDefault();
+}
+
+// Respond to a right-click on a node. Select the node and pop up the command menu.
+Controller.prototype.clickedRightOnTopNode = function (uiTopNode, event) {
+  this.selectNode(uiTopNode);
+  this.buttonPanel.popTo(uiTopNode, true);
   event.preventDefault();
 }
 
@@ -191,6 +200,7 @@ Controller.prototype.setAttributes = function (uiNode, attributes) {
 
 // This does nothing. Use it for testing.
 Controller.prototype.nop = function() {
+  console.log("Controller.nop")
 }
 
 // Called by node when a drag operation starts to let the controller
@@ -232,4 +242,68 @@ Controller.prototype.adviseDragStop = function (event, helperUiNode, originalNod
  */
 Controller.prototype.adviseDrop = function(uiNode) {
   this.dropTarget = uiNode;
+}
+
+
+/*
+Establish command key shortcuts for the ui.
+ */
+Controller.prototype.keyPressedOnNode = function (uiNode, event) {
+  // carriage return -- create new successor node of uiNode
+  if (event.charCode == 13 && !event.altKey && !event.shiftKey && !event.ctrlKey) {
+    event.preventDefault();
+    this.addSuccessor(uiNode);
+
+    // shift-return -- create new child node of uiNode
+  } else if (event.charCode == 13 && !event.altKey && event.shiftKey && !event.ctrlKey) {
+    event.preventDefault();
+    this.addChild(uiNode);
+
+    // control-c -- copy uiNode
+  } else if (event.charCode == 'c'.charCodeAt(0) && !event.altKey && !event.shiftKey && event.ctrlKey) {
+    event.preventDefault();
+    this.copyNode(uiNode);
+
+    // control-v -- paste the copied node onto uiNode.
+  } else if (event.charCode == 'v'.charCodeAt(0) && !event.altKey && !event.shiftKey && event.ctrlKey) {
+    event.preventDefault();
+    this.pasteNode(uiNode);
+
+    // control-x -- cut uiNode
+  } else if (event.charCode == 'x'.charCodeAt(0) && !event.altKey && !event.shiftKey && event.ctrlKey) {
+    event.preventDefault();
+    this.cutNode(uiNode);
+
+    // control-s -- save uiNode
+  }  else if (event.charCode == 's'.charCodeAt(0) && !event.altKey && !event.shiftKey && event.ctrlKey) {
+    event.preventDefault();
+    this.saveNode(uiNode);
+
+    // control-a -- autosize uiNode
+  }  else if (event.charCode == 'a'.charCodeAt(0) && !event.altKey && !event.shiftKey && event.ctrlKey) {
+    event.preventDefault();
+    this.autoSizeNode(uiNode);
+  }
+}
+
+/*
+Establish command key shortcuts for the top node.
+ */
+Controller.prototype.keyPressedOnTopNode = function (uiTopNode, event) {
+  // carriage return -- create new successor node is disallowed for top node.
+  if (event.charCode == 13 && !event.altKey && !event.shiftKey && !event.ctrlKey) {
+    event.preventDefault();
+
+    // control-c -- copy this node is disallowed for top node.
+  } else if (event.charCode == 'c'.charCodeAt(0) && !event.altKey && !event.shiftKey && event.ctrlKey) {
+    event.preventDefault();
+
+    // control-x -- cut this node is disallowed for top node
+  } else if (event.charCode == 'x'.charCodeAt(0) && !event.altKey && !event.shiftKey && event.ctrlKey) {
+    event.preventDefault();
+
+    // Do standard node handling.
+  } else {
+    this.keyPressedOnNode(uiTopNode, event);
+  }
 }

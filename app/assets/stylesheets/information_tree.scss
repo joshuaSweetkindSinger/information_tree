@@ -43,10 +43,18 @@ expand-collapse {
   }
 }
 
+.button-panel-button-disabled {
+  background:gray;
+  color:darkgray;
+  &:hover {
+    background:gray;
+  }
+}
+
 button-panel {
   display:block;
   box-sizing:border-box;
-  width:100px;
+  width:120px;
   position:absolute;
 }
 

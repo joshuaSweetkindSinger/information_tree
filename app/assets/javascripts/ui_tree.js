@@ -1,3 +1,5 @@
+//= require ui_top_node
+
 /*
 This file defines class UiTree, which is the toplevel dom element container on the
 client side for the information tree. It has no server-side counterpart.
@@ -42,7 +44,7 @@ UiTree.prototype.init = function() {
   var self = this;
   this.initRequest = App.server.top()
     .success(function(top) {
-      self.top = new UiNode(new Node(top))
+      self.top = new UiTopNode(new Node(top))
       $(self).append(self.top);
     });
 

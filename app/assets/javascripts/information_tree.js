@@ -1,10 +1,4 @@
 //= require app
-//= require node
-//= require ui_node
-//= require server
-//= require controller
-//= require ui_tree
-//= require buttons
 
 /*
 This file defines client-side functionality for the information-tree sub-app.

@@ -31,7 +31,7 @@ UiNode.prototype.afterCreate = function(node) {
   })
 
   // Attach handlers to content element
-  $content = $(this._header.content);
+  var $content = $(this._header.content);
   $content.on("click", this.onClick.bind(this));
   $content.on("blur", this.onBlur.bind(this))
   $content.on("contextmenu", this.onContextMenu.bind(this));
@@ -68,7 +68,7 @@ UiNode.prototype.dragStop = function(event, helperUiNode) {
 
 // Handle a left click in the text area.
 UiNode.prototype.onClick = function (event) {
-  return App.controller.clickLeftOnNode(this);
+  App.controller.clickedLeftOnNode(this);
 }
 
 
@@ -78,45 +78,11 @@ UiNode.prototype.onClick = function (event) {
  that will work at click-time.
  */
 UiNode.prototype.onContextMenu = function(event) {
-  return App.controller.clickRightOnNode(this, event);
+  App.controller.clickedRightOnNode(this, event);
 }
 
 UiNode.prototype.onKeypress = function(event) {
-  // carriage return -- create new successor node
-  if (event.charCode == 13 && !event.altKey && !event.shiftKey && !event.ctrlKey) {
-    event.preventDefault();
-    App.controller.addSuccessor(this);
-
-    // shift-return -- create new child node
-  } else if (event.charCode == 13 && !event.altKey && event.shiftKey && !event.ctrlKey) {
-    event.preventDefault();
-    App.controller.addChild(this);
-
-    // control-c -- copy this node
-  } else if (event.charCode == 'c'.charCodeAt(0) && !event.altKey && !event.shiftKey && event.ctrlKey) {
-    event.preventDefault();
-    App.controller.copyNode(this);
-
-    // control-v -- paste the copied node onto this node.
-  } else if (event.charCode == 'v'.charCodeAt(0) && !event.altKey && !event.shiftKey && event.ctrlKey) {
-    event.preventDefault();
-    App.controller.pasteNode(this);
-
-    // control-x -- cut this node
-  } else if (event.charCode == 'x'.charCodeAt(0) && !event.altKey && !event.shiftKey && event.ctrlKey) {
-    event.preventDefault();
-    App.controller.cutNode(this);
-
-    // control-s -- save this node
-  }  else if (event.charCode == 's'.charCodeAt(0) && !event.altKey && !event.shiftKey && event.ctrlKey) {
-    event.preventDefault();
-    App.controller.saveNode(this);
-
-    // control-a -- autosize this node
-  }  else if (event.charCode == 'a'.charCodeAt(0) && !event.altKey && !event.shiftKey && event.ctrlKey) {
-    event.preventDefault();
-    App.controller.autoSizeNode(this);
-  }
+  App.controller.keyPressedOnNode(this, event)
 }
 
 
