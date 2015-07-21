@@ -108,7 +108,7 @@ class Node < ActiveRecord::Base
       save!
     end
 
-    # TODO: this is overly-agressive and will cause performance problems.
+    # TODO: this is overly-aggressive and will cause performance problems.
     # To prevent underflow of rank resolution, re-rank children on each splice operation.
     self.parent.rerank_children
     self
@@ -140,10 +140,10 @@ class Node < ActiveRecord::Base
   # NOTE: We only need to patch the successor if it exists, because the _set_predecessor() method
   # will patch the predecessor for us. If the successor does not exist, then we set the predecessor to nil.
   def _repatch_siblings
-    if self.successor
-      self.successor._set_predecessor(self.predecessor)
-    elsif self.predecessor
-      self.predecessor._set_successor(nil)
+    if successor
+      successor._set_predecessor(predecessor)
+    elsif predecessor
+      predecessor._set_successor(nil)
     end
   end
 
@@ -152,6 +152,7 @@ class Node < ActiveRecord::Base
   # Link ourselves into the position specified by splice_position,
   # updating our links and those of our new siblings.
   def _splice! (splice_position)
+    splice_position.calc_relatives
     self.parent = splice_position.parent
     _set_predecessor(splice_position.predecessor)
     _set_successor(splice_position.successor)
@@ -268,16 +269,36 @@ end
 # to be inserted into the hierarchy at the position designated by the SplicePosition instance.
 # This is a base class, not to be instantiated. See SplicePositionParent, etc., below.
 class SplicePosition
-  attr_accessor :parent, :successor, :predecessor
+  attr_reader :node, :parent, :successor, :predecessor
 
-  def initialize
-    self.parent      = nil
-    self.successor   = nil
-    self.predecessor = nil
+  def initialize (node)
+    @node        = node
+    @parent      = nil
+    @successor   = nil
+    @predecessor = nil
+  end
+
+  # Override this in derived class.
+  # Calculate the parent, successor, and predecessor nodes for the node-to-be-inserted. The node-to-be-inserted
+  # is going to be inserted into the tree hierarchy relative to @node. For example, if @node is the splice position
+  # predecessor of the node-to-be-inserted, then the node-to-be-inserted will become its successor.
+  # PROGRAMMER NOTES
+  # As part of the insertion process, this method needs to be called at exactly the right time,
+  # just after the node-to-be-inserted has been unhooked from the tree.
+  # The timing is tricky because the reference node,
+  # @node, may well be undergoing changes to its relatives as part of
+  # the insert() operation that is in-progress. We need to calculate the proper parent, successor, and predecessor
+  # for the node-to-be-inserted at just the right time and then save those values before
+  # they change (again) on @node itself. When the node-to-be-inserted is unhooked, this may cause changes
+  # to @node--desirable changes that we want to take into account, so calc_relatives should be called after
+  # the unhook() operation. When the node-to-be-inserted is spliced, this may again cause changes to @node--
+  # undesirable changes as far as this method is concerned, so calc_relatives should be called before the splice()
+  # operation.
+  def calc_relatives
   end
 
   def to_s
-    "[SplicePosition: parent:(#{parent}), predecessor: (#{predecessor}), successor: (#{successor})]"
+    "[#{self.class.name}: node: (#{node}), parent:(#{parent}), predecessor: (#{predecessor}), successor: (#{successor})]"
   end
 end
 
@@ -288,31 +309,45 @@ class SplicePositionChild < SplicePosition
   attr_accessor :last
 
   def initialize (node, last = false)
-    super()
-    self.parent      = node
-    self.predecessor = node.last_child  if  last
-    self.successor   = node.first_child if !last
+    super(node)
+  end
+
+  # See documentation on superclass
+  def calc_relatives
+    @node.reload # @node may have had its relations changed. Get the latest from the db.
+    @parent      = @node
+    @predecessor = @node.last_child  if  last
+    @successor   = @node.first_child if !last
   end
 end
 
-# Designates a splice position in which the node to be inserted
-# becomes the predecessor of the node that initializes the splice position object.
+# Designates a splice position in which @node becomes the predecessor of the node-to-be-inserted
 class SplicePositionPredecessor < SplicePosition
   def initialize (node)
-    super()
-    self.parent      = node.parent
-    self.predecessor = node
-    self.successor   = node.successor
+    super(node)
+  end
+
+# See documentation on superclass
+  def calc_relatives
+    @node.reload # @node may have had its relations changed. Get the latest from the db.
+    @parent      = @node.parent
+    @predecessor = @node
+    @successor   = @node.successor
   end
 end
 
-# Designates a splice position in which the node to be inserted
-# becomes the successor of the node that initializes the splice position object.
+
+
+# Designates a splice position in which @node becomes the successor of the node-to-be-inserted
 class SplicePositionSuccessor < SplicePosition
   def initialize (node)
-    super()
-    self.parent      = node.parent
-    self.predecessor = node.predecessor
-    self.successor   = node
+    super(node)
+  end
+
+  def calc_relatives
+    @node.reload # @node may have had its relations changed. Get the latest from the db.
+    @parent      = @node.parent
+    @predecessor = @node.predecessor
+    @successor   = @node
   end
 end
