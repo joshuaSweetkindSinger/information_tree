@@ -1,9 +1,11 @@
 class Node < ActiveRecord::Base
   # TODO -- put these in the database instead
-  BULLET    = 1 # type_id of this value indicates a bullet item.
-  PARAGRAPH = 2 # type_id of this value indicates a paragraph item.
-  TOP_ID    = -1 # system-designated "parent" id for top node.
-  TRASH_ID  = -2 # system-designated "parent" id for trash node.
+  TOP_TYPE_ID       = -1 # system-designated type id for top node.
+  TRASH_TYPE_ID     = -2 # system-designated type id for trash node.
+  SYSTEM_NODE_TYPES = [TRASH_TYPE_ID, TOP_TYPE_ID]
+
+  BULLET_TYPE_ID    =  1 # type_id of this value indicates a bullet item.
+  PARAGRAPH_TYPE_ID =  2 # type_id of this value indicates a paragraph item.
 
   attr_accessible :content, :parent_id, :rank, :type_id, :predecessor_id, :successor_id, :width, :height
   belongs_to :parent, class_name: 'Node'
@@ -12,32 +14,32 @@ class Node < ActiveRecord::Base
   has_many :children, class_name: 'Node', foreign_key: :parent_id
 
   after_initialize do |node|
-    node.type_id ||= BULLET # By default, new nodes are bullets rather than paragraphs or other types.
+    node.type_id ||= BULLET_TYPE_ID # By default, new nodes are bullets rather than paragraphs or other types.
   end
 
   # ===================================== Class Methods
   def self.top
-    result = where("parent_id = #{TOP_ID}").first
+    result = where("type_id = #{TOP_TYPE_ID}").first
     result || _make_top_node
   end
 
   def self._make_top_node
     result = Node.new(content:'Top', rank:0, width:100, height:50)
-    result.parent_id = TOP_ID
+    result.type_id = TOP_TYPE_ID
     result.save!
     result
   end
 
   # Return the trash node.
   def self.trash
-    result = where("parent_id = #{TRASH_ID}").first
+    result = where("type_id = #{TRASH_TYPE_ID}").first
     result || _make_trash_node
   end
 
   # Make the trash node.
   def self._make_trash_node
     result = Node.new(content:'Trash', rank:0, width:100, height:50)
-    result.parent_id = TRASH_ID
+    result.type_id = TRASH_TYPE_ID
     result.save!
     result
   end
@@ -67,10 +69,12 @@ class Node < ActiveRecord::Base
     result
   end
 
-  # Move to the trash all nodes that have no parent.
+  # Move to the trash all nodes that have no parent, except for system nodes like top node and trash node.
   def self.trash_orphans
     self.where(parent_id: nil).each do |node|
-      node.trash
+      if !node.is_system_node?
+        node.trash
+      end
     end
   end
 
@@ -89,6 +93,9 @@ class Node < ActiveRecord::Base
   end
 
   # ===================================== Instance Methods
+  def is_system_node?
+    SYSTEM_NODE_TYPES.include?(type_id)
+  end
 
   # Insert ourselves into the node hierarchy at position, which is a SplicePosition instance.
   # NOTE: self is *not* the insertion point; it is the node being inserted.
