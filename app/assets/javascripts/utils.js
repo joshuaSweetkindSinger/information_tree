@@ -141,8 +141,9 @@ JsonRequest.prototype.done = function () {
 // async, but let's them handle the then() method so that sync and async object
 // can be handled uniformly.
 
-var PseudoRequest = function (obj) {
+var PseudoRequest = function (obj, successState) {
   this.result = obj;
+  this.successState = (arguments.length == 1 ? true : successState);
 }
 PseudoRequest.prototype = Object.create(Request.prototype);
 
@@ -151,7 +152,7 @@ PseudoRequest.prototype.then = function(callback) {
   return this;
 }
 
-PseudoRequest.prototype.isSuccess = function() {return true}
+PseudoRequest.prototype.isSuccess = function() {return this.successState}
 
 
 // ========================================================================

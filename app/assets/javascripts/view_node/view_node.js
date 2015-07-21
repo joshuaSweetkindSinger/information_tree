@@ -254,12 +254,26 @@ ViewNode.prototype.kids = function() {
  */
 
 ViewNode.prototype._add = function(nodeSpec, mode) {
+  if (this._isInvalidAddRequest(nodeSpec, mode)) {
+    return new PseudoRequest({error:'self-loop request'}, false); // Return a failed request if we are requesting to add ourselves to ourselves.
+  }
+
   return this.node
     .add(nodeSpec, mode)
     .success(function(node) {
         return App.uiTree.addUiNode(node);
     })
 };
+
+/*
+Return true if the requested add operation is invalid.
+
+The operation is invalid if nodeSpec is a reference to <this>, in which
+case we would be adding ourselves to ourselves.
+ */
+ViewNode.prototype._isInvalidAddRequest = function (nodeSpec, mode) {
+  return nodeSpec && (nodeSpec.id == this.node.id);
+}
 
 
 /*

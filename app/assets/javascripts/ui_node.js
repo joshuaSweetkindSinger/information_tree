@@ -52,26 +52,17 @@ UiNode.prototype.afterCreate = function(node) {
  */
 
 UiNode.prototype.dragStart = function() {
-  App.uiTree.dropTarget = null;
+  App.controller.adviseDragStart(this);
 }
 
 
 /*
- A drag event just ended. Determine whether we were dropped on top of another node,
- or let go beneath a node, and do either an addChild() or an addSuccessor() accordingly.
+Advise the controller that a drag event just stopped.
+In particular, this UiNode object just finished being dragged. If it was dragged on
+top of another object, the controller will handle the drop event.
  */
-UiNode.prototype.dragStop = function(event, helper) {
-  // There's a drop target: add a child
-  if (App.uiTree.dropTarget) {
-    App.controller.addChild(App.uiTree.dropTarget, {id: this.node.id});
-    return;
-  }
-
-  // There's a node above the release position: add a successor
-  var node = App.uiTree.findLowestNodeAbove(helper.position.top);
-  if (node) {
-    App.controller.addSuccessor(node, {id: this.node.id});
-  }
+UiNode.prototype.dragStop = function(event, helperUiNode) {
+  App.controller.adviseDragStop(event, helperUiNode, this)
 };
 
 
@@ -130,16 +121,16 @@ UiNode.prototype.onKeypress = function(event) {
 
 
 /*
- Handle a drop event. We were just dropped on top of a node.
- Record the drop target so that we can be added as a child when the drag event finishes.
+ A drop event just occurred.  A node was just dropped on top of <this> node.
+ Advise the controller so it can take action.
+
  Note: It seems that a single mouse-release can generate two drop events, one of them a phantom.
- Not sure why. But the "true" drop event is recognizable because the associated drop node will have an id.
- We only record this node as the drop target, not the phantom. I believe the phantom has to do with
- the cloned helper node that is created as part of the drag.
+ Not sure why. But the "true" drop event is recognizable because the associated node will have an id.
+ We only forward to the controller for the true drop event.
  */
 UiNode.prototype.handleDrop = function(event, ui) {
   if (this.id) {
-    App.uiTree.dropTarget = this;
+    App.controller.adviseDrop(this);
   }
 };
 

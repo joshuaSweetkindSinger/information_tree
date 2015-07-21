@@ -118,7 +118,7 @@ class NodesController < ApplicationController
   end
 
 
-  # Create a new text node, or use an existing one, and insert it into the node
+  # Create a new node, or use an existing one, and insert it into the node
   # hierarchy as the child or sibling of the node with id params[:id].
   # To create a new node, specify its contents with params[:node].
   # To use an existing node, specify its id with params[:node][:id].

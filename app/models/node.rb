@@ -135,7 +135,10 @@ class Node < ActiveRecord::Base
     siblings_to_save
   end
 
-
+  # Make our predecessor and successor be each other's predecessor and successor,
+  # in preparation for unhooking ourselves from the tree.
+  # NOTE: We only need to patch the successor if it exists, because the _set_predecessor() method
+  # will patch the predecessor for us. If the successor does not exist, then we set the predecessor to nil.
   def _repatch_siblings
     if self.successor
       self.successor._set_predecessor(self.predecessor)
@@ -212,7 +215,7 @@ class Node < ActiveRecord::Base
   # node is added onto the beginning of self's set of children, unless last
   # is true, in which case it is added onto the end.
   def add_child (node, last = false)
-    node.insert(SplicePositionParent.new(self, last))
+    node.insert(SplicePositionChild.new(self, last))
   end
 
 
@@ -278,8 +281,10 @@ class SplicePosition
   end
 end
 
-
-class SplicePositionParent < SplicePosition
+# Designates a splice position in which the node to be inserted
+# becomes a child of the node that initializes the splice position object.
+# If last is true, then it becomes the last child; otherwise, it becomes the first child.
+class SplicePositionChild < SplicePosition
   attr_accessor :last
 
   def initialize (node, last = false)
@@ -290,7 +295,8 @@ class SplicePositionParent < SplicePosition
   end
 end
 
-
+# Designates a splice position in which the node to be inserted
+# becomes the predecessor of the node that initializes the splice position object.
 class SplicePositionPredecessor < SplicePosition
   def initialize (node)
     super()
@@ -300,7 +306,8 @@ class SplicePositionPredecessor < SplicePosition
   end
 end
 
-
+# Designates a splice position in which the node to be inserted
+# becomes the successor of the node that initializes the splice position object.
 class SplicePositionSuccessor < SplicePosition
   def initialize (node)
     super()

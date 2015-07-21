@@ -94,9 +94,7 @@ Server:     Mediate all api calls to the server.
  TODO: Should the uiTree be holding the droppable target? Or should the UI be holding it? Seems like
        if the ui holds the selectedNode, it should also hold the droppable target. And vice versa,
        perhaps the uiTree should hold both.
- TODO: Object interfaces should be through methods only. Don't let other objects even read the member variables.
-       unless the object in question is functioning as a data object: a hash, a struct.
-TODO: Adding a node is a mess. Clean it up.
+
 
 TODO: General problem: where does a change event get initiated? In the general case, a change event, such
 as changing the content of a node, might occur on the client side, or on the server side, and, if on the
@@ -126,7 +124,7 @@ logic to handle creation as well.
 TODO: There are annoying flashes when a node is saved. Probably because of the round-trip to server, and maybe
 because of the timing of when they are added to the dom.
 
-TODO: Do we realize use the client-side predecessor and successor member variables? How do we use them on the server side?
+TODO: Do we really use the client-side predecessor and successor member variables? How do we use them on the server side?
 If we move a node on the client-side, its previous predecessor and successor nodes now have new predecessor and successor
 links, but we never update them.
  */

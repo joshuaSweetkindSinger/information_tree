@@ -192,3 +192,44 @@ Controller.prototype.setAttributes = function (uiNode, attributes) {
 // This does nothing. Use it for testing.
 Controller.prototype.nop = function() {
 }
+
+// Called by node when a drag operation starts to let the controller
+// know about it. In this case, we clear the previous drop target
+// because a new drop is possibly about to occur.
+Controller.prototype.adviseDragStart = function (uiNode) {
+  this.dropTarget = null;
+}
+
+
+/*
+Advise the controller that a drag event just ended.
+Determine whether helperUiNode was dropped on top of another node,
+ or let go beneath a node, and do either an addChild() or an addSuccessor() accordingly on
+ originalNode.
+
+ Inputs:
+   event:        is the drag event object.
+   helperUiNode: is a throw-away node created by jquery to give visual feedback on the dragged node
+                 while the user is dragging it, without dragging the actual, original node that was clicked on.
+   originalNode: is that original node that was clicked on by the user to initiate the drag event.
+ */
+Controller.prototype.adviseDragStop = function (event, helperUiNode, originalNode) {
+  var target;
+  var source = {id: originalNode.node.id}
+
+  // There's a drop target: add originalNode as a child
+  if (target = this.dropTarget) {
+    this.addChild(target, source);
+
+  // There's a node above us: add originalNode as a successor
+  } else if (target = App.uiTree.findLowestNodeAbove(helperUiNode.position.top)) {
+    this.addSuccessor(target, source);
+  }
+}
+
+/*
+ Record the drop target so that it can be added as a parent when the drag event finishes.
+ */
+Controller.prototype.adviseDrop = function(uiNode) {
+  this.dropTarget = uiNode;
+}
