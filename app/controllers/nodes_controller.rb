@@ -118,53 +118,17 @@ class NodesController < ApplicationController
   end
 
 
-  # Create a new node, or use an existing one, and insert it into the node
-  # hierarchy as the child or sibling of the node with id params[:id].
-  # To create a new node, specify its contents with params[:node].
-  # To use an existing node, specify its id with params[:node][:id].
-  # To add the node as a child of params[:id], set params[:mode] = :add_child.
-  # To add the node as a successor of params[:id], set params[:mode] = :add_successor.
-  # To add the node as a predecessor of params[:id], set params[:mode] = :add_predecessor.
-  # For json format, return the newly created node as a json object.
-  def add_node
-    at_node = Node.find(params[:id])
-
-    unless at_node
-      return render(
-        json: {error: "at_node with id #{id} not found"},
-        status: :not_found
-      )
-    end
-
-
-    @obj = if params[:node][:id]
-             Node.find(params[:node][:id])
-           else
-             Node.new(params[:node])
-           end
-
-    unless @obj
-      return render(
-        json: {error: "Unable to find or create node from spec",
-               spec: params[:node]},
-        status: :not_found
-      )
-    end
-
-
-    mode = params[:mode].to_sym
-    if ![:add_successor, :add_predecessor, :add_child].include?(mode)
-      return render(json: {error: "mode must be one of :add_child, :add_successor, :add_predecessor"})
-    end
-
-    at_node.send(mode, @obj)
-
-    respond_to do |format|
-      format.html { redirect_to interactive_nodes_path, notice: 'Node was successfully created.' }
-      format.json { render json: @obj, status: :created, location: @obj }
-    end
+  def add_child
+    add_node('add_child')
   end
 
+  def add_successor
+    add_node('add_successor')
+  end
+
+  def add_predecessor
+    add_node('add_predecessor')
+  end
 
   # Set one or more attributes of the object whose id is params[:id].
   # The attributes and their values are passed in as a sub-hash on params[:node], e.g.
@@ -222,4 +186,67 @@ class NodesController < ApplicationController
       format.js {render js: 'alert("this is a test!");', content_type: 'application/javascript'}
     end
   end
+
+  # ============================================= HELPERS
+  private
+
+  # Create a new node, or use an existing one, and insert it into the node
+  # hierarchy as the child, successor, or predecessor of the node with id params[:id].
+  # The relationship is determined by add_mode: one of 'add_child', 'add_successor', 'add_predecessor'.
+  # To create a new node, specify its contents within params[:node][:content].
+  # To use an existing node, specify its id with params[:node][:id].
+  # For json format, return the child node as a json object.
+  def add_node (add_mode)
+    reference_node = get_reference_node
+    node_to_attach = get_node_to_attach if reference_node
+    return unless reference_node && node_to_attach
+
+    reference_node.send(add_mode, node_to_attach)
+
+    respond_to do |format|
+      format.json { render json: node_to_attach, status: :created, location: node_to_attach }
+    end
+  end
+
+  # Find the reference node, which is the node with id params[:id]
+  # Render an error if it is not found.
+  # This is a helper function for the get_reference_node_and_node_to_attach method.
+  def get_reference_node
+    reference_node = Node.find(params[:id])
+
+    unless reference_node
+      render(
+        json: {error: "at_node with id #{id} not found"},
+        status: :not_found
+      )
+    end
+
+    reference_node
+  end
+
+
+  # Find or create the node_to_attach, which is the node specified by params[:node].
+  # If params[:node][:id] is specified, the node must exist: find it; otherwise render
+  # an error. If params[:node][:id] is not specified, create the node with attributes as
+  # specified by params[:node].
+  # This is a helper function for the get_reference_node_and_node_to_attach method.
+  def get_node_to_attach
+    node_to_attach = if params[:node][:id]
+                       Node.find(params[:node][:id])
+                     else
+                       Node.new(params[:node])
+                     end
+
+    unless node_to_attach
+      render(
+        json: {error: "Unable to find or create node from spec",
+               spec: params[:node]},
+        status: :not_found
+      )
+    end
+
+    node_to_attach
+  end
+
+
 end

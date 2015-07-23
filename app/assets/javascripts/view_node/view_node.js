@@ -238,7 +238,8 @@ ViewNode.prototype.kids = function() {
  relative to <this>.
 
  mode determines how node is moved relative to <this>, as either a child, successor, or predecessor
- of the node represented by <this>. mode should be a string, one of: 'child', 'successor', 'predecessor'
+ of the node represented by <this>. mode should be a string
+ that names one of this.node's add methods: 'addChild', 'addSuccessor', 'addPredecessor'
 
  The return value is a request object that captures the asynchronous computation.
 
@@ -255,8 +256,7 @@ ViewNode.prototype._add = function(nodeSpec, mode) {
     return new PseudoRequest({error:'self-loop request'}, false); // Return a failed request if we are requesting to add ourselves to ourselves.
   }
 
-  return this.node
-    .add(nodeSpec, mode)
+  return this.node[mode](nodeSpec)
     .success(function(node) {
         return App.uiTree.addUiNode(node);
     })
@@ -283,7 +283,7 @@ ViewNode.prototype.addChild = function(nodeSpec) {
   // Make sure we are expanded so that the new child node can be seen.
   if (!nodeSpec) this.expand();
 
-  return this._add(nodeSpec, 'add_child');
+  return this._add(nodeSpec, 'addChild');
 }
 
 
@@ -294,7 +294,7 @@ ViewNode.prototype.addChild = function(nodeSpec) {
  */
 ViewNode.prototype.addSuccessor = function(nodeSpec) {
   this.parent().expand(); // Make sure that our parent is expanded so that the new node can be seen.
-  return this._add(nodeSpec, 'add_successor');
+  return this._add(nodeSpec, 'addSuccessor');
 }
 
 
@@ -305,7 +305,7 @@ ViewNode.prototype.addSuccessor = function(nodeSpec) {
  */
 ViewNode.prototype.addPredecessor = function(nodeSpec) {
   this.parent().expand(); // Make sure that our parent is expanded so that the new node can be seen.
-  return this._add(nodeSpec, 'add_predecessor');
+  return this._add(nodeSpec, 'addPredecessor');
 }
 
 

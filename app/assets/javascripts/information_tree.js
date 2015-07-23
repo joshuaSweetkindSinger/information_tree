@@ -118,10 +118,15 @@ logic to handle creation as well.
 TODO: There are annoying flashes when a node is saved. Probably because of the round-trip to server, and maybe
 because of the timing of when they are added to the dom.
 
-TODO: Do we really use the client-side predecessor and successor member variables? How do we use them on the server side?
-If we move a node on the client-side, its previous predecessor and successor nodes now have new predecessor and successor
-links, but we never update them.
+TODO: Create parallel handling of add() functionality on client. Make sure predecessor and successor
+links are updated when nodes are moved around in the dom tree.
 
+
+TODO: Unify handling of add() functionality on server and client sides, using parallel construction.
+status: created the 3 primitives. Next up: look at insertion functionality.
+Use 3 primitives in each case: addChild(), addSuccessor(), addPredecessor(). Possibly separate out
+creation from insertion. Unify insertion operation on both sides, using same terminology. Don't use the
+name glom(), use insert().
 
  */
 

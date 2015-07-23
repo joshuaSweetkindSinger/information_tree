@@ -73,7 +73,8 @@ Node.prototype.view = function (obj) {
  relative to <this>.
 
  mode determines how node is moved relative to <this>, as either a child, successor, or predecessor
- of the node represented by <this>. mode should be a string, one of: 'child', 'successor', 'predecessor'
+ of the node represented by <this>. mode should be a string,
+ that names one of App.server's add methods: 'addChild', 'addSuccessor', 'addPredecessor'
 
  callback is a function that gets executed after the node has been returned from the server, and only if the
  request was successful.
@@ -87,7 +88,7 @@ Node.prototype.add = function (nodeSpec, mode) {
   if (!nodeSpec) nodeSpec = Node.defaultSpec;
 
   var self = this;
-  return App.server.addNode(this.id, nodeSpec, mode)
+  return App.server[mode](this.id, nodeSpec)
     .success(function(nodeRep) {
       return new Node(nodeRep)
     })
@@ -95,6 +96,19 @@ Node.prototype.add = function (nodeSpec, mode) {
       console.log("Got an error attempting to add a node on server. parent = ", self, "; spec = ", nodeSpec, "; mode = ", mode, "; error = ", error);
     })
 }
+
+Node.prototype.addChild = function (nodeSpec) {
+  return this.add(nodeSpec, 'addChild')
+}
+
+Node.prototype.addSuccessor = function (nodeSpec) {
+  return this.add(nodeSpec, 'addSuccessor')
+}
+
+Node.prototype.addPredecessor = function (nodeSpec) {
+  return this.add(nodeSpec, 'addPredecessor')
+}
+
 
 Node.prototype.reportError = function() {
   console.log("Got an error attempting to make changes to node on server: ", this)

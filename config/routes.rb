@@ -9,13 +9,14 @@ JssNotes::Application.routes.draw do
     end
 
     member do
-      get :children        # route is /nodes/:id/children
-      post :add_node      # route is /nodes/:id/add_node
-      put :set_attributes  # route is /nodes/:id/set_attributes
-      delete :trash        # route is /nodes/:id/trash
+      get    :children        # route is /nodes/:id/children
+      post   :add_child       # route is /nodes/:id/add_child
+      post   :add_successor   # route is /nodes/:id/add_successor
+      post   :add_predecessor # route is /nodes/:id/add_predecessor
+      put    :set_attributes  # route is /nodes/:id/set_attributes
+      delete :trash           # route is /nodes/:id/trash
     end
   end
-
 
   root to: 'information_tree#information_tree'
   match '/pages', via: :get, to: 'pages#index'

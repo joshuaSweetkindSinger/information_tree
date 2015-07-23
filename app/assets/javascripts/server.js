@@ -15,25 +15,39 @@ Server.prototype.topNodePath = function() {
 }
 
 /*
- Create a new node on the server, or insert an existing one at a new location.
+ The three methods below create a new node on the server, or insert an existing one at a new location.
  Attach it to the text node tree at a position relative to the baseNode
- as indicated by mode, which must be one of 'add_child', 'add_successor', 'add_predeessor'.
- Then execute the function next() when done.
+ as indicated by the method name.
+
  Inputs:
- baseId: The id of an existing node that determines the point in the tree relative to which node will be added.
- node: if creating a new node, this should be an object that specs out the desired new node.
- If adding an existing node, then this should just be an object with an id whose
- value is the id of the existing node.
- mode: one of 'add_child', 'add_successor', 'add_predecessor'.
- next: This is a continuation function that says what to do after the node is created or inserted.
+ baseId:   The id of an existing node that determines the point in the tree relative to which node will be added.
+ nodeSpec: if creating a new node, this should be an object that specs out the desired new node.
+           If adding an existing node, then this should just be an object with an id whose
+           value is the id of the existing node.
  */
-Server.prototype.addNode = function(baseId, nodeSpec, mode) {
-  return new JsonRequest("POST", this.addNodePath(baseId), {node: nodeSpec, mode:mode});
+
+Server.prototype.addChild = function(baseId, nodeSpec) {
+  return new JsonRequest("POST", this.addChildPath(baseId), {node: nodeSpec});
 };
 
+Server.prototype.addChildPath = function(id) {
+  return '/nodes/' + id + '/add_child.json'
+}
 
-Server.prototype.addNodePath = function(id) {
-  return '/nodes/' + id + '/add_node.json'
+Server.prototype.addSuccessor = function(baseId, nodeSpec) {
+  return new JsonRequest("POST", this.addSuccessorPath(baseId), {node: nodeSpec});
+};
+
+Server.prototype.addSuccessorPath = function(id) {
+  return '/nodes/' + id + '/add_successor.json'
+}
+
+Server.prototype.addPredecessorPath = function(baseId, nodeSpec) {
+  return new JsonRequest("POST", this.addPredecessorPath(baseId), {node: nodeSpec});
+};
+
+Server.prototype.addPredecessorPath = function(id) {
+  return '/nodes/' + id + '/add_predecessor.json'
 }
 
 Server.prototype.trash = function (id) {
