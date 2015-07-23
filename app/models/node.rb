@@ -1,3 +1,7 @@
+# TODO: who calls calc_rank, which is now a method on the parent, not the inserted node.
+
+
+
 class Node < ActiveRecord::Base
   # TODO -- put these in the database instead
   TOP_TYPE_ID       = -1 # system-designated type id for top node.
@@ -74,27 +78,50 @@ class Node < ActiveRecord::Base
     SYSTEM_NODE_TYPES.include?(type_id)
   end
 
-  # Insert ourselves into the node hierarchy at position, which is a SplicePosition instance.
-  # NOTE: self is *not* the insertion point; it is the node being inserted.
-  #       splice_position is the insertion point.
+  # Insert node into the node hierarchy relative to ourselves, as indicated by
+  # splice-position, which is a SplicePosition instance.
   #
   # This method fixes all the predecessor and successor links, calculates the rank of node,
   # and causes node to be saved to the db if it was not already in the db, along with mods
   # to the sibling nodes on either side of it. If node was already in the db, its previous
   # relationship links are unhooked.
   #
+  # This method also reranks all the children of the node's parent, to prevent underflow.
+  # Due to the method we are using to calculate ranks, adding, say 20 children to the top of the list
+  # every time could produce underflow.
+  #
   # The return value of this method is node.
-  def insert (splice_position)
+  def insert (node, splice_position)
+    transaction do
+      _insert(node, splice_position)
+      node.parent.rerank_children
+    end
+
+    node
+  end
+
+
+  # See documentation for insert() above.
+  def _insert (node, splice_position)
+    transaction do
+      node._attach(splice_position)
+      node.rank = node.parent.calc_child_rank(node)
+      node.save!
+    end
+
+    node
+  end
+
+
+
+  # Attach ourselves to the hierarchy at the position indicated by splice_position.
+  def _attach(splice_position)
     transaction do
       _unhook!
       _splice!(splice_position)
-      self.rank = calc_rank()
       save!
     end
 
-    # TODO: this is overly-aggressive and will cause performance problems.
-    # To prevent underflow of rank resolution, re-rank children on each splice operation.
-    self.parent.rerank_children
     self
   end
 
@@ -166,15 +193,37 @@ class Node < ActiveRecord::Base
   end
 
 
-  # Calculate our rank.
+  # Calculate node's splice-rank. This is the most-used rank method so far.
+  # But others might come along. This is a generic utility rank-calculation-function,
+  # one of the possible rank calculation methods that calc_node_rank() might use.
+  #
   # Algorithm for calculating ranks: a node's rank is the average of the ranks
   # of its predecessor and successor siblings. If a node has no predecessor, the rank used in place
   # of the predecessor's rank is 0.0. If a node has no successor, the rank used in place
   # of the successor's rank is 1.0.
-  def calc_rank
+  def calc_splice_rank
     predecessor_rank = predecessor ? predecessor.rank : 0.0
     successor_rank   = successor   ? successor.rank   : 1.0
+
     (successor_rank + predecessor_rank) / 2.0
+  end
+
+
+  # Used by the trash node to calculate the rank of its children.
+  # Each successive child pushed onto the top of the child list is given a rank
+  # that is one less than its successor.
+  def calc_pushed_child_rank
+    if successor
+      successor.rank - 1
+    else
+      0
+    end
+  end
+
+  # Calculate the rank for node, which should be a relative of ourselves (child, successor, predecessor),
+  # as part of the process of inserting node as a relative of ourselves.
+  def calc_child_rank (child_node)
+    child_node.calc_splice_rank
   end
 
 
@@ -200,7 +249,7 @@ class Node < ActiveRecord::Base
   # node is added onto the beginning of self's set of children, unless last
   # is true, in which case it is added onto the end.
   def add_child (node, last = false)
-    node.insert(SplicePositionChild.new(self, last))
+    insert(node, SplicePositionChild.new(self, last))
   end
 
 
@@ -208,7 +257,7 @@ class Node < ActiveRecord::Base
   # of self. If node is already in the hierarchy, then its existing parent- and sibling-links
   # will be detached and re-hooked-up to fit with its new position.
   def add_successor (node)
-    node.insert(SplicePositionPredecessor.new(self))
+    insert(node, SplicePositionPredecessor.new(self))
   end
 
 
@@ -216,7 +265,7 @@ class Node < ActiveRecord::Base
   # of self. If node is already in the hierarchy, then its existing parent- and sibling-links
   # will be detached and re-hooked-up to fit with its new position.
   def add_predecessor (node)
-    node.insert(SplicePositionSuccessor.new(self))
+    insert(node, SplicePositionSuccessor.new(self))
   end
 
 
