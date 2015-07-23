@@ -1,4 +1,7 @@
+
 class Trash < Node
+  DAYS_TO_KEEP_TRASHED_NODE = 30 # Trashed nodes will be deleted after this many days
+
   # Return the trash node.
   def self.trash
     result = where("type_id = #{TRASH_TYPE_ID}").first
@@ -16,11 +19,23 @@ class Trash < Node
   # =========================================================================
   #                   Instance Methods
   # =========================================================================
-  # Override Node's insert method. We don't need to rerank our children as Node does. Otherwise, everything is the same.
+  # Override Node's insert method. We don't need to rerank our children as Node does.
+  # But we do want to delete very old nodes whenever a new one is added, in order to do basic
+  # maintenance on the Trash. Otherwise, everything else is the same.
   def insert (node, splice_position)
     _insert(node, splice_position)
 
+    # delete nodes older than 30 days.
+    delete_old_nodes
+
     node
+  end
+
+  # Delete all nodes in the trash that were put there longer than DAYS_TO_KEEP_TRASHED_NODE days ago.
+  def delete_old_nodes
+    children.where('created_at < ?', Time.now - DAYS_TO_KEEP_TRASHED_NODE.day).each do |node|
+      node.destroy
+    end
   end
 
 
