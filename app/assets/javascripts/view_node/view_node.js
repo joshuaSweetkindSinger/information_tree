@@ -130,10 +130,6 @@ ViewNode.prototype.expandedViewNodes = function(result) {
 // =========================================================================
 //        Tree Hierarchy Accessors And Manipulation Methods
 // =========================================================================
-// TODO: Probably this should be done in the model instead of the view, no?
-// But we need to attach the dom elements to the dom hierarchy. So we must use
-// the views at some point. When?
-
 /*
  Attach ourselves to the information tree view. This is done just after a new
  ViewNode is created from a rep sent by the server to the client.

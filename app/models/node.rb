@@ -286,12 +286,12 @@ class Node < ActiveRecord::Base
 
 
   def last_child
-    children.order('rank desc').first
+    children.where('successor_id is null').first
   end
 
 
   def first_child
-    children.order('rank asc').first
+    children.where('predecessor_id is null').first
   end
 end
 
