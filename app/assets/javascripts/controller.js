@@ -224,16 +224,16 @@ Determine whether helperUiNode was dropped on top of another node,
    originalNode: is that original node that was clicked on by the user to initiate the drag event.
  */
 Controller.prototype.adviseDragStop = function (event, helperUiNode, originalNode) {
-  var target;
-  var source = {id: originalNode.node.id}
+  var referenceNode;
+  var nodeToAddSpec = {id: originalNode.node.id}
 
-  // There's a drop target: add originalNode as a child
-  if (target = this.dropTarget) {
-    this.addChild(target, source);
+  // There's drop target: add originalNode as a child
+  if (referenceNode = this.dropTarget) {
+    this.addChild(referenceNode, nodeToAddSpec);
 
   // There's a node above us: add originalNode as a successor
-  } else if (target = App.uiTree.findLowestNodeAbove(helperUiNode.position.top)) {
-    this.addSuccessor(target, source);
+  } else if (referenceNode = App.uiTree.findLowestNodeAbove(helperUiNode.position.top)) {
+    this.addSuccessor(referenceNode, nodeToAddSpec);
   }
 }
 

@@ -127,7 +127,6 @@ status: created the 3 primitives. Next up: look at insertion functionality.
 Use 3 primitives in each case: addChild(), addSuccessor(), addPredecessor(). Possibly separate out
 creation from insertion. Unify insertion operation on both sides, using same terminology. Don't use the
 name glom(), use insert().
-
  */
 
 $(document).ready(function(){
