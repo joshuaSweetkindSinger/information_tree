@@ -416,20 +416,21 @@ ViewNode.prototype.calcAutoSize = function() {
   var maxWidth = 1000.0
   var charWidth  = 6.5
   var charHeight = 20.0
-  var scrollBarWidth = 20;
+  var scrollBarWidth = 10;
+  var scrollBarHeight = 6; // This isn't really the height of the scrollbar. It's the extra height we need to add to make the scroll bar not appear!
   var width = 0.0
   var height = 0.0
   var widthInChars = 0.0;
   var heightInChars= 0.0;
   if (n < 60) {
-    widthInChars  = n;
+    widthInChars  = Math.max(n, 4); // for n <=3, the calc yields a box that is too small, so do all small calcs based on n = 4.
     heightInChars = 1;
   } else {
     widthInChars  = Math.min(maxWidth, Math.sqrt(3 * n  * charHeight / charWidth))
     heightInChars = n / widthInChars;
   }
   width  = widthInChars * charWidth + scrollBarWidth;
-  height = heightInChars * charHeight;
+  height = heightInChars * charHeight + scrollBarHeight;
 
   return {width:width, height:height}
 }
