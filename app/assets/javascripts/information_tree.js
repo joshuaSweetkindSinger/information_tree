@@ -1,33 +1,54 @@
 //= require app
 
 /*
-This file defines client-side functionality for the information-tree sub-app.
-TODO: Obsolete documentation. Update this.
-This defines dom tag classes for the node hierarchy of an information tree.
-The structure is as follows:
-TextTree: a single node of this type is put in a static html file, which initiates the dynamic
-          creation of a text tree when the html file is loaded into the browser, via its custom tag constructor.
-          A text tree is made up of TextNodes.
-TextNode: has two child elements, called ViewNodeHeader and ViewNodeChildren.
-ViewNodeHeader: represents content for the node.
-ViewNodeChildren: represents a container for sub-nodes. Its only children are of type TextNode.
+This is the toplevel javascript file for client-side tree manipulation.
 
-Text Nodes are stored in the db in the nodes table. When the client-side expands a node, it asks the db for its children,
+High-level description of architecture:
+ Main Components:
+ Controller: handles all client-side UI interactions
+ Server: client side object that mediates interactions with the server.
+ Tree: client-side object only: represents the entire tree.
+ UiNode: Ui-aware class, dom element representing a node in the tree.
+ Node: non-viewable, non-dom-element, core node functionality and relationships.
+
+ Top layer is the UI. It orchestrates all user-initiated action. It handles all events. It introduces
+ ui concepts like cut/paste, the clipboard, the trash, etc. Any data-entry or modification of the
+ tree must be mediated by the ui. The ui consists of a controller and UiNode objects,
+ the latter of which are dom elements representing the nodes in the tree. These UiNode objects
+ are wrappers on underlying Node objects that are *not* dom elements.
+ These client-side Node objects represent the fundamental objects
+ that are the nodes of the tree, their relationships to each other, and the tree object itself.
+ These objects, in turn, are backed by server-side cognates.
+
+ The UI gets its job done as follows. User actions are intercepted by event handlers on UiNode dom
+ elements. These dom elements are formally part of the ui layer. Each dom element will handle the event
+ by passing it to the ui controller, which will coordinate all actions.
+ The majority of user-actions entail modification of a node. This achieved by sending a message to the associated
+ client-side node object, which is NOT part of the UI. This is the middle layer, which is the client
+ side model. These client-side objects, in turn, get their job done by making api calls to the server
+ to effect changes on the server side. They also handle responses from the server to update their
+ state, which they forward to their ui representations, so that the ui can render the state
+ change appropriately.
+ UI <--> client-side model <--> server-side api
+
+
+The dom elements comprising the information tree are as follows:
+information-tree: a single node of this type is put in a static html file, which initiates the dynamic
+          creation of a UiTree object when the html file is loaded into the browser, via its custom tag constructor.
+          An information tree is made up of UiNodes.
+UiNode: A dynamically instantiated dom-element that represents a node in the information tree.
+
+On the server side, nodes are stored in the db in the nodes table. When the client-side expands a node, it asks the db for its children,
 which get sent as json, and then the client builds the nodes on the browser.
 
 New nodes are created by sending an async request to the server to create the new node.
 
 Some terminology, and discussion of the relationship between server and client:
-The server is the place where nodes get created. The client requests that the server create a node
-by sending it a nodeSpec to the proper endpoint. The server responds with a nodeRep. Both of these
+The server is the place where nodes get created and manipulated. The client requests that the server create a node
+by sending it a nodeSpec or a nodeRef to the proper endpoint. The server responds with a nodeRep. Both of these
 are identical-looking json objects. The name nodeSpec indicates a request to create an object with
-certain properties. The name nodeRep indicates that a representation of the now-existing object
-has been sent back to the client.
-
-TOPLEVEL OBJECTS:
-Controller: Controls all UI interactions.
-UiTree:   Client-side representation of the information tree.
-Server:     Mediate all api calls to the server.
+certain properties. The name nodeRef indicates a request to manipulate an existing object.
+The name nodeRep indicates that a representation of the now-existing object has been sent back to the client.
 */
 
 /*
@@ -56,32 +77,7 @@ Server:     Mediate all api calls to the server.
  This presupposes we're not always in edit mode.
  TODO: implement cut/copy/paste, and put cut nodes in "the basket".
  TODO: Refactor for layers:
- Top layer is the UI. It orchestrates all user-initiated action. It handles all events. It introduces
- ui concepts like cut/paste, the clipboard, the trash, etc. Any data-entry or modification of the
- tree must be mediated by the ui. The ui consists of a controller and dom elements. The dom elements
- represent the tree and ui-related decorations such as pop up menus. The tree and its nodes
- are represented by dom elements, but these dom elements are wrappers on underlying client-side
- object that are *not* dom elements. These client-side objects represent the fundamental objects
- that are the nodes of the tree, their relationships to each other, and the tree object itself.
- These objects, in turn, are backed by server-side cognates.
 
- The UI gets its job done as follows. User actions are intercepted by event handlers on dom
- elements. These dom elements are formally part of the ui layer. Each dom element will most
- likely handle the event by passing it to the ui controller, which will coordinate all actions,
- but some events might be handled directly by the dom element. The majority of
- user-actions entail modification of a node. This achieved by sending a message to the associated
- client-side node object, which is NOT part of the UI. This is the middle layer, which is the client
- side model. These client-side objects, in turn, get their job done by making api calls to the server
- to effect changes on the server side. They also handle responses from the server to update their
- state, which they forward to their ui representations, so that the ui can render the state
- change appropriately.
- UI <--> client-side model <--> server-side api
-
- Main Components:
- Controller: handles all client-side UI interactions
- Server: client side object that mediates interactions with the server.
- Tree: represents the entire tree.
- Node: Represents a single node in the tree.
 
  TODO: Hide classes and functions within a package.
  TODO: consider creating a single View class, with subclasses representing the different view classes.
@@ -123,10 +119,19 @@ links are updated when nodes are moved around in the dom tree.
 
 
 TODO: Unify handling of add() functionality on server and client sides, using parallel construction.
-Use 3 primitives in each case: addChild(), addSuccessor(), addPredecessor(). Possibly separate out
+Use 3 primitives in each case: insertChild(), insertSuccessor(), insertPredecessor(). Possibly separate out
 creation from insertion. Unify insertion operation on both sides, using same terminology. Don't use the
 name glom(), use insert().
+status: in the middle of separating insertion from creation. On server side, this is already separated, because insertion
+presumes an already created node. On the client side, go to Node class first and separate out insertion from creation, then
+work your way up the food chain to the UiNode.
 status: created the 3 primitives. Next up: look at insertion functionality.
+TODO: make sure the path of new creation works.
+TODO: Look at UiTree.addUiNode(). Separate for insert and create?
+TODO: look for callers of findOrCreateNode
+TODO: redocument _glom().
+TODO: find all nodes with null parents and delete them (except trash and top)
+
  */
 
 $(document).ready(function(){

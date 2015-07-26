@@ -11,6 +11,11 @@ class Node < ActiveRecord::Base
   BULLET_TYPE_ID    =  1 # type_id of this value indicates a bullet item.
   PARAGRAPH_TYPE_ID =  2 # type_id of this value indicates a paragraph item.
 
+  # Default node spec for creation of new nodes.
+  DEFAULT_SPEC = {content:'',
+                  width:500,
+                  height:100}
+
   attr_accessible :content, :parent_id, :rank, :type_id, :predecessor_id, :successor_id, :width, :height
   belongs_to :parent, class_name: 'Node'
   belongs_to :predecessor, class_name: 'Node'
@@ -248,7 +253,7 @@ class Node < ActiveRecord::Base
   # will be detached and re-hooked-up to fit with its new position.
   # node is added onto the beginning of self's set of children, unless last
   # is true, in which case it is added onto the end.
-  def add_child (node, last = false)
+  def insert_child (node, last = false)
     insert(node, SplicePositionChild.new(self, last))
   end
 
@@ -256,7 +261,7 @@ class Node < ActiveRecord::Base
   # Add node to the node hierarchy to be the successor
   # of self. If node is already in the hierarchy, then its existing parent- and sibling-links
   # will be detached and re-hooked-up to fit with its new position.
-  def add_successor (node)
+  def insert_successor (node)
     insert(node, SplicePositionPredecessor.new(self))
   end
 
@@ -264,7 +269,7 @@ class Node < ActiveRecord::Base
   # Add node to the node hierarchy to be the predecessor
   # of self. If node is already in the hierarchy, then its existing parent- and sibling-links
   # will be detached and re-hooked-up to fit with its new position.
-  def add_predecessor (node)
+  def insert_predecessor (node)
     insert(node, SplicePositionSuccessor.new(self))
   end
 
@@ -272,7 +277,7 @@ class Node < ActiveRecord::Base
   # Remove self and children from the node hierarchy, patching up predecessor/successor links.
   # This moves the node and its children to the "trash" node. It doesn't really delete them.
   def trash
-    Trash.trash.add_child(self)
+    Trash.trash.insert_child(self)
   end
 
 

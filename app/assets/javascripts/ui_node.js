@@ -10,6 +10,9 @@
 // =========================================================================
 var UiNode = defCustomTag('ui-node', ViewNode);
 
+ViewNode.uiClass = UiNode; // The class to instantiate.
+
+
 // ======= Construction and Initialization
 /*
  Create a UiNode object from a Node object. The UiNode object is a wrapper for the Node

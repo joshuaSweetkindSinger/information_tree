@@ -7,12 +7,40 @@
 This file defines the NodeView class.
 
 A NodeView is a client-side dom element that represents a single node in the information tree.
-*/
 
+This class cannot be directly instantiated, because it doesn't know anything about the UI. Instead,
+it knows about all operations that can be performed on nodes and how to execute those operations on the client side.
+But it doesn't know which mouse clicks or keyboard clicks invoke those actions.
+
+To add knowledge about the ui, this class has a subclass called UiNode.
+
+Structure:
+ A ViewNode has two child elements, called ViewNodeHeader and ViewNodeChildren.
+ ViewNodeHeader: represents content for the node.
+ ViewNodeChildren: represents a container for sub-nodes. The container only contains dom elements instantiated
+                   from class UiNode.
+
+*/
 // =========================================================================
 //                   View Node
 // =========================================================================
 var ViewNode = defCustomTag('node-view', HTMLElement);
+
+/*
+ Create a new server-side node with attributes as specified in nodeSpec, or
+ with default attributes if nodeSpec is not supplied. The new node will have
+ no parents (it is in "limbo" until it is added to the tree).
+ This method returns a request object for asynchronous continuation to process the node representation
+ returned by the server (a hash object).
+
+ NOTE: ViewNode is not an instantiable class. However, node creation is part of what this class
+ knows about. So what it instantiates is this.uiClass, whose value must be set by the instantiable subclass
+ of ViewNode at page load time.
+ */
+ViewNode.createNode = function (nodeSpec) {
+  var self = this;
+  return Node.createNode(nodeSpec).success(function(node) {return new self.uiClass(node)})
+}
 
 
 // ======= Construction and Initialization
@@ -163,14 +191,14 @@ ViewNode.prototype._glom = function() {
 };
 
 
-ViewNode.prototype._attachSuccessor = function(successorView) {
-  $(this).after(successorView);
+ViewNode.prototype._attachSuccessor = function(viewSuccessor) {
+  $(this).after(viewSuccessor);
   return this;
 };
 
 
-ViewNode.prototype._attachPredecessor = function(predecessorView) {
-  $(this).before(predecessorView);
+ViewNode.prototype._attachPredecessor = function(viewPredecessor) {
+  $(this).before(viewPredecessor);
   return this;
 };
 
@@ -178,8 +206,8 @@ ViewNode.prototype._attachPredecessor = function(predecessorView) {
 /*
  NOTE: This method will only be called by glom() if the parent has no children yet.
  */
-ViewNode.prototype._attachChild = function(childView) {
-  $(this._childrenContainer).append(childView);
+ViewNode.prototype._attachChild = function(viewChild) {
+  $(this._childrenContainer).append(viewChild);
   return this;
 };
 
@@ -214,51 +242,29 @@ ViewNode.prototype.kids = function() {
   return $(this._childrenContainer).children().get();
 }
 
-// =========================== Add Node
-// TODO: Rethink all the taxonomy operations. Probably they should trickle like so:
-// UI initiates based on browser event: asks model to change its taxonomy status, and, when
-// done, asks view to update itself. We have to make an architectural decision about whether
-// view wraps model, or vice versa, or neither. Is the view responsible and delegates parts to the model?
-// That's the easiest to implement, based on prior architecture. Or is the model responsible, receiving
-// requests directly from the controller, and it then updates the view? Or do the model and view just handle
-// their own parts, and we leave it to the controller to be the glue that keeps them in correspondence? This
-// latter is more in keeping with standard mvc.
+// =========================== Insert Node
+
 /*
- Ask the server to alter the existing tree by moving a child or sibling node, specified by <nodeSpec>,
- to the node represented by <this> ViewNode, creating the new node if necessary. After the server
+ Ask the server to alter the existing tree by inserting a child or sibling node, specified by nodeToInsert,
+ relative to the reference node represented by <this> ViewNode. After the server
  responds with a success code, effect the same changes on the client-side.
 
- If nodeSpec is null, create a new default node.
-
- If nodeSpec is non-null and fully spec'd,
- but without an id, create a new node as specified.
-
- If nodeSpec is non-null, but just contains an id, use the existing node
- with that id for the add operation and move it to the new location (child or sibling)
- relative to <this>.
 
  mode determines how node is moved relative to <this>, as either a child, successor, or predecessor
  of the node represented by <this>. mode should be a string
- that names one of this.node's add methods: 'addChild', 'addSuccessor', 'addPredecessor'
+ that names one of this.node's add methods: 'insertChild', 'insertSuccessor', 'insertPredecessor'
 
  The return value is a request object that captures the asynchronous computation.
+*/
 
- NOTES: nodeSpec is a hash that specifies a new node, or names an existing one, but it is *not* a node object.
- node is a client-side node object.
-
- NOTE: this method does NOT directly create a new ViewNode. It can't, because ViewNode is not a toplevel class.
- We need to create a wrapper class, of which this class has no knowledge. So, instead, it contacts the uiTree
- object, which is a UI-level object, and asks the uiTree to create a ui-level node of the proper class.
- */
-
-ViewNode.prototype._add = function(nodeSpec, mode) {
-  if (this._isInvalidAddRequest(nodeSpec, mode)) {
+ViewNode.prototype._insert = function(viewNode, mode) {
+  if (this._isInvalidAddRequest(viewNode, mode)) {
     return new PseudoRequest({error:'self-loop request'}, false); // Return a failed request if we are requesting to add ourselves to ourselves.
   }
 
-  return this.node[mode](nodeSpec)
+  return this.node[mode](viewNode.node)
     .success(function(node) {
-        return App.uiTree.addUiNode(node);
+      return viewNode._glom();
     })
 };
 
@@ -268,51 +274,89 @@ Return true if the requested add operation is invalid.
 The operation is invalid if nodeSpec is a reference to <this>, in which
 case we would be adding ourselves to ourselves.
  */
-ViewNode.prototype._isInvalidAddRequest = function (nodeSpec, mode) {
-  return nodeSpec && (nodeSpec.id == this.node.id);
+ViewNode.prototype._isInvalidAddRequest = function (viewNode, mode) {
+  return viewNode.node.id == this.node.id;
 }
 
 
 /*
- Create a new node on the server or insert an existing one, in either case making the
+ Insert an existing node in a new location on the server, making the
  node represented by this node be its parent. Then effect the same transformation
  on the client side.
  */
-ViewNode.prototype.addChild = function(nodeSpec) {
-  // null node means we're creating a new node as opposed to moving an existing one.
-  // Make sure we are expanded so that the new child node can be seen.
-  if (!nodeSpec) this.expand();
-
-  return this._add(nodeSpec, 'addChild');
+ViewNode.prototype.insertChild = function(viewNode) {
+  return this._insert(viewNode, 'insertChild');
 }
 
 
 /*
- Create a new node on the server or insert an existing one, in either case making the
+ Insert an existing node in a new location, making the
  node represented by this node be its predecessor. Then effect the same transformation
  on the client side.
  */
-ViewNode.prototype.addSuccessor = function(nodeSpec) {
+ViewNode.prototype.insertSuccessor = function(viewNode) {
   this.parent().expand(); // Make sure that our parent is expanded so that the new node can be seen.
-  return this._add(nodeSpec, 'addSuccessor');
+  return this._insert(viewNode, 'insertSuccessor');
 }
 
 
 /*
- Create a new node on the server or insert an existing one, in either case making the
+ Insert an existing node in a new location, making the
  node represented by this node be its successor. Then effect the same transformation
  on the client side.
  */
-ViewNode.prototype.addPredecessor = function(nodeSpec) {
+ViewNode.prototype.insertPredecessor = function(viewNode) {
   this.parent().expand(); // Make sure that our parent is expanded so that the new node can be seen.
-  return this._add(nodeSpec, 'addPredecessor');
+  return this._insert(viewNode, 'insertPredecessor');
+}
+
+/*
+ Create a new node on the server to be the child of the node represented by <this>,
+ with attributes as specified in nodeSpec.  Use default attributes if nodeSpec is not supplied.
+ Then effect the same transformation on the client side.
+ */
+ViewNode.prototype.createChild = function(nodeSpec) {
+  var self = this;
+  return ViewNode.createNode(nodeSpec)
+    .success(function (uiNode) {
+      self.insertChild(uiNode);
+    })
 }
 
 
+/*
+ Create a new node on the server to be the successor of the node represented by <this>,
+ with attributes as specified in nodeSpec.  Use default attributes if nodeSpec is not supplied.
+ Then effect the same transformation on the client side.
+ */
+ViewNode.prototype.createSuccessor = function(nodeSpec) {
+  this.parent().expand(); // Make sure that our parent is expanded so that the new node can be seen.
+
+  var self = this;
+  return ViewNode.createNode(nodeSpec)
+    .success(function (uiNode) {
+      self.insertSuccessor(uiNode);
+    })
+}
+
+/*
+ Create a new node on the server to be the predecessor of the node represented by <this>,
+ with attributes as specified in nodeSpec.  Use default attributes if nodeSpec is not supplied.
+ Then effect the same transformation on the client side.
+ */
+ViewNode.prototype.createPredecessor = function(nodeSpec) {
+  this.parent().expand(); // Make sure that our parent is expanded so that the new node can be seen.
+
+  var self = this;
+  return ViewNode.createNode(nodeSpec)
+    .success(function (uiNode) {
+      self.insertPredecessor(uiNode);
+    })
+}
 // ========================== Paste
 // Paste node onto ourselves. This means adding it as a child.
 ViewNode.prototype.paste = function(node) {
-  return this.addChild({id: node.id});
+  return this.insertChild({id: node.id});
 };
 
 // =========================== Trash

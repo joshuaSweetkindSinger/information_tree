@@ -100,7 +100,7 @@ UiTree.prototype.find = function(id) {
  with the other information contained in node, and return it.
 
  If no such UiNode yet exists in the dom, create one based on node, which is an instance
- of class Node, and return the new UiNode after glomming it to the information tree in its proper position.
+ of class Node, and return the new UiNode.
 
  Note that the newly created UiNode is unglommed; that is, it is
  unattached to the information tree.

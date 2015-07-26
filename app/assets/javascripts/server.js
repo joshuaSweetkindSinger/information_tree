@@ -15,47 +15,61 @@ Server.prototype.topNodePath = function() {
 }
 
 /*
- The three methods below create a new node on the server, or insert an existing one at a new location.
- Attach it to the text node tree at a position relative to the baseNode
+Create a new node on the server with attributes specified in nodeSpec,
+or with default attributes if nodeSpec is not supplied.
+
+Returns a JsonRequest object for asynchronous continuation to handle the
+returned node representation from the server.
+ */
+Server.prototype.createNode = function(nodeSpec) {
+  return new JsonRequest("POST", this.createNodePath(), nodeSpec ? {node: nodeSpec} : {});
+};
+
+Server.prototype.createNodePath = function() {
+  return '/nodes.json'
+}
+
+/*
+ The three methods below insert an existing node on the server at a new location.
+ Attach it to the text node tree at a position relative to the referenceNode
  as indicated by the method name.
 
  Inputs:
- baseId:   The id of an existing node that determines the point in the tree relative to which node will be added.
- nodeSpec: if creating a new node, this should be an object that specs out the desired new node.
-           If adding an existing node, then this should just be an object with an id whose
-           value is the id of the existing node.
+ referenceNode: The existing node that determines the point in the tree relative to which nodeToInsert will be added.
+ nodeToInsert: This should just be a node object with an id whose value is the id of the existing node to insert.
+               All other attributes of the node will be ignored.
  */
 
-Server.prototype.addChild = function(baseId, nodeSpec) {
-  return new JsonRequest("POST", this.addChildPath(baseId), {node: nodeSpec});
+Server.prototype.insertChild = function(referenceNode, nodeToInsert) {
+  return new JsonRequest("POST", this.addChildPath(referenceNode), {node: {id: nodeToInsert.id}});
 };
 
-Server.prototype.addChildPath = function(id) {
-  return '/nodes/' + id + '/add_child.json'
+Server.prototype.addChildPath = function(referenceNode) {
+  return '/nodes/' + referenceNode.id + '/insert_child.json'
 }
 
-Server.prototype.addSuccessor = function(baseId, nodeSpec) {
-  return new JsonRequest("POST", this.addSuccessorPath(baseId), {node: nodeSpec});
+Server.prototype.insertSuccessor = function(referenceNode, nodeToInsert) {
+  return new JsonRequest("POST", this.addSuccessorPath(referenceNode), {node: {id: nodeToInsert.id}});
 };
 
-Server.prototype.addSuccessorPath = function(id) {
-  return '/nodes/' + id + '/add_successor.json'
+Server.prototype.addSuccessorPath = function(referenceNode) {
+  return '/nodes/' + referenceNode.id + '/insert_successor.json'
 }
 
-Server.prototype.addPredecessorPath = function(baseId, nodeSpec) {
-  return new JsonRequest("POST", this.addPredecessorPath(baseId), {node: nodeSpec});
+Server.prototype.addPredecessorPath = function(referenceNode, nodeToInsert) {
+  return new JsonRequest("POST", this.addPredecessorPath(referenceNode), {node: {id: nodeToInsert.id}});
 };
 
-Server.prototype.addPredecessorPath = function(id) {
-  return '/nodes/' + id + '/add_predecessor.json'
+Server.prototype.addPredecessorPath = function(referenceNode) {
+  return '/nodes/' + referenceNode.id + '/insert_predecessor.json'
 }
 
-Server.prototype.trash = function (id) {
-  return new Request("DELETE", this.trashPath(id))
+Server.prototype.trash = function (node) {
+  return new Request("DELETE", this.trashPath(node))
 }
 
-Server.prototype.trashPath = function(id) {
-  return '/nodes/' + id + '/trash.json'
+Server.prototype.trashPath = function(node) {
+  return '/nodes/' + node.id + '/trash.json'
 }
 
 /*

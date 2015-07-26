@@ -100,43 +100,63 @@ Controller.prototype.followLink = function (uiNode) {
 }
 
 /*
- Make the node referenced by childSpec be a child of parentUiNode, creating the child if necessary.
- childSpec can either be an object with an id key referencing an existing node, or null.
- If null, a new UiNode will be created. If a new node will be created, then we move focus to the new node
- after it is added.
+ Make uiNodeToInsert be a child of uiReferenceNode.
  */
-Controller.prototype.addChild = function (parentUiNode, childSpec) {
+Controller.prototype.insertChild = function (uiReferenceNode, uiNodeToInsert) {
+  return uiReferenceNode.insertChild(uiNodeToInsert)
+}
+
+
+/*
+ Make uiNodeToInsert be a successor of uiReferenceNode.
+ */
+Controller.prototype.insertSuccessor = function (uiReferenceNode, uiNodeToInsert) {
+  return uiReferenceNode.insertSuccessor(uiNodeToInsert)
+}
+
+
+/*
+ Make uiNodeToInsert be a predecessor of uiReferenceNode.
+ */
+Controller.prototype.insertPredecessor = function (uiReferenceNode, uiNodeToInsert) {
+  return uiReferenceNode.insertPredecessor(uiNodeToInsert)
+}
+
+
+/*
+ Create a new uiNode and attach it to the tree as determined by mode, one of: createChild,
+ createSuccessor, createPredecessor.
+ */
+Controller.prototype.createNode = function (uiNode, mode) {
   var self = this;
-  return (parentUiNode || self.selectedNode)
-    .addChild(childSpec)
-    .success(function(uiNode) {
-      if (!childSpec) self.restoreFocus(uiNode);
+  return (uiNode || this.selectedNode)[mode]()
+    .success(function(uiNewNode) {
+      self.restoreFocus(uiNewNode);
     })
 }
 
-// successorSpec can either be an object with an id key referencing an existing node or null.
-// Add successorSpec as the successor of predecessor. If successorSpec is null, create a new node
-// and set the focus to it.
-Controller.prototype.addSuccessor = function (predecessorUiNode, successorSpec) {
-  var self = this;
-  return (predecessorUiNode || self.selectedNode)
-    .addSuccessor(successorSpec)
-    .success(function(uiNode) {
-      if (!successorSpec) self.restoreFocus(uiNode)
-    })
+/*
+ Create a new child of uiNode
+ */
+Controller.prototype.createChild = function (uiNode) {
+  return this.createNode(uiNode, 'createChild');
 }
 
-// predecessorSpec can either be an object with an id key referencing an existing node or null.
-// Add predecessorSpec as the predecessor of successor. If predecessorSpec is null, create a new node
-// and set the focus to it.
-Controller.prototype.addPredecessor = function (successorUiNode, predecessorSpec) {
-  var self = this;
-  return (successorUiNode || self.selectedNode)
-    .addPredecessor(predecessorSpec)
-    .success(function(uiNode) {
-      if (!predecessorSpec) self.restoreFocus(uiNode)
-    })
+
+/*
+ Create a new successor of uiNode
+ */
+Controller.prototype.createSuccessor = function (uiNode) {
+  return this.createNode(uiNode, 'createSuccessor');
 }
+
+/*
+ Create a new predecessor of uiNode
+ */
+Controller.prototype.createPredecessor = function (uiNode) {
+  return this.createNode(uiNode, 'createPredecessor');
+}
+
 
 // Restore the focus to the specified viewNode, which somehow gets lost on new node creation.
 // Hack! For some reason, sometimes, a sequence of blur events occurs that undoes
@@ -214,7 +234,7 @@ Controller.prototype.adviseDragStart = function (uiNode) {
 /*
 Advise the controller that a drag event just ended.
 Determine whether helperUiNode was dropped on top of another node,
- or let go beneath a node, and do either an addChild() or an addSuccessor() accordingly on
+ or let go beneath a node, and do either an insertChild() or an insertSuccessor() accordingly on
  originalNode.
 
  Inputs:
@@ -223,17 +243,16 @@ Determine whether helperUiNode was dropped on top of another node,
                  while the user is dragging it, without dragging the actual, original node that was clicked on.
    originalNode: is that original node that was clicked on by the user to initiate the drag event.
  */
-Controller.prototype.adviseDragStop = function (event, helperUiNode, originalNode) {
-  var referenceNode;
-  var nodeToAddSpec = {id: originalNode.node.id}
+Controller.prototype.adviseDragStop = function (event, helperUiNode, originalUiNode) {
+  var uiReferenceNode;
 
-  // There's drop target: add originalNode as a child
-  if (referenceNode = this.dropTarget) {
-    this.addChild(referenceNode, nodeToAddSpec);
+  // There's a drop target: add originalNode as a child
+  if (uiReferenceNode = this.dropTarget) {
+    this.insertChild(uiReferenceNode, originalUiNode);
 
   // There's a node above us: add originalNode as a successor
-  } else if (referenceNode = App.uiTree.findLowestNodeAbove(helperUiNode.position.top)) {
-    this.addSuccessor(referenceNode, nodeToAddSpec);
+  } else if (uiReferenceNode = App.uiTree.findLowestNodeAbove(helperUiNode.position.top)) {
+    this.insertSuccessor(uiReferenceNode, originalUiNode);
   }
 }
 
@@ -252,12 +271,12 @@ Controller.prototype.keyPressedOnNode = function (uiNode, event) {
   // carriage return -- create new successor node of uiNode
   if (event.charCode == 13 && !event.altKey && !event.shiftKey && !event.ctrlKey) {
     event.preventDefault();
-    this.addSuccessor(uiNode);
+    this.createSuccessor(uiNode);
 
   // shift-return -- create new child node of uiNode
   } else if (event.charCode == 13 && !event.altKey && event.shiftKey && !event.ctrlKey) {
     event.preventDefault();
-    this.addChild(uiNode);
+    this.createChild(uiNode);
 
     // control-c -- copy uiNode
   } else if (event.charCode == 'c'.charCodeAt(0) && !event.altKey && !event.shiftKey && event.ctrlKey) {

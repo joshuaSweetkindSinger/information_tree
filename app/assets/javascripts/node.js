@@ -4,7 +4,9 @@
   For that, see NodeView.
 */
 
-
+/*
+Node constructor: create a client-side node object from a node representation (a hash object).
+ */
 var Node = function (nodeRep) {
   this._children       = [];
   this.childrenFetched = false // True when we have received child node information from the server. See fetch_and_expand()
@@ -18,6 +20,19 @@ Node.defaultSpec = {
   content:'',
   width:500,
   height:100
+}
+
+/*
+Create a new server-side node with attributes as specified in nodeSpec, or
+with default attributes if nodeSpec is not supplied, then effect the same changes
+on the client side, creating a new client-side Node object. The new node, on both server and client,
+will have no parents (it is in "limbo" until it is added to the tree).
+This method returns a request object for asynchronous continuation to further process the client-side
+Node object.
+ */
+Node.createNode = function (nodeSpec) {
+  return App.server.createNode(nodeSpec || Node.defaultSpec)
+    .success(function(nodeRep) {return new Node(nodeRep)})
 }
 
 /*
@@ -59,54 +74,40 @@ Node.prototype.view = function (obj) {
 
 
 /*
- Ask the server to add a child or sibling node, specified by <nodeSpec>,
- to the node represented by <this> node. After the server
- responds with a success code, effect the same changes on the client-side.
+ Ask the server to insert a child or sibling node, specified by the node object nodeToInsert,
+ to the reference node represented by <this> node. After the server
+ responds with a success code and node rep, effect the same changes on the client-side.
 
- If nodeSpec is null, create a new default node.
 
- If nodeSpec is non-null and fully spec'd,
- but without an id, create a new node as specified.
-
- If nodeSpec is non-null, but just contains an id, use the existing node
+ nodeToInsert must contain an id, and the server will use the existing node
  with that id for the add operation and move it to the new location (child or sibling)
- relative to <this>.
+ relative to <this>. None of the attributes of the client-side node are used by the server.
 
  mode determines how node is moved relative to <this>, as either a child, successor, or predecessor
  of the node represented by <this>. mode should be a string,
- that names one of App.server's add methods: 'addChild', 'addSuccessor', 'addPredecessor'
-
- callback is a function that gets executed after the node has been returned from the server, and only if the
- request was successful.
-
- NOTES: nodeSpec is a hash that specifies a new node, or names an existing one, but it is *not* a node object.
- nodeRep is a hash that represents a node on the server side. It contains complete info, but it is not
- a client-side node object.
- node is a client-side node object.
+ that names one of App.server's add methods: 'insertChild', 'insertSuccessor', 'insertPredecessor'
  */
-Node.prototype.add = function (nodeSpec, mode) {
-  if (!nodeSpec) nodeSpec = Node.defaultSpec;
-
+Node.prototype.insert = function (nodeToInsert, mode) {
   var self = this;
-  return App.server[mode](this.id, nodeSpec)
+  return App.server[mode](this, nodeToInsert)
     .success(function(nodeRep) {
-      return new Node(nodeRep)
+      return nodeToInsert.update(nodeRep)
     })
     .failure(function(error) {
-      console.log("Got an error attempting to add a node on server. parent = ", self, "; spec = ", nodeSpec, "; mode = ", mode, "; error = ", error);
+      console.log("Got an error attempting to add a node on server. reference node = ", self, "; spec = ", nodeToInsert, "; mode = ", mode, "; error = ", error);
     })
 }
 
-Node.prototype.addChild = function (nodeSpec) {
-  return this.add(nodeSpec, 'addChild')
+Node.prototype.insertChild = function (nodeToInsert) {
+  return this.insert(nodeToInsert, 'insertChild')
 }
 
-Node.prototype.addSuccessor = function (nodeSpec) {
-  return this.add(nodeSpec, 'addSuccessor')
+Node.prototype.insertSuccessor = function (nodeToInsert) {
+  return this.insert(nodeToInsert, 'insertSuccessor')
 }
 
-Node.prototype.addPredecessor = function (nodeSpec) {
-  return this.add(nodeSpec, 'addPredecessor')
+Node.prototype.insertPredecessor = function (nodeToInsert) {
+  return this.insert(nodeToInsert, 'insertPredecessor')
 }
 
 
@@ -116,7 +117,7 @@ Node.prototype.reportError = function() {
 
 
 Node.prototype.trash = function() {
-  return App.server.trash(this.id)
+  return App.server.trash(this)
 }
 
 // TODO: Refactor so this just always return its children.

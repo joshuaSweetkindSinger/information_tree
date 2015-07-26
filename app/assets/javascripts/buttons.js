@@ -221,40 +221,40 @@ ExpandCollapseRecursive.prototype.onClick = function (event) {
 
 
 // =========================================================================
-//                   Add Child Button
+//                   Create Child Button
 // =========================================================================
-var AddChild = defCustomTag('add-child', ButtonPanelButton)
+var AddChild = defCustomTag('create-child', ButtonPanelButton)
 
 AddChild.prototype.afterCreate = function() {
   ButtonPanelButton.prototype.afterCreate.call(this, '+Child')
 }
 
 AddChild.prototype.onClick = function (event) {
-  App.controller.addChild()
+  App.controller.createChild()
 }
 
 // =========================================================================
-//                   Add Successor Button
+//                   Create Successor Button
 // =========================================================================
-var AddSuccessor = defCustomTag('add-successor', ButtonPanelButton)
+var AddSuccessor = defCustomTag('create-successor', ButtonPanelButton)
 AddSuccessor.prototype.afterCreate = function() {
   ButtonPanelButton.prototype.afterCreate.call(this, '+Successor')
 }
 
 AddSuccessor.prototype.onClick = function (event) {
-  App.controller.addSuccessor()
+  App.controller.createSuccessor()
 }
 
 // =========================================================================
-//                   Add Predecessor Button
+//                   Create Predecessor Button
 // =========================================================================
-var AddPredecessor = defCustomTag('add-predecessor', ButtonPanelButton)
+var AddPredecessor = defCustomTag('create-predecessor', ButtonPanelButton)
 AddPredecessor.prototype.afterCreate = function() {
   ButtonPanelButton.prototype.afterCreate.call(this, '+Predecessor')
 }
 
 AddPredecessor.prototype.onClick = function (event) {
-  App.controller.addPredecessor()
+  App.controller.createPredecessor()
 }
 
 // =========================================================================
