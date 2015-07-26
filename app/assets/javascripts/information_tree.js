@@ -123,10 +123,10 @@ links are updated when nodes are moved around in the dom tree.
 
 
 TODO: Unify handling of add() functionality on server and client sides, using parallel construction.
-status: created the 3 primitives. Next up: look at insertion functionality.
 Use 3 primitives in each case: addChild(), addSuccessor(), addPredecessor(). Possibly separate out
 creation from insertion. Unify insertion operation on both sides, using same terminology. Don't use the
 name glom(), use insert().
+status: created the 3 primitives. Next up: look at insertion functionality.
  */
 
 $(document).ready(function(){
