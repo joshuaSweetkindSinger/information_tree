@@ -79,26 +79,6 @@ ButtonPanel.prototype.onClick = function() {
   $(this).hide()
 }
 
-
-// =========================================================================
-//                   Expand / Collapse Button
-// =========================================================================
-var ExpandCollapse = defCustomTag('expand-collapse', HTMLElement)
-
-ExpandCollapse.prototype.afterCreate = function(nodeView) {
-  this.viewNode = nodeView
-
-  $(this).html('>');
-
-  $(this).click(function(event) {this.toggle(event)})
-}
-
-
-ExpandCollapse.prototype.toggle = function() {
-  $(this).html(this.viewNode.state === 'expanded' ? '>' : 'v')
-  App.controller.toggleNodeExpandCollapse(this.viewNode);
-}
-
 // =========================================================================
 //                   Button Panel Button
 // =========================================================================

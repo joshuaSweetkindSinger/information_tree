@@ -36,10 +36,12 @@ var ViewNode = defCustomTag('node-view', HTMLElement);
  NOTE: ViewNode is not an instantiable class. However, node creation is part of what this class
  knows about. So what it instantiates is this.uiClass, whose value must be set by the instantiable subclass
  of ViewNode at page load time.
+
+ NOTE: We create new nodes in expanded status, because we know, by definition, that they have no children yet.
  */
 ViewNode.createNode = function (nodeSpec) {
   var self = this;
-  return Node.createNode(nodeSpec).success(function(node) {return new self.uiClass(node)})
+  return Node.createNode(nodeSpec).success(function(node) {return new self.uiClass(node)._expand()})
 }
 
 
@@ -414,6 +416,8 @@ ViewNode.prototype._expand = function() {
 
   this.state = 'expanded'
   $(this).children('node-children').show('slow')
+  this._header.expandCollapseButton.showExpandedStatus();
+  return this;
 }
 
 
@@ -422,6 +426,7 @@ ViewNode.prototype.collapse = function(doRecursive) {
   this.state = 'collapsed'
   var nodeChildren = $(this).children('node-children')
   nodeChildren.hide('slow')
+  this._header.expandCollapseButton.showCollapsedStatus();
 
   if (doRecursive) {
     nodeChildren.children().each(function(index) {
