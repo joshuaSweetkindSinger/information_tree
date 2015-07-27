@@ -10,9 +10,9 @@ JssNotes::Application.routes.draw do
 
     member do
       get    :children        # route is /nodes/:id/children
-      post   :insert_child       # route is /nodes/:id/insert_child
-      post   :insert_successor   # route is /nodes/:id/insert_successor
-      post   :insert_predecessor # route is /nodes/:id/insert_predecessor
+      put    :insert_child       # route is /nodes/:id/insert_child
+      put    :insert_successor   # route is /nodes/:id/insert_successor
+      put    :insert_predecessor # route is /nodes/:id/insert_predecessor
       put    :set_attributes  # route is /nodes/:id/set_attributes
       delete :trash           # route is /nodes/:id/trash
     end

@@ -58,7 +58,7 @@ ViewNode.prototype.afterCreate = function(node) {
   this.id   = node.id
 
   var $this  = $(this)
-  $this.append(this._header = new ViewNodeHeader(this, {tooltip:"Created on " + node.createdAt}))
+  $this.append(this._header = new ViewNodeHeader(this, {tooltip:"id = " + node.id + "; Created on " + node.createdAt}))
   $this.append(this._childrenContainer = new ViewNodeChildren);
 
   this.update(node) // This needs to follow the _header and container appends above; it invokes setters that depend upon them.
@@ -295,7 +295,6 @@ ViewNode.prototype.insertChild = function(viewNode) {
  on the client side.
  */
 ViewNode.prototype.insertSuccessor = function(viewNode) {
-  this.parent().expand(); // Make sure that our parent is expanded so that the new node can be seen.
   return this._insert(viewNode, 'insertSuccessor');
 }
 
@@ -304,49 +303,58 @@ ViewNode.prototype.insertSuccessor = function(viewNode) {
  Insert an existing node in a new location, making the
  node represented by this node be its successor. Then effect the same transformation
  on the client side.
+
+ PROGRAMMER NOTES: Don't try expanding the parent node, because this will re-read the node children
+ from the server, and some of them might have unsaved changes to their content if this method is being
+ triggered in conjunction with a blur() event.
  */
 ViewNode.prototype.insertPredecessor = function(viewNode) {
-  this.parent().expand(); // Make sure that our parent is expanded so that the new node can be seen.
   return this._insert(viewNode, 'insertPredecessor');
 }
 
+
 /*
- Create a new node on the server to be the child of the node represented by <this>,
+ Create a new node on the server to be the successor/predecess/child of the node represented by <this>,
+ as indicated by mode, one of: 'insertChild', 'insertSuccessor', 'insertPredecessor',
  with attributes as specified in nodeSpec.  Use default attributes if nodeSpec is not supplied.
  Then effect the same transformation on the client side.
+
+ PROGRAMMER NOTES: Don't try expanding the parent node, because this will re-read the node children
+ from the server, and some of them might have unsaved changes to their content if this method is being
+ triggered in conjunction with a blur() event.
  */
+ViewNode.prototype._createAndInsertNode = function (nodeSpec, mode) {
+  var self = this;
+  return ViewNode.createNode(nodeSpec)
+    .success(function (uiNode) {
+      self[mode](uiNode);
+    })
+}
+
+
 ViewNode.prototype.createChild = function(nodeSpec) {
-  var self = this;
-  return ViewNode.createNode(nodeSpec)
-    .success(function (uiNode) {
-      self.insertChild(uiNode);
-    })
+  return this._createAndInsertNode(nodeSpec, 'insertChild')
 }
 
-
-/*
- Create a new node on the server to be the successor of the node represented by <this>,
- with attributes as specified in nodeSpec.  Use default attributes if nodeSpec is not supplied.
- Then effect the same transformation on the client side.
- */
 ViewNode.prototype.createSuccessor = function(nodeSpec) {
-  this.parent().expand(); // Make sure that our parent is expanded so that the new node can be seen.
-
-  var self = this;
-  return ViewNode.createNode(nodeSpec)
-    .success(function (uiNode) {
-      self.insertSuccessor(uiNode);
-    })
+  return this._createAndInsertNode(nodeSpec, 'insertSuccessor')
 }
+
+ViewNode.prototype.createPredecessor = function(nodeSpec) {
+  return this._createAndInsertNode(nodeSpec, 'insertPredecessor')
+}
+
 
 /*
  Create a new node on the server to be the predecessor of the node represented by <this>,
  with attributes as specified in nodeSpec.  Use default attributes if nodeSpec is not supplied.
  Then effect the same transformation on the client side.
+
+ PROGRAMMER NOTES: Don't try expanding the parent node, because this will re-read the node children
+ from the server, and some of them might have unsaved changes to their content if this method is being
+ triggered in conjunction with a blur() event.
  */
 ViewNode.prototype.createPredecessor = function(nodeSpec) {
-  this.parent().expand(); // Make sure that our parent is expanded so that the new node can be seen.
-
   var self = this;
   return ViewNode.createNode(nodeSpec)
     .success(function (uiNode) {

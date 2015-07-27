@@ -131,7 +131,8 @@ TODO: Look at UiTree.addUiNode(). Separate for insert and create?
 TODO: look for callers of findOrCreateNode
 TODO: redocument _glom().
 TODO: find all nodes with null parents and delete them (except trash and top)
-
+TODO:status: take a look at iscontent dirty, is sizedirty, for failure to save first child node.
+TODO: drag to successor doesn't work.
  */
 
 $(document).ready(function(){

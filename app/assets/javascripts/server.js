@@ -41,7 +41,7 @@ Server.prototype.createNodePath = function() {
  */
 
 Server.prototype.insertChild = function(referenceNode, nodeToInsert) {
-  return new JsonRequest("POST", this.addChildPath(referenceNode), {node: {id: nodeToInsert.id}});
+  return new JsonRequest("PUT", this.addChildPath(referenceNode), {node: {id: nodeToInsert.id}});
 };
 
 Server.prototype.addChildPath = function(referenceNode) {
@@ -49,7 +49,7 @@ Server.prototype.addChildPath = function(referenceNode) {
 }
 
 Server.prototype.insertSuccessor = function(referenceNode, nodeToInsert) {
-  return new JsonRequest("POST", this.addSuccessorPath(referenceNode), {node: {id: nodeToInsert.id}});
+  return new JsonRequest("PUT", this.addSuccessorPath(referenceNode), {node: {id: nodeToInsert.id}});
 };
 
 Server.prototype.addSuccessorPath = function(referenceNode) {
@@ -57,7 +57,7 @@ Server.prototype.addSuccessorPath = function(referenceNode) {
 }
 
 Server.prototype.addPredecessorPath = function(referenceNode, nodeToInsert) {
-  return new JsonRequest("POST", this.addPredecessorPath(referenceNode), {node: {id: nodeToInsert.id}});
+  return new JsonRequest("PUT", this.addPredecessorPath(referenceNode), {node: {id: nodeToInsert.id}});
 };
 
 Server.prototype.addPredecessorPath = function(referenceNode) {
