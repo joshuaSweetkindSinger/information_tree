@@ -1,4 +1,5 @@
 //= require ui_top_node
+//= require ui_trash_node
 
 /*
 This file defines class UiTree, which is the toplevel dom element container on the
@@ -46,6 +47,12 @@ UiTree.prototype.init = function() {
     .success(function(top) {
       self.top = new UiTopNode(new Node(top))
       $(self).append(self.top);
+
+      App.server.getTrash()
+        .success(function(trash) {
+          self.trash = new UiTrashNode(new Node(trash))
+          $(self).append(self.trash)
+        })
     });
 
   return this;

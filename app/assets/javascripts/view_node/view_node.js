@@ -260,9 +260,8 @@ ViewNode.prototype.kids = function() {
 */
 
 ViewNode.prototype._insert = function(viewNode, mode) {
-  if (this._isInvalidAddRequest(viewNode, mode)) {
-    return new PseudoRequest({error:'self-loop request'}, false); // Return a failed request if we are requesting to add ourselves to ourselves.
-  }
+  var isInvalidRequest = this._isInvalidAddRequest(viewNode, mode);
+  if (isInvalidRequest) return isInvalidRequest;
 
   return this.node[mode](viewNode.node)
     .success(function(node) {
@@ -277,14 +276,15 @@ The operation is invalid if nodeSpec is a reference to <this>, in which
 case we would be adding ourselves to ourselves.
  */
 ViewNode.prototype._isInvalidAddRequest = function (viewNode, mode) {
-  return viewNode.node.id == this.node.id;
+  if (viewNode.node.id == this.node.id) {
+    return new PseudoRequest({error:'self-loop request'}, false); // Return a failed request if we are requesting to add ourselves to ourselves.
+  }
 }
 
 
 /*
- Insert an existing node in a new location on the server, making the
- node represented by this node be its parent. Then effect the same transformation
- on the client side.
+ Insert the existing node viewNode into the information tree as the first child of <this>.
+ Do this first on server side, then on client side.
  */
 ViewNode.prototype.insertChild = function(viewNode) {
   return this._insert(viewNode, 'insertChild');
@@ -292,9 +292,8 @@ ViewNode.prototype.insertChild = function(viewNode) {
 
 
 /*
- Insert an existing node in a new location, making the
- node represented by this node be its predecessor. Then effect the same transformation
- on the client side.
+ Insert the existing node viewNode into the information tree as the successor of <this>.
+ Do this first on server side, then on client side.
  */
 ViewNode.prototype.insertSuccessor = function(viewNode) {
   return this._insert(viewNode, 'insertSuccessor');
@@ -302,13 +301,8 @@ ViewNode.prototype.insertSuccessor = function(viewNode) {
 
 
 /*
- Insert an existing node in a new location, making the
- node represented by this node be its successor. Then effect the same transformation
- on the client side.
-
- PROGRAMMER NOTES: Don't try expanding the parent node, because this will re-read the node children
- from the server, and some of them might have unsaved changes to their content if this method is being
- triggered in conjunction with a blur() event.
+ Insert the existing node viewNode into the information tree as the predecessor of <this>.
+ Do this first on server side, then on client side.
  */
 ViewNode.prototype.insertPredecessor = function(viewNode) {
   return this._insert(viewNode, 'insertPredecessor');
@@ -322,7 +316,7 @@ ViewNode.prototype.insertPredecessor = function(viewNode) {
  Then effect the same transformation on the client side.
 
  PROGRAMMER NOTES: Don't try expanding the parent node, because this will re-read the node children
- from the server, and some of them might have unsaved changes to their content if this method is being
+ from the server, and some of them might have unsaved changes if this method is being
  triggered in conjunction with a blur() event.
  */
 ViewNode.prototype._createAndInsertNode = function (nodeSpec, mode) {
@@ -372,14 +366,10 @@ ViewNode.prototype.paste = function(viewNode) {
 // =========================== Trash
 
 /*
- Get rid of <this> from the information tree.
-
- NOTE: We use detach() instead of remove() because the trashed node may later be restored--the most
- common example of this being a simple cut/paste operation (cut nodes are moved ot the trash)--and we
- don't want the node to lose all its bound event handlers.
- */
+ Tell the server to trash the node represented by <this>, then trash it on the client side as well.
+  */
 ViewNode.prototype.trash = function() {
-  $(this).detach()
+ App.uiTree.trash.insertChild(this);
 }
 
 

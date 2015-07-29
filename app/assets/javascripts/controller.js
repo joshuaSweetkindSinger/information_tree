@@ -44,11 +44,16 @@ Controller.prototype.clickedRightOnNode = function (uiNode, event) {
   event.preventDefault();
 }
 
-// Respond to a right-click on a node. Select the node and pop up the command menu.
+// Respond to a right-click on the top node. Select the node and pop up its special command menu.
 Controller.prototype.clickedRightOnTopNode = function (uiTopNode, event) {
   this.selectNode(uiTopNode);
   this.buttonPanel.popTo(uiTopNode, true);
   event.preventDefault();
+}
+
+// Respond to a right-click on the trash node. Select the node and pop up its special command menu.
+Controller.prototype.clickedRightOnTrashNode = function (uiTrashNode, event) {
+  return this.clickedRightOnTrashNode(uiTrashNode, event);
 }
 
 // Handle a blur action on a node. This usually means saving any changes to the node to the server.
@@ -71,13 +76,24 @@ Controller.prototype.selectNode = function (uiNode) {
 }
 
 
-// TODO: make the selected node be a node instead of a nodeview.
 // Trash the selected node.
 Controller.prototype.trash = function (uiNode) {
   uiNode = uiNode || this.selectedNode
   uiNode.node.trash()
     .success(function() {
       uiNode.trash()
+      if (uiNode === this.selectedNode) {
+        this.selectedNode = null;   // We just deleted the selected node, so now there is none.
+        $(this.buttonPanel).hide(); // we just deleted the selected node, so hide the button panel.
+      }
+    })
+}
+
+// Trash the selected node.
+Controller.prototype.newTrash = function (uiNode) {
+  uiNode = uiNode || this.selectedNode
+  uiNode.trash()
+    .success(function() {
       if (uiNode === this.selectedNode) {
         this.selectedNode = null;   // We just deleted the selected node, so now there is none.
         $(this.buttonPanel).hide(); // we just deleted the selected node, so hide the button panel.
@@ -334,4 +350,8 @@ Controller.prototype.keyPressedOnTopNode = function (uiTopNode, event) {
   } else {
     this.keyPressedOnNode(uiTopNode, event);
   }
+}
+
+Controller.prototype.keyPressedOnTrashNode = function (uiTrashNode, event) {
+  return this.keyPressedOnTopNode(uiTrashNode, event);
 }

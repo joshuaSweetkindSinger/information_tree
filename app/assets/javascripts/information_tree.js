@@ -2,6 +2,7 @@
 
 /*
 This is the toplevel javascript file for client-side tree manipulation.
+NOTE: For the class that implements the toplevel dom object with tag name 'information-tree', see ui_tree.js.
 
 High-level description of architecture:
  Main Components:
@@ -131,9 +132,6 @@ TODO: Look at UiTree.addUiNode(). Separate for insert and create?
 TODO: look for callers of findOrCreateNode
 TODO: redocument _glom().
 TODO: find all nodes with null parents and delete them (except trash and top)
-TODO:status: take a look at iscontent dirty, is sizedirty, for failure to save first child node.
-TODO: drag to successor doesn't work.
-TODO: Give trash full status on client side: a node that can be seen and to which and from which nodes and be cut and pasted, inserted, etc.
  */
 
 $(document).ready(function(){
