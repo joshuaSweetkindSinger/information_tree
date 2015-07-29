@@ -97,9 +97,18 @@ class NodesController < ApplicationController
   end
 
 
-  # /nodes/top
-  def top
+  # GET /nodes/top
+  def get_top
     @obj = Top.top
+    respond_to do |format|
+      format.html {render 'show'}
+      format.json {render json: @obj}
+    end
+  end
+
+  # GET /nodes/trash
+  def get_trash
+    @obj = Trash.trash
     respond_to do |format|
       format.html {render 'show'}
       format.json {render json: @obj}

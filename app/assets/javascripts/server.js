@@ -5,8 +5,8 @@ var Server = function () {
 
 }
 
-Server.prototype.top = function(callback) {
-  return new JsonRequest("GET", this.topNodePath(), callback)
+Server.prototype.getTop = function() {
+  return new JsonRequest("GET", this.topNodePath())
 }
 
 
@@ -14,6 +14,14 @@ Server.prototype.topNodePath = function() {
   return '/nodes/top.json'
 }
 
+Server.prototype.getTrash = function() {
+  return new JsonRequest("GET", this.trashNodePath())
+}
+
+
+Server.prototype.trashNodePath = function() {
+  return '/nodes/trash.json'
+}
 /*
 Create a new node on the server with attributes specified in nodeSpec,
 or with default attributes if nodeSpec is not supplied.
@@ -40,55 +48,55 @@ Server.prototype.createNodePath = function() {
                All other attributes of the node will be ignored.
  */
 
-Server.prototype.insertChild = function(referenceNode, nodeToInsert) {
-  return new JsonRequest("PUT", this.addChildPath(referenceNode), {node: {id: nodeToInsert.id}});
+Server.prototype.insertChild = function(referenceNodeId, nodeToInsertId) {
+  return new JsonRequest("PUT", this.insertChildPath(referenceNodeId), {node: {id: nodeToInsertId}});
 };
 
-Server.prototype.addChildPath = function(referenceNode) {
-  return '/nodes/' + referenceNode.id + '/insert_child.json'
+Server.prototype.insertChildPath = function(referenceNodeId) {
+  return '/nodes/' + referenceNodeId + '/insert_child.json'
 }
 
-Server.prototype.insertSuccessor = function(referenceNode, nodeToInsert) {
-  return new JsonRequest("PUT", this.addSuccessorPath(referenceNode), {node: {id: nodeToInsert.id}});
+Server.prototype.insertSuccessor = function(referenceNodeId, nodeToInsertId) {
+  return new JsonRequest("PUT", this.insertSuccessorPath(referenceNodeId), {node: {id: nodeToInsertId}});
 };
 
-Server.prototype.addSuccessorPath = function(referenceNode) {
-  return '/nodes/' + referenceNode.id + '/insert_successor.json'
+Server.prototype.insertSuccessorPath = function(referenceNodeId) {
+  return '/nodes/' + referenceNodeId + '/insert_successor.json'
 }
 
-Server.prototype.addPredecessorPath = function(referenceNode, nodeToInsert) {
-  return new JsonRequest("PUT", this.addPredecessorPath(referenceNode), {node: {id: nodeToInsert.id}});
-};
-
-Server.prototype.addPredecessorPath = function(referenceNode) {
-  return '/nodes/' + referenceNode.id + '/insert_predecessor.json'
+Server.prototype.insertPredecessor = function(referenceNodeId, nodeToInsertId) {
+  return new JsonRequest("PUT", this.insertPredecessorPath(referenceNodeId), {node: {id: nodeToInsertId}});
 }
 
-Server.prototype.trash = function (node) {
-  return new Request("DELETE", this.trashPath(node))
+Server.prototype.insertPredecessorPath = function(referenceNodeId) {
+  return '/nodes/' + referenceNodeId + '/insert_predecessor.json'
 }
 
-Server.prototype.trashPath = function(node) {
-  return '/nodes/' + node.id + '/trash.json'
+Server.prototype.trash = function (nodeId) {
+  return new Request("DELETE", this.trashPath(nodeId))
+}
+
+Server.prototype.trashPath = function(nodeId) {
+  return '/nodes/' + nodeId + '/trash.json'
 }
 
 /*
  Get the child nodes of the node with id, in json format
 */
-Server.prototype.getNodeChildren = function(id) {
-  return new JsonRequest("GET", this.nodeChildrenPath(id))
+Server.prototype.getNodeChildren = function(nodeId) {
+  return new JsonRequest("GET", this.nodeChildrenPath(nodeId))
 }
 
-Server.prototype.nodeChildrenPath = function(id) {
-  return '/nodes/' + id + '/children.json'
-}
-
-
-Server.prototype.setNodeAttributes = function (id, options) {
-  return new JsonRequest("PUT", this.setAttributesPath(id), {node: options})
+Server.prototype.nodeChildrenPath = function(nodeId) {
+  return '/nodes/' + nodeId + '/children.json'
 }
 
 
-Server.prototype.setAttributesPath = function(id) {
-  return '/nodes/' + id + '/set_attributes.json'
+Server.prototype.setNodeAttributes = function (nodeId, options) {
+  return new JsonRequest("PUT", this.setAttributesPath(nodeId), {node: options})
+}
+
+
+Server.prototype.setAttributesPath = function(nodeId) {
+  return '/nodes/' + nodeId + '/set_attributes.json'
 }

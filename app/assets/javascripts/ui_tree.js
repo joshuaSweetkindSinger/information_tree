@@ -42,7 +42,7 @@ UiTree.prototype.init = function() {
   $(this).click(this.onClick);
 
   var self = this;
-  this.initRequest = App.server.top()
+  this.initRequest = App.server.getTop()
     .success(function(top) {
       self.top = new UiTopNode(new Node(top))
       $(self).append(self.top);

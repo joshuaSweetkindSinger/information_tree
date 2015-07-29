@@ -3,7 +3,8 @@ JssNotes::Application.routes.draw do
   resources :nodes do
     collection do
       get :interactive
-      get :top
+      get :top, to: :get_top
+      get :trash, to: :get_trash
       post :back_up
       get :test_me
     end

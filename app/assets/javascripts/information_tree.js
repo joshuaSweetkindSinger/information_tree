@@ -133,6 +133,7 @@ TODO: redocument _glom().
 TODO: find all nodes with null parents and delete them (except trash and top)
 TODO:status: take a look at iscontent dirty, is sizedirty, for failure to save first child node.
 TODO: drag to successor doesn't work.
+TODO: Give trash full status on client side: a node that can be seen and to which and from which nodes and be cut and pasted, inserted, etc.
  */
 
 $(document).ready(function(){

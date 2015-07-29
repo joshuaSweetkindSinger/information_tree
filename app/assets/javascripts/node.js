@@ -89,12 +89,12 @@ Node.prototype.view = function (obj) {
  */
 Node.prototype.insert = function (nodeToInsert, mode) {
   var self = this;
-  return App.server[mode](this, nodeToInsert)
+  return App.server[mode](this.id, nodeToInsert.id)
     .success(function(nodeRep) {
       return nodeToInsert.update(nodeRep)
     })
     .failure(function(error) {
-      console.log("Got an error attempting to add a node on server. reference node = ", self, "; spec = ", nodeToInsert, "; mode = ", mode, "; error = ", error);
+      console.log("Got an error attempting to add a node on server. reference node = ", self, "; node-to-insert = ", nodeToInsert, "; mode = ", mode, "; error = ", error);
     })
 }
 
@@ -117,7 +117,7 @@ Node.prototype.reportError = function() {
 
 
 Node.prototype.trash = function() {
-  return App.server.trash(this)
+  return App.server.trash(this.id)
 }
 
 // TODO: Refactor so this just always return its children.
