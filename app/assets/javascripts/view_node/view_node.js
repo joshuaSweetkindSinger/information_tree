@@ -365,17 +365,21 @@ ViewNode.prototype.createPredecessor = function(nodeSpec) {
 }
 // ========================== Paste
 // Paste node onto ourselves. This means adding it as a child.
-ViewNode.prototype.paste = function(node) {
-  return this.insertChild({id: node.id});
+ViewNode.prototype.paste = function(viewNode) {
+  return this.insertChild(viewNode);
 };
 
 // =========================== Trash
 
 /*
  Get rid of <this> from the information tree.
+
+ NOTE: We use detach() instead of remove() because the trashed node may later be restored--the most
+ common example of this being a simple cut/paste operation (cut nodes are moved ot the trash)--and we
+ don't want the node to lose all its bound event handlers.
  */
 ViewNode.prototype.trash = function() {
-  $(this).remove()
+  $(this).detach()
 }
 
 

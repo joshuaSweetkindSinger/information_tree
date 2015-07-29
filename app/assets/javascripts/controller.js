@@ -182,7 +182,11 @@ Controller.prototype.copyNode = function (uiNode) {
 
 // Paste the copiedNode onto node.
 Controller.prototype.pasteNode = function (uiNode) {
-  (uiNode || this.selectedNode).paste(this.copiedNode)
+  if (this.copiedNode) {
+    (uiNode || this.selectedNode).paste(this.copiedNode)
+  } else {
+    alert("There is no node in the paste buffer to paste.")
+  }
 }
 
 
