@@ -130,7 +130,6 @@ status: created the 3 primitives. Next up: look at insertion functionality.
 TODO: make sure the path of new creation works.
 TODO: Look at UiTree.addUiNode(). Separate for insert and create?
 TODO: look for callers of findOrCreateNode
-TODO: redocument _glom().
 TODO: find all nodes with null parents and delete them (except trash and top)
  */
 

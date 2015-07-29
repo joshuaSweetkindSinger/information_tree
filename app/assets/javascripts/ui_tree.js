@@ -127,7 +127,7 @@ UiTree.prototype._findOrCreateUiNode = function(node) {
  */
 // TODO: UiTree should not be accepting node Reps and doing find or create. Maybe Tree should do this.
 UiTree.prototype.addUiNode = function(node) {
-  return this._findOrCreateUiNode(node)._glom();
+  return this._findOrCreateUiNode(node)._attachToTree();
 }
 
 

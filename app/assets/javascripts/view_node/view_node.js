@@ -168,11 +168,15 @@ ViewNode.prototype.expandedViewNodes = function(result) {
  and parent links. If we have one of the first two links, we know exactly where to attach
  ourselves. If we have neither, then we must be the only child of our parent.
 
- In all cases, make sure that our new parent has had its children downloaded from the server
- before we glom ourselves to it; otherwise, we create an indeterminate state in which only some
- of the parent's children are represented on the client side.
+ NOTE: we may be attaching as the child of an unexpanded node parent, in which case the client-side will only show
+ some of the children of that node. An easy fix would seem to be to simply expand the parent before attaching, but
+ that expansion does a reload of *all* children from the server, and one of them on the client side may be in the
+ middle of a blur event, which means it is dirty. Re-expanding from the server would erase the client-side changes.
+ In order to handle this elegantly, more thought, and code, is required. For now, if a node's expand/collapse icon
+ indicates that the node is collapsed, but the node nonetheless seems to have children, then the use needs to know
+ that this is just a partial list of the node's children.
  */
-ViewNode.prototype._glom = function() {
+ViewNode.prototype._attachToTree = function() {
   var relative;
   if (relative = this.predecessor()) {
     relative._attachSuccessor(this);
@@ -189,27 +193,32 @@ ViewNode.prototype._glom = function() {
     return this;
   }
 
-  console.log("could not glom:", this);
+  console.log("could not attach to information tree:", this);
 };
 
 
-ViewNode.prototype._attachSuccessor = function(viewSuccessor) {
-  $(this).after(viewSuccessor);
+// Attach nodeToAttach to the tree as our successor.
+ViewNode.prototype._attachSuccessor = function(nodeToAttach) {
+  $(this).after(nodeToAttach);
   return this;
 };
 
-
-ViewNode.prototype._attachPredecessor = function(viewPredecessor) {
-  $(this).before(viewPredecessor);
+// Attach nodeToAttach to the tree as our predecessor.
+ViewNode.prototype._attachPredecessor = function(nodeToAttach) {
+  $(this).before(nodeToAttach);
   return this;
 };
 
 
 /*
- NOTE: This method will only be called by glom() if the parent has no children yet.
+Attach nodeToAttach to the tree as our first and only child.
+
+ NOTE: This method will only be called by _attachToTree() if the parent has no children yet. Because,
+ if the parent has children, then _attachToTree will find a predecessor or successor of the node to be attached,
+ and will prefer to call _attachSuccessor() or _attachPredecessor() instead.
  */
-ViewNode.prototype._attachChild = function(viewChild) {
-  $(this._childrenContainer).append(viewChild);
+ViewNode.prototype._attachChild = function(nodeToAttach) {
+  $(this._childrenContainer).append(nodeToAttach);
   return this;
 };
 
@@ -265,7 +274,7 @@ ViewNode.prototype._insert = function(viewNode, mode) {
 
   return this.node[mode](viewNode.node)
     .success(function(node) {
-      return viewNode._glom();
+      return viewNode._attachToTree();
     })
 };
 
@@ -369,7 +378,7 @@ ViewNode.prototype.paste = function(viewNode) {
  Tell the server to trash the node represented by <this>, then trash it on the client side as well.
   */
 ViewNode.prototype.trash = function() {
- App.uiTree.trash.insertChild(this);
+ return App.uiTree.trash.insertChild(this);
 }
 
 

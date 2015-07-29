@@ -79,19 +79,6 @@ Controller.prototype.selectNode = function (uiNode) {
 // Trash the selected node.
 Controller.prototype.trash = function (uiNode) {
   uiNode = uiNode || this.selectedNode
-  uiNode.node.trash()
-    .success(function() {
-      uiNode.trash()
-      if (uiNode === this.selectedNode) {
-        this.selectedNode = null;   // We just deleted the selected node, so now there is none.
-        $(this.buttonPanel).hide(); // we just deleted the selected node, so hide the button panel.
-      }
-    })
-}
-
-// Trash the selected node.
-Controller.prototype.newTrash = function (uiNode) {
-  uiNode = uiNode || this.selectedNode
   uiNode.trash()
     .success(function() {
       if (uiNode === this.selectedNode) {
