@@ -162,7 +162,8 @@ ViewNode.prototype.expandedViewNodes = function(result) {
 // =========================================================================
 /*
  Attach ourselves to the information tree view. This is done just after a new
- ViewNode is created from a rep sent by the server to the client.
+ ViewNode is created from a rep sent by the server to the client, just after
+ an existing client-side node has been repositioned to have a new parent or siblings.
 
  We figure out where to attach ourselves by examining our predecessor, successor,
  and parent links. If we have one of the first two links, we know exactly where to attach
@@ -173,8 +174,8 @@ ViewNode.prototype.expandedViewNodes = function(result) {
  that expansion does a reload of *all* children from the server, and one of them on the client side may be in the
  middle of a blur event, which means it is dirty. Re-expanding from the server would erase the client-side changes.
  In order to handle this elegantly, more thought, and code, is required. For now, if a node's expand/collapse icon
- indicates that the node is collapsed, but the node nonetheless seems to have children, then the use needs to know
- that this is just a partial list of the node's children.
+ indicates that the node is collapsed, but the node nonetheless seems to have children, then the user needs
+ to be smart enough to realize that this is just a partial list of the node's children.
  */
 ViewNode.prototype._attachToTree = function() {
   var relative;
@@ -268,13 +269,13 @@ ViewNode.prototype.kids = function() {
  The return value is a request object that captures the asynchronous computation.
 */
 
-ViewNode.prototype._insert = function(viewNode, mode) {
-  var isInvalidRequest = this._isInvalidAddRequest(viewNode, mode);
+ViewNode.prototype._insert = function(nodeToInsert, mode) {
+  var isInvalidRequest = this._isInvalidAddRequest(nodeToInsert, mode);
   if (isInvalidRequest) return isInvalidRequest;
 
-  return this.node[mode](viewNode.node)
+  return this.node[mode](nodeToInsert.node)
     .success(function(node) {
-      return viewNode._attachToTree();
+      return nodeToInsert._attachToTree();
     })
 };
 

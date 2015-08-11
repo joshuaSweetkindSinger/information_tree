@@ -2,6 +2,12 @@
   A node is the client-side representation of an information-tree node.
   It does *not* contain ui-related functionality and decorations.
   For that, see NodeView.
+
+  Also, although a node object contains relationships fields: parent, predecessor, successor,
+  these can go stale on the client side when the node is moved via an insert operation. The client-side UI
+  does not bother to update these when nodes are moved around in the hierarchy. The only true way to assess
+  the siblings of a node on the client side are to look at the dom relationships themselves, as indicated by
+  the node's ViewNode counterpart, accessed via the _view() method.
 */
 
 /*

@@ -33,6 +33,20 @@ put the node where it says it belongs.
 Since the node might, in principle, go anywhere in the tree, we let this functionality be handled by the UiTree,
 rather than by any individual UiNode in the tree.
 
+MORE ABOUT NODE ATTACHMENT
+There are is only one way that a node comes into being on the client-side: via expansion. When the node's
+client-side parent requests its children from the server, a representation of the node is sent to the client,
+along with representations of all the parent's children. The client side then creates the node for the first time.
+
+Once a node exists on the client side, it can be moved around via the insert() operations: insertChild(),
+insertPredecessor(), insertSuccessor(). Each of these passes the request down the hierarchy: from controller
+to UiNode to ViewNode to Node to Server, which sends the request from client side to server. The server
+performs the necessary insert operation on the server side, updates the node's parent and sibling links,
+and then sends a node rep back to the client, from whence it trickles back up the hierarchy, from node to ViewNode.
+
+There is only one way that a node changes its relationship to the tree on the client side: via attachToTree().
+Regardless of the originating operation, after the node has been updated by the server and a node rep has
+been sent back to the client, the node is replaced in the client-side tree by the method ViewNode._attachToTree().
  */
 // ========================================================================
 //                   UiTree
@@ -107,9 +121,7 @@ UiTree.prototype.find = function(id) {
  with the other information contained in node, and return it.
 
  If no such UiNode yet exists in the dom, create one based on node, which is an instance
- of class Node, and return the new UiNode.
-
- Note that the newly created UiNode is unglommed; that is, it is
+ of class Node, and return the new UiNode. Note if a new UiNode is created, it will be returned
  unattached to the information tree.
  */
 UiTree.prototype._findOrCreateUiNode = function(node) {
@@ -123,7 +135,7 @@ UiTree.prototype._findOrCreateUiNode = function(node) {
  with the other information contained in node, and return it.
 
  If no such UiNode yet exists in the dom, create one based on node, which is an instance
- of class Node, and return the new UiNode after glomming it to the information tree in its proper position.
+ of class Node, and return the new UiNode after attaching it to the information tree in its proper position.
  */
 // TODO: UiTree should not be accepting node Reps and doing find or create. Maybe Tree should do this.
 UiTree.prototype.addUiNode = function(node) {

@@ -70,6 +70,9 @@ The name nodeRep indicates that a representation of the now-existing object has 
  TODO: There's an ambiguity between node.content and node._header.content. The former returns the text of node._header.content.
  The latter returns the content dom object, which is a textarea element.
  TODO: look for refs to stopPropagation() and preventDefault() and make sure they're necessary.
+ TODO: It isn't clear that all UI dom elements should defer to the controller. the UI will be
+ more extensible if we can add new UI elements that enhance UI functionality without having to also alter
+ the controller.
  TODO: all the various UI dom components should simply defer to the ui controller for their functionality.
  They should bind event handlers, but then pass the event to the ui controller for actual processing.
  They are like sockets, with functionality to be plugged in by the ui controller.
@@ -77,60 +80,18 @@ The name nodeRep indicates that a representation of the now-existing object has 
  TODO: Consider having hit return on a node put you in edit mode for the node, equal to clicking on it.
  This presupposes we're not always in edit mode.
  TODO: implement cut/copy/paste, and put cut nodes in "the basket".
- TODO: Refactor for layers:
 
-
- TODO: Hide classes and functions within a package.
- TODO: consider creating a single View class, with subclasses representing the different view classes.
- TODO: Should the uiTree be holding the droppable target? Or should the UI be holding it? Seems like
-       if the ui holds the selectedNode, it should also hold the droppable target. And vice versa,
-       perhaps the uiTree should hold both.
-
-
-TODO: General problem: where does a change event get initiated? In the general case, a change event, such
-as changing the content of a node, might occur on the client side, or on the server side, and, if on the
-client side, it might occur inside a node, or via the controller. The problem of syncing means that the
-node, the viewNode, and the server-side node all need to be updated. The flow should generally be:
-server, node, viewNode. When initiated by the controller, this is how it handles things. But in general
-a change might start at any of these places. How do we create an architecture that completes the chain
-by visiting all relevant parties exactly once?
-
-View as wrapper: using an architecture in which the view is a wrapper, we have nestings like so: view contains
-node contains server-node. With this architecture, all requests start with the view. It does its job by asking
-the node to change, and then it updates itself after a successful node change. The node in turn does its job
-by asking the server-node to change, and then it updates itself after a successful server change. There's a naming
-problem that arises with this architecture. When the viewNode first gets the setContent() message, it initiates
-a wrapper-level change, i.e., by passing the setContent() message to the node, who passes the setContent() message
-to the server. On the way back, the node receives the server's update and then it really has to set its content,
-and then it has to pass a success message back up to the view, and the view then has to really set its content.
-One way to handle this is by having a private method like _setContent() that does the local work.
-
-TODO: Node creation and taxonomy alteration are currently munged into a single operation called add(),
-which can accept either a new node or an existing node. Perhaps it is better to break out the creation
-operation and treat it separate. Newly created nodes would inherit a default parent of Limbo, for example,
-and then would get assigned to the hierarchy after creation. Then the reassignment operation wouldn't need
-logic to handle creation as well.
 
 
 TODO: There are annoying flashes when a node is saved. Probably because of the round-trip to server, and maybe
 because of the timing of when they are added to the dom.
 
-TODO: Create parallel handling of add() functionality on client. Make sure predecessor and successor
-links are updated when nodes are moved around in the dom tree.
-
-
-TODO: Unify handling of add() functionality on server and client sides, using parallel construction.
-Use 3 primitives in each case: insertChild(), insertSuccessor(), insertPredecessor(). Possibly separate out
-creation from insertion. Unify insertion operation on both sides, using same terminology. Don't use the
-name glom(), use insert().
-status: in the middle of separating insertion from creation. On server side, this is already separated, because insertion
-presumes an already created node. On the client side, go to Node class first and separate out insertion from creation, then
-work your way up the food chain to the UiNode.
-status: created the 3 primitives. Next up: look at insertion functionality.
-TODO: make sure the path of new creation works.
-TODO: Look at UiTree.addUiNode(). Separate for insert and create?
-TODO: look for callers of findOrCreateNode
 TODO: find all nodes with null parents and delete them (except trash and top)
+TODO: Feature: Add intra-tree node links, e.g., "see Application-Specific-Passwords", which, when clicked on,
+would navigate to the referenced node in the information tree.
+TODO: Modify schema so that each node has a has_children boolean. Whenever a node becomes the parent of a child,
+that flag is set to true. When the last child is removed, that flag is set to false. This will enable the UI to
+only show expand icons for nodes that are expandable.
  */
 
 $(document).ready(function(){
