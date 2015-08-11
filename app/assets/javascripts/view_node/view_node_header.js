@@ -13,7 +13,7 @@ ViewNodeHeader.prototype.afterCreate = function(nodeView, options) {
   this.expandCollapseButton = new ExpandCollapse(nodeView)
   $this.append(this.expandCollapseButton)
 
-  this.content = new ViewNodeContent(nodeView, options);
+  this.contentArea = new ViewNodeContent(nodeView, options);
   $this.append(this.content)
 }
 

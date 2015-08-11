@@ -112,28 +112,28 @@ Object.defineProperties(ViewNode.prototype, {
 
     content: {
       get: function() {
-        return $(this._header.content).val()
+        return $(this._header.contentArea).val()
       },
       set: function(content) {
-        $(this._header.content).val(content)
+        $(this._header.contentArea).val(content)
       }
     },
 
     width: {
       get: function() {
-        return $(this._header.content).width()
+        return $(this._header.contentArea).width()
       },
       set: function(v) {
-        $(this._header.content).width(v)
+        $(this._header.contentArea).width(v)
       }
     },
 
     height: {
       get: function() {
-        return $(this._header.content).height()
+        return $(this._header.contentArea).height()
       },
       set: function(v) {
-        $(this._header.content).height(v)
+        $(this._header.contentArea).height(v)
       }
     }
   }
