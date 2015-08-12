@@ -49,40 +49,41 @@ ButtonPanel.prototype.afterCreate = function() {
   $this.click(this.onClick)
 }
 
+
 /*
- Move button panel to float above node.
+ Move button panel to float above uiNode.
  Programmer's Note: In the case in which the selected node is deleted, we hide the button panel.
  If we then select a new node and change the button panel's offset before showing it, it shows up
  in the wrong place in the dom. Not sure why. But if you show the panel before setting the offset,
  then everything works okay.
  */
 // TODO: the isTopNode flag is inelegant and won't scale well. Find a better way.
-ButtonPanel.prototype.popTo = function(node, isTopNode) {
+ButtonPanel.prototype.popTo = function(uiNode) {
   $(this).show(); // I'm not sure why, but showing this before doing new offset avoids a bug. See documentation above.
-  var offset = $(node).offset();
+  var offset = $(uiNode).offset();
   var left   = offset.left;
   var top    = offset.top;
   $(this).offset({left:left-102, top:top}); // TODO: Remove hardcoded constant.
 
-  /* TODO: All this knowledge is in the wrong place. A node should know what options are valid on it and
-    tell that to the popup menu. Hardcoding that knowledge in the popup is not DRY.
-  */
-
-  // These options are active only if we're not dealing with the top node.
-  this.addPredecessorButton.enable(!isTopNode);
-  this.addSuccessorButton.enable(!isTopNode);
-  this.cutButton.enable(!isTopNode);
-  this.trashNodeButton.enable(!isTopNode);
+  uiNode.enableButtonPanelOptions(this)
 }
 
 ButtonPanel.prototype.onClick = function() {
   $(this).hide()
 }
 
+
+// Enable all buttons on the button panel.
+ButtonPanel.prototype.enableAll = function () {
+  $(this).children().each(function () {
+    this.enable()
+  })
+}
+
 // =========================================================================
 //                   Button Panel Button
 // =========================================================================
-// Base class for button panel  buttons.
+// Base class for button panel buttons.
 var ButtonPanelButton = defCustomTag('button-panel-button', HTMLElement)
 
 ButtonPanelButton.prototype.afterCreate = function(label) {
@@ -92,13 +93,17 @@ ButtonPanelButton.prototype.afterCreate = function(label) {
 }
 
 /*
-If status is true, then enabled the button; otherwise, disable it so that it can't be clicked on.
+If status is true (or not supplied), then enable the button; otherwise,
+disable it so that it can't be clicked on by removing its click handler.
+
 PROGRAMMER's NOTE: the jquery on() method seems to accommodate adding the same handler multiple times.
 That is, it doesn't notice whether a handler is already attached. If you attempt to attach the same handler,
 twice, jquery will let you do that, and will fire the handler twice. Therefore, to make sure we don't get
 the same handler attached multiple times, we clear the click handler at the beginning of the method.
 */
 ButtonPanelButton.prototype.enable = function (status) {
+  if (arguments.length === 0) status = true // default is to enable the button if no arg is supplied.
+
   $(this).off('click')
 
   if (!status) {
@@ -107,6 +112,10 @@ ButtonPanelButton.prototype.enable = function (status) {
     $(this).removeClass('button-panel-button-disabled')
     $(this).on('click', this.onClick)
   }
+}
+
+ButtonPanelButton.prototype.disable = function () {
+  this.enable(false)
 }
 
 // =========================================================================

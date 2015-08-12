@@ -25,8 +25,12 @@ UiTrashNode.prototype.afterCreate = function(node) {
 }
 
 
-UiTrashNode.prototype.onContextMenu = function(event) {
-  App.controller.clickedRightOnTrashNode(this, event);
+UiTrashNode.prototype.enableButtonPanelOptions = function(buttonPanel) {
+  buttonPanel.enableAll()
+  buttonPanel.addPredecessorButton.disable()
+  buttonPanel.addSuccessorButton.disable()
+  buttonPanel.cutButton.disable()
+  buttonPanel.trashNodeButton.disable()
 }
 
 UiTrashNode.prototype.onKeypress = function(event) {

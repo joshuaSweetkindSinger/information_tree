@@ -24,8 +24,8 @@ ViewNode.uiClass = UiNode; // The class to instantiate.
  need to pass args, which can only be passed via afterCreate().
  */
 UiNode.prototype.afterCreate = function(node) {
-  ViewNode.prototype.afterCreate.call(this, node);
-  this.bindEventHandlers();
+  ViewNode.prototype.afterCreate.call(this, node)
+  this.bindEventHandlers()
 }
 
 /*
@@ -46,10 +46,10 @@ UiNode.prototype.bindEventHandlers = function () {
   })
 
   // Attach handlers to content element
-  var $content = $(this._header.contentArea);
-  $content.on("click", this.onClick.bind(this));
+  var $content = $(this._header.contentArea)
+  $content.on("click", this.onClick.bind(this))
   $content.on("blur", this.onBlur.bind(this))
-  $content.on("contextmenu", this.onContextMenu.bind(this));
+  $content.on("contextmenu", this.onContextMenu.bind(this))
   $content.on("keypress", this.onKeypress.bind(this))
   $content.droppable({
     tolerance: "pointer",
@@ -60,14 +60,12 @@ UiNode.prototype.bindEventHandlers = function () {
 }
 
 
-
 /*
  A drag event just started. Erase the last drop target.
  This function is called whenever a new drag event is initiated.
  */
-
 UiNode.prototype.dragStart = function() {
-  App.controller.adviseDragStart(this);
+  App.controller.adviseDragStart(this)
 }
 
 
@@ -78,12 +76,12 @@ top of another object, the controller will handle the drop event.
  */
 UiNode.prototype.dragStop = function(event, helperUiNode) {
   App.controller.adviseDragStop(event, helperUiNode, this)
-};
+}
 
 
 // Handle a left click in the text area.
 UiNode.prototype.onClick = function (event) {
-  App.controller.clickedLeftOnNode(this);
+  App.controller.clickedLeftOnNode(this)
 }
 
 
@@ -93,8 +91,19 @@ UiNode.prototype.onClick = function (event) {
  that will work at click-time.
  */
 UiNode.prototype.onContextMenu = function(event) {
-  App.controller.clickedRightOnNode(this, event);
+  App.controller.clickedRightOnNode(this, event)
 }
+
+
+/*
+Enable all the buttons on the button panel that should be enabled when a generic UiNode is right-clicked-on.
+In this case, all buttons should be enable. Certain subclasses of UiNode may not permit all the options available on the button panel
+that pops up in response to a right click.
+ */
+UiNode.prototype.enableButtonPanelOptions = function (buttonPanel) {
+  buttonPanel.enableAll()
+}
+
 
 UiNode.prototype.onKeypress = function(event) {
   App.controller.keyPressedOnNode(this, event)
@@ -113,7 +122,7 @@ UiNode.prototype.handleDrop = function(event, ui) {
   if (this.id) {
     App.controller.adviseDrop(this);
   }
-};
+}
 
 
 // This event-handler is bound to the object's blur event.

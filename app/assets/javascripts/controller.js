@@ -44,17 +44,6 @@ Controller.prototype.clickedRightOnNode = function (uiNode, event) {
   event.preventDefault();
 }
 
-// Respond to a right-click on the top node. Select the node and pop up its special command menu.
-Controller.prototype.clickedRightOnTopNode = function (uiTopNode, event) {
-  this.selectNode(uiTopNode);
-  this.buttonPanel.popTo(uiTopNode, true);
-  event.preventDefault();
-}
-
-// Respond to a right-click on the trash node. Select the node and pop up its special command menu.
-Controller.prototype.clickedRightOnTrashNode = function (uiTrashNode, event) {
-  return this.clickedRightOnTopNode(uiTrashNode, event);
-}
 
 // Handle a blur action on a node. This usually means saving any changes to the node to the server.
 Controller.prototype.blurNode = function (uiNode) {

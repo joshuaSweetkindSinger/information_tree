@@ -29,8 +29,12 @@ UiTopNode.prototype.afterCreate = function(node) {
  a pointer to the Node parent from the UiNodeContent object. So we create a delegator
  that will work at click-time.
  */
-UiTopNode.prototype.onContextMenu = function(event) {
-  App.controller.clickedRightOnTopNode(this, event);
+UiTopNode.prototype.enableButtonPanelOptions = function(buttonPanel) {
+  buttonPanel.enableAll()
+  buttonPanel.addPredecessorButton.disable()
+  buttonPanel.addSuccessorButton.disable()
+  buttonPanel.cutButton.disable()
+  buttonPanel.trashNodeButton.disable()
 }
 
 UiTopNode.prototype.onKeypress = function(event) {
