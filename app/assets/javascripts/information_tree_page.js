@@ -35,7 +35,7 @@ High-level description of architecture:
 
 The dom elements comprising the information tree are as follows:
 information-tree: a single node of this type is put in a static html file, which initiates the dynamic
-          creation of a UiTree object when the html file is loaded into the browser, via its custom tag constructor.
+          creation of a InformationTree object when the html file is loaded into the browser, via its custom tag constructor.
           An information tree is made up of UiNodes.
 UiNode: A dynamically instantiated dom-element that represents a node in the information tree.
 

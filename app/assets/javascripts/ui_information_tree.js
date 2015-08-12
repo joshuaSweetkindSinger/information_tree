@@ -2,7 +2,7 @@
 //= require ui_trash_node
 
 /*
-This file defines class UiTree, which is the toplevel dom element container on the
+This file defines class InformationTree, which is the toplevel dom element container on the
 client side for the information tree. It has no server-side counterpart.
 
 It's main job is to intercept certain user events and pass them to the controller, and to provide
@@ -11,8 +11,8 @@ tree-level functionality, which means functionality that spans two or more indiv
 that of attaching new nodes to the tree, or moving nodes from one place in the tree to another.
 
 RELEVANT CLASSES
-UiTree - toplevel Ui object on client side, a dom element.
-UiNode - the children of the UiTree dom element are UiNode dom elements.
+InformationTree - toplevel Ui object on client side, a dom element.
+UiNode - the children of the InformationTree dom element are UiNode dom elements.
 ViewNode - a superclass of UiNode, this implements all standard client-side functionality for
            a node that is represented by a dom element. No ui-specific functionality is defined here.
            That functionality is defined in the UiNode subclass.
@@ -23,14 +23,14 @@ Node    - a client side encapsulation of a server-side node representation. This
 NODE ATTACHMENT
 In theory, certain kinds of node attachment could be handled by class UiNode. For example, when a UiNode
 expands, it asks the server for its children. It could simply attach those children to itself. But that's not
-the way we handle it. Instead, *all* new node attachment goes through UiTree.AddUiNode() or UiTree.AddUiNodes().
+the way we handle it. Instead, *all* new node attachment goes through InformationTree.AddUiNode() or InformationTree.AddUiNodes().
 
 When a Node object comes back from the server, it contains all the information necessary to
 specify where it should go in the tree. So, rather than assuming that it belongs to a particular node parent, just
 because that parent asked for its children, we instead look at the node coming back from the server and
 put the node where it says it belongs.
 
-Since the node might, in principle, go anywhere in the tree, we let this functionality be handled by the UiTree,
+Since the node might, in principle, go anywhere in the tree, we let this functionality be handled by the InformationTree,
 rather than by any individual UiNode in the tree.
 
 MORE ABOUT NODE ATTACHMENT
@@ -47,13 +47,16 @@ and then sends a node rep back to the client, from whence it trickles back up th
 There is only one way that a node changes its relationship to the tree on the client side: via attachToTree().
 Regardless of the originating operation, after the node has been updated by the server and a node rep has
 been sent back to the client, the node is replaced in the client-side tree by the method ViewNode._attachToTree().
+
+WHY THIS FILE CANNOT BE NAMED information_tree.js: probably because this is also the name of the toplevel folder
+for the app. In any case, we get a circular dependency error when we try to name this file to information_tree.js.
  */
 // ========================================================================
-//                   UiTree
+//                   InformationTree
 // ========================================================================
-var UiTree = defCustomTag('information-tree', HTMLElement);
+var InformationTree = defCustomTag('information-tree', HTMLElement);
 
-UiTree.prototype.init = function() {
+InformationTree.prototype.init = function() {
   $(this).click(this.onClick);
 
   var self = this;
@@ -72,7 +75,7 @@ UiTree.prototype.init = function() {
   return this;
 };
 
-UiTree.prototype.onClick = function (event) {
+InformationTree.prototype.onClick = function (event) {
   App.controller.hideButtonPanel();
 }
 
@@ -82,12 +85,12 @@ UiTree.prototype.onClick = function (event) {
  Return the nodes in order of descending y-value. This means that every visible node will
  be preceded by its older siblings, all their visible descendants, and by its parent.
  */
-UiTree.prototype.expandedViewNodes = function() {
+InformationTree.prototype.expandedViewNodes = function() {
   return this.top.expandedViewNodes([]);
 }
 
 
-UiTree.prototype.findLowestNodeAbove = function(y) {
+InformationTree.prototype.findLowestNodeAbove = function(y) {
   var nodes = this.expandedViewNodes().reverse();
   for(var i = 0; i < nodes.length; i++) {
     var node = nodes[i];
@@ -107,7 +110,7 @@ UiTree.prototype.findLowestNodeAbove = function(y) {
 /*
  If it currently exists in the dom, return the UiNode with the specified id.
  */
-UiTree.prototype.find = function(id) {
+InformationTree.prototype.find = function(id) {
   if (!id) return;
 
   var $uiNode = $('#' + id);
@@ -124,7 +127,7 @@ UiTree.prototype.find = function(id) {
  of class Node, and return the new UiNode. Note if a new UiNode is created, it will be returned
  unattached to the information tree.
  */
-UiTree.prototype._findOrCreateUiNode = function(node) {
+InformationTree.prototype._findOrCreateUiNode = function(node) {
   var foundUiNode = this.find(node.id);
   return foundUiNode ? foundUiNode.update(node) : new UiNode(node);
 }
@@ -137,12 +140,12 @@ UiTree.prototype._findOrCreateUiNode = function(node) {
  If no such UiNode yet exists in the dom, create one based on node, which is an instance
  of class Node, and return the new UiNode after attaching it to the information tree in its proper position.
  */
-// TODO: UiTree should not be accepting node Reps and doing find or create. Maybe Tree should do this.
-UiTree.prototype.addUiNode = function(node) {
+// TODO: InformationTree should not be accepting node Reps and doing find or create. Maybe Tree should do this.
+InformationTree.prototype.addUiNode = function(node) {
   return this._findOrCreateUiNode(node)._attachToTree();
 }
 
 
-UiTree.prototype.addUiNodes = function(nodes) {
+InformationTree.prototype.addUiNodes = function(nodes) {
   return nodes.map(this.addUiNode.bind(this));
 }

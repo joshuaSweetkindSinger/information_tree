@@ -1,5 +1,5 @@
 //= require server
-//= require ui_tree
+//= require ui_information_tree
 //= require controller
 
 // ========================================================================
