@@ -58,11 +58,29 @@ button-panel {
   position:absolute;
 }
 
+.information-tree-container {
+  margin-left:10px;
+  display:block;
+}
+
 information-tree {
+  display:block;
+  background:#e0f0ff;
+  border:1px solid black;
+  border-top:0px;
+}
+
+visited-node-list {
+  display:block;
+  background:#e0f0ff;
+  height:50px;
+}
+
+.visited-node-list {
   display:block;
   border:1px solid black;
   background:#e0f0ff;
-  margin-left:100px;
+  height:77px;
 }
 
 text-node {
