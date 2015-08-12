@@ -24,11 +24,11 @@ Controller = function () {
   this.selectedNode = null // The Ui maintains a "selected node", to which actions are performed.
   this.buttonPanel  = new ButtonPanel;
 
-  App.uiTree.initRequest
+  App.informationTree.initRequest
     .success(function() {
-    $(App.uiTree).append(self.buttonPanel);
+    $(App.informationTree).append(self.buttonPanel);
     $(self.buttonPanel).hide();
-    self.selectNode(App.uiTree.top);
+    self.selectNode(App.informationTree.top);
   });
 };
 
@@ -247,7 +247,7 @@ Controller.prototype.adviseDragStop = function (event, helperUiNode, originalUiN
     this.insertChild(uiReferenceNode, originalUiNode);
 
   // There's a node above us: add originalNode as a successor
-  } else if (uiReferenceNode = App.uiTree.findLowestNodeAbove(helperUiNode.position.top)) {
+  } else if (uiReferenceNode = App.informationTree.findLowestNodeAbove(helperUiNode.position.top)) {
     this.insertSuccessor(uiReferenceNode, originalUiNode);
   }
 }

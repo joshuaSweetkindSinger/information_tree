@@ -229,7 +229,7 @@ ViewNode.prototype._attachChild = function(nodeToAttach) {
  and return it if found.
  */
 ViewNode.prototype.predecessor = function() {
-  return App.uiTree.find(this.node.predecessor_id);
+  return App.informationTree.find(this.node.predecessor_id);
 };
 
 
@@ -238,7 +238,7 @@ ViewNode.prototype.predecessor = function() {
  and return it if found.
  */
 ViewNode.prototype.successor = function() {
-  return App.uiTree.find(this.node.successor_id);
+  return App.informationTree.find(this.node.successor_id);
 };
 
 
@@ -247,7 +247,7 @@ ViewNode.prototype.successor = function() {
  and return it if found.
  */
 ViewNode.prototype.parent = function() {
-  return App.uiTree.find(this.node.parent_id);
+  return App.informationTree.find(this.node.parent_id);
 }
 
 ViewNode.prototype.kids = function() {
@@ -379,7 +379,7 @@ ViewNode.prototype.paste = function(viewNode) {
  Tell the server to trash the node represented by <this>, then trash it on the client side as well.
   */
 ViewNode.prototype.trash = function() {
- return App.uiTree.trash.insertChild(this);
+ return App.informationTree.trash.insertChild(this);
 }
 
 
@@ -400,7 +400,7 @@ ViewNode.prototype.expand = function(doRecursive) {
   var self = this;
   this.node.fetchChildren()
     .success(function(children) {
-      App.uiTree.addUiNodes(children)
+      App.informationTree.addUiNodes(children)
       self._expand()
       if (doRecursive) {
         self.kids().forEach(function(nodeView) {nodeView.expand(true)});
