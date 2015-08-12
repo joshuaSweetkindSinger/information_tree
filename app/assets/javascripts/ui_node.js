@@ -46,7 +46,7 @@ UiNode.prototype.bindEventHandlers = function () {
   })
 
   // Attach handlers to content element
-  var $content = $(this._header.content);
+  var $content = $(this._header.contentArea);
   $content.on("click", this.onClick.bind(this));
   $content.on("blur", this.onBlur.bind(this))
   $content.on("contextmenu", this.onContextMenu.bind(this));
@@ -124,7 +124,7 @@ UiNode.prototype.onBlur = function(e) {
 
 // Put browser focus on this node, for data entry.
 UiNode.prototype.focus = function () {
-  $(this._header.content).focus()
+  $(this._header.contentArea).focus()
 }
 
 UiNode.prototype.isContentDirty = function () {
