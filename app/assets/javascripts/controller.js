@@ -28,7 +28,8 @@ Controller = function () {
 
   App.informationTree.initRequest
     .success(function() {
-    $(App.informationTree).append(self.buttonPanel);
+      // $(App.informationTree).append(self.buttonPanel);
+      $('body').append(self.buttonPanel);
     $(self.buttonPanel).hide();
     self.selectNode(App.informationTree.top);
   });

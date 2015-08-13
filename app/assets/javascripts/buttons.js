@@ -59,11 +59,12 @@ ButtonPanel.prototype.afterCreate = function() {
  */
 // TODO: the isTopNode flag is inelegant and won't scale well. Find a better way.
 ButtonPanel.prototype.popTo = function(uiNode) {
-  $(this).show(); // I'm not sure why, but showing this before doing new offset avoids a bug. See documentation above.
-  var offset = $(uiNode).offset();
-  var left   = offset.left;
-  var top    = offset.top;
-  $(this).offset({left:left-102, top:top}); // TODO: Remove hardcoded constant.
+  var $this = $(this)
+  $this.show(); // I'm not sure why, but showing this before doing new offset avoids a bug. See documentation above.
+
+  var offset = $(uiNode._header.contentArea).offset();
+  offset.left = offset.left - $this.width()
+  $this.offset(offset);
 
   uiNode.enableButtonPanelOptions(this)
 }
