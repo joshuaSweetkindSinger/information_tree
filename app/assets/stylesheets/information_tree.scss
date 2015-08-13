@@ -83,6 +83,13 @@ visited-node-list {
   height:77px;
 }
 
+visited-node-marker {
+  display:inline-block;
+  border:1px solid black;
+  margin:3px;
+  padding:3px;
+}
+
 text-node {
   display:block;
   box-sizing:border-box;

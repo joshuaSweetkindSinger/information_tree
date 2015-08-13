@@ -21,8 +21,10 @@
 Controller = function () {
   var self = this;
 
-  this.selectedNode = null // The Ui maintains a "selected node", to which actions are performed.
-  this.buttonPanel  = new ButtonPanel;
+  this.selectedNode    = null // The Ui maintains a "selected node", to which actions are performed.
+  this.buttonPanel     = new ButtonPanel;
+  this.visitedNodeList = $('visited-node-list')[0].init();
+
 
   App.informationTree.initRequest
     .success(function() {
@@ -61,7 +63,9 @@ Controller.prototype.autoSizeNode = function (uiNode) {
  Select the specified node.
  */
 Controller.prototype.selectNode = function (uiNode) {
-  this.selectedNode = uiNode;
+  this.selectedNode = uiNode
+  $(uiNode).focus()
+  this.visitedNodeList.addVisitedNode(uiNode)
 }
 
 
