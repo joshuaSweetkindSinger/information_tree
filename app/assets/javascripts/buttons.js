@@ -57,7 +57,6 @@ ButtonPanel.prototype.afterCreate = function() {
  in the wrong place in the dom. Not sure why. But if you show the panel before setting the offset,
  then everything works okay.
  */
-// TODO: the isTopNode flag is inelegant and won't scale well. Find a better way.
 ButtonPanel.prototype.popTo = function(uiNode) {
   var $this = $(this)
   $this.show(); // I'm not sure why, but showing this before doing new offset avoids a bug. See documentation above.
