@@ -69,7 +69,7 @@ ButtonPanel.prototype.popTo = function(uiNode) {
 }
 
 ButtonPanel.prototype.onClick = function() {
-  $(this).hide()
+  App.controller.hideAllMenus()
 }
 
 

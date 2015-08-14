@@ -67,7 +67,7 @@ VisitedNodeMarker.prototype.onClick = function (event) {
 
   $tree.scrollTop($tree.scrollTop() + $(this.uiNode).position().top)
   App.controller.selectNode(this.uiNode)
-  $(this.visitedNodeList).hide()
+  App.controller.hideAllMenus()
 }
 
 /*
