@@ -22,8 +22,8 @@ Controller = function () {
   var self = this;
 
   this.selectedNode    = null // The Ui maintains a "selected node", to which actions are performed.
-  this.buttonPanel     = new ButtonPanel;
-  this.visitedNodeList = $('visited-node-list')[0].init();
+  this.buttonPanel     = new ButtonPanel
+  this.visitedNodeList = new VisitedNodeList
 
 
   App.informationTree.initRequest

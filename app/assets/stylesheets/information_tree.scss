@@ -61,16 +61,15 @@ button-panel {
   border:1px solid black;
 }
 
-.information-tree-container {
-  margin-left:50px;
-  display:block;
-}
 
 information-tree {
   display:block;
   background:#e0f0ff;
   border:1px solid black;
   border-top:0px;
+  height:100vh;
+  overflow-y:auto;
+  overflow-x:auto;
 }
 
 visited-node-list {
@@ -92,6 +91,8 @@ visited-node-marker {
   border:1px solid black;
   margin:3px;
   padding:3px;
+  background:white;
+  border-radius:5px;
 }
 
 text-node {

@@ -10,7 +10,7 @@ nodes that have been visited.
 // ========================================================================
 var VisitedNodeList = defCustomTag('visited-node-list', HTMLElement)
 
-VisitedNodeList.prototype.init = function() {
+VisitedNodeList.prototype.afterCreate = function() {
   return this
 };
 
