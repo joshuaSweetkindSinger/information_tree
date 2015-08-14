@@ -59,6 +59,10 @@ var InformationTree = defCustomTag('information-tree', HTMLElement);
 InformationTree.prototype.init = function() {
   $(this).click(this.onClick);
 
+  /*
+  Initialize the information tree by asking the server to give us its "Top"
+  and "Trash" nodes.
+   */
   var self = this;
   this.initRequest = App.server.getTop()
     .success(function(top) {
@@ -76,7 +80,7 @@ InformationTree.prototype.init = function() {
 };
 
 InformationTree.prototype.onClick = function (event) {
-  App.controller.hideButtonPanel();
+  App.controller.hideAllMenus();
 }
 
 

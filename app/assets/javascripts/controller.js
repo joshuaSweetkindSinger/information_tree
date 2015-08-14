@@ -23,15 +23,23 @@ Controller = function () {
 
   this.selectedNode    = null // The Ui maintains a "selected node", to which actions are performed.
   this.buttonPanel     = new ButtonPanel
-  this.visitedNodeList = new VisitedNodeList
+
+  this.visitedNodeList = $('visited-node-list-dropdown')[0].init().visitedNodeList
 
 
+  /*
+  After the information Tree is done asynchronously initializing itself,
+  select the top node of the tree, and append some menus to do the dom.
+   */
   App.informationTree.initRequest
     .success(function() {
-      // $(App.informationTree).append(self.buttonPanel);
       $('body').append(self.buttonPanel);
-    $(self.buttonPanel).hide();
-    self.selectNode(App.informationTree.top);
+      $(self.buttonPanel).hide();
+
+      $('body').append(self.visitedNodeList);
+      $(self.visitedNodeList).hide();
+
+      self.selectNode(App.informationTree.top);
   });
 };
 
@@ -198,8 +206,9 @@ Controller.prototype.saveNode = function (uiNode) {
 }
 
 
-Controller.prototype.hideButtonPanel = function () {
+Controller.prototype.hideAllMenus = function () {
   $(this.buttonPanel).hide()
+  $(this.visitedNodeList).hide()
 }
 
 
