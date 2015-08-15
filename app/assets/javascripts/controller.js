@@ -1,4 +1,6 @@
 //= require buttons
+//= require visited_node_list
+//= require node_path_list
 
 // ========================================================================
 //                   User Interface
@@ -24,7 +26,8 @@ Controller = function () {
   this.selectedNode    = null // The Ui maintains a "selected node", to which actions are performed.
   this.buttonPanel     = new ButtonPanel
 
-  this.visitedNodeList = $('visited-node-list-dropdown')[0].init().visitedNodeList
+  this.visitedNodeList = $('#visited-node-list-dropdown')[0].init().visitedNodeList
+  this.nodePathList    = $('#node-path-list-dropdown')[0].init().nodePathList
 
 
   /*
@@ -38,6 +41,9 @@ Controller = function () {
 
       $('body').append(self.visitedNodeList);
       $(self.visitedNodeList).hide();
+
+      $('body').append(self.nodePathList);
+      $(self.nodePathList).hide();
 
       self.selectNode(App.informationTree.top);
   });
@@ -75,6 +81,17 @@ Controller.prototype.selectNode = function (uiNode) {
   this.selectedNode = uiNode
   $(uiNode).focus()
   this.visitedNodeList.addVisitedNode(uiNode)
+  this.nodePathList.setPath(uiNode)
+}
+
+
+/*
+ Visit the specified node. This means scrolling the node to the top of the viewport as well as selecting the node.
+ */
+Controller.prototype.visitNode = function (uiNode) {
+  App.informationTree.scrollTo(uiNode)
+  this.selectNode(uiNode)
+  this.hideAllMenus()
 }
 
 
@@ -209,6 +226,7 @@ Controller.prototype.saveNode = function (uiNode) {
 Controller.prototype.hideAllMenus = function () {
   $(this.buttonPanel).hide()
   $(this.visitedNodeList).hide()
+  $(this.nodePathList).hide()
 }
 
 

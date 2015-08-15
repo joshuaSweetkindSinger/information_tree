@@ -1,16 +1,20 @@
+//= require node_marker
 /*
 This file defines class VisitedNodeList, and associated helper classes. It is the primary dom element
 container on the client side for displaying the nodes that have been visited by the user.
 
 */
 
-/*
-A VisitedNodeList object consists of multiple objects of class VisitedNodeMarker, which represent the
-nodes that have been visited.
- */
+
+
 // ========================================================================
 //                   Visited Node List
 // ========================================================================
+/*
+ A VisitedNodeList object consists of multiple objects of class VisitedNodeMarker, which represent the
+ nodes that have been visited.
+ */
+
 var VisitedNodeList = defCustomTag('visited-node-list', HTMLElement)
 
 VisitedNodeList.prototype.afterCreate = function() {
@@ -19,7 +23,7 @@ VisitedNodeList.prototype.afterCreate = function() {
 
 VisitedNodeList.prototype.addVisitedNode = function (uiNode) {
   var $this = $(this)
-  $this.prepend(new VisitedNodeMarker(uiNode, this))
+  $this.prepend(new NodeMarker(uiNode, this))
   if ($this.children().length > 10) {
     $this.children().last().remove()
   }
@@ -40,47 +44,15 @@ VisitedNodeList.prototype.popUp = function(element) {
   $this.offset(offset)
 }
 
-// ========================================================================
-//                   Visited Node Marker
-// ========================================================================
-var VisitedNodeMarker = defCustomTag('visited-node-marker', HTMLElement)
 
-/*
-Create a new visited node marker and initialize it from the specified ViewNode object.
- */
-VisitedNodeMarker.prototype.afterCreate = function (uiNode, visitedNodeList) {
-  this.uiNode          = uiNode
-  this.visitedNodeList = visitedNodeList // pointer back to parent list
-
-  var $this = $(this)
-  $this.html(uiNode.content)
-  $this.on('click', this.onClick.bind(this))
-}
-
-/*
-Handle a click on a visited node marker: scroll the information tree so that the
-node represented by the mark is at the top of the viewport.
-
-MATH NOTES:
-To do this, we set the scroll parameters for the node's parent, which is the information-tree element
-(it's the scroll parent because it has a position:relative style attribute), to be its current scrollTop plus
-the element's position.top, which states how many pixels below the current scroll top the element lies.
- */
-VisitedNodeMarker.prototype.onClick = function (event) {
-  var $tree = $(App.informationTree)
-
-  $tree.scrollTop($tree.scrollTop() + $(this.uiNode).position().top)
-  App.controller.selectNode(this.uiNode)
-  App.controller.hideAllMenus()
-}
-
-/*
-A VisitedNodeListDropdown object is a clickable button that displays
-a visited node list menu.
-  */
 // ========================================================================
 //                   Visited Node List Dropdown
 // ========================================================================
+/*
+ A VisitedNodeListDropdown object is a clickable button that displays
+ a visited node list menu.
+ */
+
 var VisitedNodeListDropdown = defCustomTag('visited-node-list-dropdown', HTMLElement)
 
 /*
@@ -98,5 +70,6 @@ VisitedNodeListDropdown.prototype.init = function() {
 };
 
 VisitedNodeListDropdown.prototype.onClick = function (event) {
+  App.controller.hideAllMenus()
   this.visitedNodeList.popUp(this)
 }

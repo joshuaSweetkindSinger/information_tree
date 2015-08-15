@@ -153,3 +153,16 @@ InformationTree.prototype.addUiNode = function(node) {
 InformationTree.prototype.addUiNodes = function(nodes) {
   return nodes.map(this.addUiNode.bind(this));
 }
+
+/*
+Set the information tree's scroll parameters such that uiNode is at the top of the tree's div.
+
+ MATH NOTES:
+ To do this, we set the scroll parameters for the node's parent, which is the information-tree element
+ (it's the scroll parent because it has a position:relative style attribute), to be its current scrollTop plus
+ the element's position.top, which states how many pixels below the current scroll top the element lies.
+ */
+InformationTree.prototype.scrollTo = function (uiNode) {
+  var $this = $(this)
+  $this.scrollTop($this.scrollTop() + $(uiNode).position().top)
+}

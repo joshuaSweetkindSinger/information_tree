@@ -157,6 +157,19 @@ ViewNode.prototype.expandedViewNodes = function(result) {
   return result;
 }
 
+/*
+Return the logical parent of the node, if it exists, or null.
+The logical parent of a ViewNode is another ViewNode. In the actual dom structure,
+the actual parent of a view node is a children-container element, which is not a ViewNode.
+But *its* parent is another ViewNode: the logical parent.
+
+Special Case: when <this> is the top node, the structure breaks. There is no logical parent to the
+top node (although there is an actual parent in the dom structure).
+*/
+ViewNode.prototype.parent = function () {
+  return this === App.informationTree.top ? null : $(this).parent().parent()[0]
+}
+
 // =========================================================================
 //        Tree Hierarchy Accessors And Manipulation Methods
 // =========================================================================

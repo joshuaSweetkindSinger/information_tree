@@ -73,37 +73,57 @@ information-tree {
   position:relative; // important for determining position of child nodes for scrolling.
 }
 
-visited-node-list-dropdown {
-  &:hover {
-    background:black;
-  }
-}
-
-visited-node-list {
-  display:block;
-  background:#e0f0ff;
-  height:300px;
-  width:120px;
-  overflow-y:auto;
-  overflow-x:hidden;
-  border:1px solid black;
-}
-
-visited-node-marker {
+node-marker {
   display:inline-block;
   border:1px solid black;
   margin:3px;
   padding:10px;
   background:white;
   border-radius:5px;
-  width:80px;
+  width:200px;
   height:30px;
   overflow:hidden;
   &:hover {
     background:yellow;
   }
-
 }
+
+visited-node-list-dropdown {
+  &:hover {
+    background:black;
+  }
+  margin:10px;
+}
+
+visited-node-list {
+  display:block;
+  background:#e0f0ff;
+  height:300px;
+  width:300px;
+  overflow-y:auto;
+  overflow-x:hidden;
+  border:1px solid black;
+}
+
+
+
+node-path-list-dropdown {
+  margin:10px;
+  &:hover {
+    background:black;
+  }
+}
+
+node-path-list {
+  display:block;
+  background:#e0f0ff;
+  height:300px;
+  width:300px;
+  overflow-y:auto;
+  overflow-x:hidden;
+  border:1px solid black;
+}
+
 
 text-node {
   display:block;
