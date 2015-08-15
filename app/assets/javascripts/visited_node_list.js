@@ -18,7 +18,11 @@ VisitedNodeList.prototype.afterCreate = function() {
 };
 
 VisitedNodeList.prototype.addVisitedNode = function (uiNode) {
-  $(this).append(new VisitedNodeMarker(uiNode, this))
+  var $this = $(this)
+  $this.prepend(new VisitedNodeMarker(uiNode, this))
+  if ($this.children().length > 10) {
+    $this.children().last().remove()
+  }
 }
 
 
