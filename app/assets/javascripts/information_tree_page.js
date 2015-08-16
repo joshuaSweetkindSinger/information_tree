@@ -54,28 +54,8 @@ The name nodeRep indicates that a representation of the now-existing object has 
 
 /*
  TODO: Make New Node get deleted on blur if nothing changed.
- TODO: Think about nodespec, noderep, and node. All of these should be nodespecs and anything
- that takes a nodespec should take the others. Does addNode always add a new node, or sometimes an existing one?
- If the latter, how did the new node get created? What are the right primitives? Does it always go through the server first?
- Is there a way to do some things on client side first? What are right primitives for creation and movement of nodes?
- Primitives: server side: Node.new() creates a new node on server side. Node.insert(node, insertionPoint) inserts a node at the right place.
- server side: Node.getTop(), Node.getTrash(), Node.get(:id) return specific nodesReps.
- server side: addNodeOnServer(nodeSpec, insertionPoint) creates a new node on server at insertion point.
- server side: getNodeFromServer(ref) returns a nodeRep for the referenced node.
- client side: addNode(nodeRep) attaches a rep from the server to the client side tree.
- Server side node primitives: create, read, update, delete, trash, move, children.
- Client side node primitives: create, update, trash, move, expand.
- TODO: fix rank calculation. Do we need predecessor and successor in db?
- TODO: Make the trash node visible in hierarchy: Top has children named User and System. But Trash and Basket under System.
- TODO: There's an ambiguity between node.content and node._header.content. The former returns the text of node._header.content.
- The latter returns the content dom object, which is a textarea element.
  TODO: look for refs to stopPropagation() and preventDefault() and make sure they're necessary.
- TODO: It isn't clear that all UI dom elements should defer to the controller. the UI will be
- more extensible if we can add new UI elements that enhance UI functionality without having to also alter
- the controller.
- TODO: all the various UI dom components should simply defer to the ui controller for their functionality.
- They should bind event handlers, but then pass the event to the ui controller for actual processing.
- They are like sockets, with functionality to be plugged in by the ui controller.
+
  TODO: hitting return on an empty node should delete the node.
  TODO: Consider having hit return on a node put you in edit mode for the node, equal to clicking on it.
  This presupposes we're not always in edit mode.

@@ -62,11 +62,15 @@ Controller.prototype.clickedRightOnNode = function (uiNode, event) {
 }
 
 
-// Handle a blur action on a node. This usually means saving any changes to the node to the server.
+/*
+Handle a blur action on a node. This means saving any changes to the node to the server.
+Also, if the node is empty and not dirty, trash the node on blur.
+  */
 Controller.prototype.blurNode = function (uiNode) {
   uiNode = uiNode || this.selectedNode
   if (uiNode.isContentDirty()) this.autoSizeNode(uiNode)
   if (uiNode.isDirty()) this.saveNode(uiNode)
+  if (!uiNode.isDirty() && uiNode.content === '') this.trash(uiNode)
 }
 
 
