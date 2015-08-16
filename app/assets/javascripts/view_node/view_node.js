@@ -157,18 +157,6 @@ ViewNode.prototype.expandedViewNodes = function(result) {
   return result;
 }
 
-/*
-Return the logical parent of the node, if it exists, or null.
-The logical parent of a ViewNode is another ViewNode. In the actual dom structure,
-the actual parent of a view node is a children-container element, which is not a ViewNode.
-But *its* parent is another ViewNode: the logical parent.
-
-Special Case: when <this> is the top node, the structure breaks. There is no logical parent to the
-top node (although there is an actual parent in the dom structure).
-*/
-ViewNode.prototype.parent = function () {
-  return this === App.informationTree.top ? null : $(this).parent().parent()[0]
-}
 
 // =========================================================================
 //        Tree Hierarchy Accessors And Manipulation Methods
@@ -257,7 +245,9 @@ ViewNode.prototype.successor = function() {
 
 /*
  Search the dom for a ViewNode whose id matches the parent id of this.node
- and return it if found.
+ and return it if found. This is the "logical" parent of the view node, which is
+ another view node. By contrast, the actual dom parent of the view node is going to be
+ a children-container element.
  */
 ViewNode.prototype.parent = function() {
   return App.informationTree.find(this.node.parent_id);
@@ -423,7 +413,7 @@ ViewNode.prototype.expand = function(doRecursive) {
 
 
 /*
- Do the client-side stuff necessary to xxpand this node,
+ Do the client-side stuff necessary to expand this node,
  which means revealing its children and showing its button panel.
  This is a helper method called by expand(). The parent method takes care
  of ensuring that this node already has its children fetched from the server.

@@ -72,6 +72,16 @@ would navigate to the referenced node in the information tree.
 TODO: Modify schema so that each node has a has_children boolean. Whenever a node becomes the parent of a child,
 that flag is set to true. When the last child is removed, that flag is set to false. This will enable the UI to
 only show expand icons for nodes that are expandable.
+
+TODO: Implement a search bar that returns up to 30 matching nodes in a node-marker menu. Then, clicking on a node marker
+needs to take the user to visit that node, which requires loading its entire path, since none of the path, except for
+Top may actually be on the client side yet. Probably best way to download the path is to return an array of json nodes.
+This is a very flexible structure. We just hash each json node into the client side and call it a day. A node becomes
+visible on the client side when it has a path to Top. A node without a known parent can go into an "orphans"
+system node.
+
+TODO: Fix bug whereby trash does not expand smoothly on first go
+TODO: Fix bug whereby trash does not fully show at bottom of view when Top is expanded.
  */
 
 $(document).ready(function(){

@@ -1,5 +1,14 @@
-@import "bootstrap";
 
+information-tree {
+  display:block;
+  background:#e0f0ff;
+  border:1px solid black;
+  border-top:0px;
+  height:100vh;
+  overflow-y:auto;
+  overflow-x:auto;
+  position:relative; // important for determining position of child nodes for scrolling.
+}
 
 // Custom tags derived from built-in tags
 // can't have css based on the derived tag,
@@ -61,17 +70,6 @@ button-panel {
   border:1px solid black;
 }
 
-
-information-tree {
-  display:block;
-  background:#e0f0ff;
-  border:1px solid black;
-  border-top:0px;
-  height:100vh;
-  overflow-y:auto;
-  overflow-x:auto;
-  position:relative; // important for determining position of child nodes for scrolling.
-}
 
 node-marker {
   display:inline-block;
