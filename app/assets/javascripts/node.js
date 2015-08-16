@@ -126,9 +126,12 @@ Node.prototype.trash = function() {
   return App.server.trash(this.id)
 }
 
-// TODO: Refactor so this just always return its children.
-// As it now stands, it will return an array of those children that were fetched.
-// Fetch children if necessary and "return" through async protocol an array of the children fetched.
+/*
+If children have not yet been fetched, fetch the chidlren and return an array of nodereps for
+the children. If the children have been fetched, return an empty array.
+
+Thus, the return value is always an array of the children that have been fetched.
+ */
 Node.prototype.fetchChildren = function () {
   var self = this;
 

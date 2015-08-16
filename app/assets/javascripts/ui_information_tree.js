@@ -143,6 +143,8 @@ InformationTree.prototype._findOrCreateUiNode = function(node) {
 
  If no such UiNode yet exists in the dom, create one based on node, which is an instance
  of class Node, and return the new UiNode after attaching it to the information tree in its proper position.
+
+ Input: node is a Node object.
  */
 // TODO: InformationTree should not be accepting node Reps and doing find or create. Maybe Tree should do this.
 InformationTree.prototype.addUiNode = function(node) {

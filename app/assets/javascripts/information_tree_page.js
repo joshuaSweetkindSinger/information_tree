@@ -72,9 +72,6 @@ would navigate to the referenced node in the information tree.
 TODO: Modify schema so that each node has a has_children boolean. Whenever a node becomes the parent of a child,
 that flag is set to true. When the last child is removed, that flag is set to false. This will enable the UI to
 only show expand icons for nodes that are expandable.
-
-TODO: Get rid of UI prefix on most classes. Most classes *are* Ui objects at this point, so the prefix
-is cluttery.
  */
 
 $(document).ready(function(){

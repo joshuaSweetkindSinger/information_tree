@@ -64,8 +64,6 @@ ViewNode.prototype.afterCreate = function(node) {
   $this.append(this._childrenContainer = new ViewNodeChildren);
 
   this.update(node) // This needs to follow the _header and container appends above; it invokes setters that depend upon them.
-
-  this.collapse();   // Note: need to call this method, not just to set state, but so that child dom element will be hidden.
 }
 
 // Clean up the width and height after we are attached.
@@ -78,6 +76,8 @@ ViewNode.prototype.onAttach = function() {
   if (this._header) {
     this.width   = this.node.width
     this.height  = this.node.height
+
+    this.collapse();   // Note: need to call this method, not just to set state, but so that child dom element will be hidden.
   }
 }
 
@@ -432,7 +432,7 @@ ViewNode.prototype._expand = function() {
   if (this.state == 'expanded') return; // Already expanded, so do nothing.
 
   this.state = 'expanded'
-  $(this).children('node-children').show('slow')
+  $(this._childrenContainer).show('slow')
   this._header.expandCollapseButton.showExpandedStatus();
   return this;
 }
@@ -441,12 +441,12 @@ ViewNode.prototype._expand = function() {
 // Collapse this node, which means hiding its children and hiding its button panel.
 ViewNode.prototype.collapse = function(doRecursive) {
   this.state = 'collapsed'
-  var nodeChildren = $(this).children('node-children')
-  nodeChildren.hide('slow')
+  var $childrenContainer = $(this._childrenContainer)
+  $childrenContainer.hide('slow')
   this._header.expandCollapseButton.showCollapsedStatus();
 
   if (doRecursive) {
-    nodeChildren.children().each(function(index) {
+    $childrenContainer.children().each(function(index) {
       this.collapse(doRecursive)
     })
   }
