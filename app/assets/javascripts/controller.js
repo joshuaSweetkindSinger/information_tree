@@ -274,17 +274,29 @@ Determine whether helperUiNode was dropped on top of another node,
    helperUiNode: is a throw-away node created by jquery to give visual feedback on the dragged node
                  while the user is dragging it, without dragging the actual, original node that was clicked on.
    originalNode: is that original node that was clicked on by the user to initiate the drag event.
+
+PROGRAMMER NOTES
+MATH: helperUiNode.position().top is in coordinates relative to the top of the information tree, which
+is 0,0 in this coordinate system. Nodes near the bottom of the information tree will
+have a high top value. We convert this value to "scrolled" information-tree coords
+before passing it to findLowestNodeAbove(). The information-tree is a div that sits beneath the top
+menu bar, and it is scrollable. Any node in the tree can be asked its tree coords via $(node).position().
+These values will be expressed in pixels relative to the scroll position of the tree. The upper left corner
+of the tree that is visible in the view is always 0,0 in this coord system.
+Nodes off-screen above this will have negative top values in "scrolled" tree coords.
+
+We use $(tree).scrollTop() to get the current values of the scroll offsets so we can do the conversion.
  */
 Controller.prototype.adviseDragStop = function (event, helperUiNode, originalUiNode) {
-  var uiReferenceNode;
+  var uiReferenceNode
 
   // There's a drop target: add originalNode as a child
   if (uiReferenceNode = this.dropTarget) {
-    this.insertChild(uiReferenceNode, originalUiNode);
+    this.insertChild(uiReferenceNode, originalUiNode)
 
   // There's a node above us: add originalNode as a successor
-  } else if (uiReferenceNode = App.informationTree.findLowestNodeAbove(helperUiNode.position.top)) {
-    this.insertSuccessor(uiReferenceNode, originalUiNode);
+  } else if (uiReferenceNode = App.informationTree.findLowestNodeAbove(helperUiNode.position.top - $(App.informationTree).scrollTop())) {
+    this.insertSuccessor(uiReferenceNode, originalUiNode)
   }
 }
 
