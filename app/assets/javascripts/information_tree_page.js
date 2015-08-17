@@ -82,6 +82,9 @@ system node.
 
 TODO: Fix bug whereby trash does not expand smoothly on first go
 TODO: Fix bug whereby trash does not fully show at bottom of view when Top is expanded.
+
+TODO: Newly created nodes are not created expanded. We want them to be.
+TODO: Create an "empty trash" function for the trash node.
  */
 
 $(document).ready(function(){

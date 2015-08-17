@@ -25,15 +25,15 @@ class Trash < Node
   def insert (node, splice_position)
     _insert(node, splice_position)
 
-    # delete nodes older than 30 days.
     delete_old_nodes
 
     node
   end
 
-  # Delete all nodes in the trash that were put there longer than DAYS_TO_KEEP_TRASHED_NODE days ago.
-  def delete_old_nodes
-    children.where('updated_at < ?', Time.now - DAYS_TO_KEEP_TRASHED_NODE.day).each do |node|
+
+  # Delete all nodes in the trash that were put there longer than days_to_keep days ago.
+  def delete_old_nodes (days_to_keep = DAYS_TO_KEEP_TRASHED_NODE)
+    children.where('updated_at < ?', Time.now - days_to_keep.day).each do |node|
       node.destroy
     end
   end

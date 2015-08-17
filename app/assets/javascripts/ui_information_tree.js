@@ -113,13 +113,17 @@ InformationTree.prototype.findLowestNodeAbove = function(y) {
 
 /*
  If it currently exists in the dom, return the UiNode with the specified id.
+ If it does not exist, behavior depends on options. Default is to throw an error
+ unless options.noError is true.
  */
-InformationTree.prototype.find = function(id) {
-  if (!id) return;
+InformationTree.prototype.find = function(id, options) {
+  options = options || {noError: false}
 
   var $uiNode = $('#' + id);
   if ($uiNode.length > 0) {
     return $uiNode[0];
+  } else if (!options.noError) {
+    throw "Could not find node on client-side with id of " + id
   }
 }
 
@@ -132,7 +136,7 @@ InformationTree.prototype.find = function(id) {
  unattached to the information tree.
  */
 InformationTree.prototype._findOrCreateUiNode = function(node) {
-  var foundUiNode = this.find(node.id);
+  var foundUiNode = this.find(node.id, {noError:true});
   return foundUiNode ? foundUiNode.update(node) : new UiNode(node);
 }
 

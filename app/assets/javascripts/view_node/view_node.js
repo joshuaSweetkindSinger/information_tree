@@ -163,7 +163,7 @@ ViewNode.prototype.expandedViewNodes = function(result) {
 // =========================================================================
 /*
  Attach ourselves to the information tree view. This is done just after a new
- ViewNode is created from a rep sent by the server to the client, just after
+ ViewNode is created from a node rep sent by the server to the client, and also just after
  an existing client-side node has been repositioned to have a new parent or siblings.
 
  We figure out where to attach ourselves by examining our predecessor, successor,
@@ -179,24 +179,17 @@ ViewNode.prototype.expandedViewNodes = function(result) {
  to be smart enough to realize that this is just a partial list of the node's children.
  */
 ViewNode.prototype._attachToTree = function() {
-  var relative;
-  if (relative = this.predecessor()) {
-    relative._attachSuccessor(this);
-    return this;
+  var predecessor = this.predecessor();
+
+  // Node has no predecessor--it's the first child of its parent
+  if (!predecessor) {
+    this.parent().attachChild(this)
+  } else {
+    predecessor._attachSuccessor(this);
   }
 
-  if (relative = this.successor()) {
-    relative._attachPredecessor(this);
-    return this;
-  }
-
-  if (relative = this.parent()) {
-    relative._attachChild(this);
-    return this;
-  }
-
-  console.log("could not attach to information tree:", this);
-};
+  return this;
+}
 
 
 // Attach nodeToAttach to the tree as our successor.
@@ -213,14 +206,13 @@ ViewNode.prototype._attachPredecessor = function(nodeToAttach) {
 
 
 /*
-Attach nodeToAttach to the tree as our first and only child.
+Attach nodeToAttach to the tree as our first child.
 
- NOTE: This method will only be called by _attachToTree() if the parent has no children yet. Because,
- if the parent has children, then _attachToTree will find a predecessor or successor of the node to be attached,
- and will prefer to call _attachSuccessor() or _attachPredecessor() instead.
+ NOTE: This method will be called by _attachToTree() if the parent has no children yet, or if
+ the user has created a new node on the fly to be the new first child of its parent.
  */
-ViewNode.prototype._attachChild = function(nodeToAttach) {
-  $(this._childrenContainer).append(nodeToAttach);
+ViewNode.prototype.attachChild = function(nodeToAttach) {
+  $(this._childrenContainer).prepend(nodeToAttach);
   return this;
 };
 
@@ -230,8 +222,10 @@ ViewNode.prototype._attachChild = function(nodeToAttach) {
  and return it if found.
  */
 ViewNode.prototype.predecessor = function() {
-  return App.informationTree.find(this.node.predecessor_id);
-};
+  if (this.node.predecessor_id) {
+    return App.informationTree.find(this.node.predecessor_id);
+  }
+}
 
 
 /*
@@ -239,8 +233,10 @@ ViewNode.prototype.predecessor = function() {
  and return it if found.
  */
 ViewNode.prototype.successor = function() {
-  return App.informationTree.find(this.node.successor_id);
-};
+  if (this.node.successor_id) {
+    return App.informationTree.find(this.node.successor_id);
+  }
+}
 
 
 /*
@@ -250,7 +246,9 @@ ViewNode.prototype.successor = function() {
  a children-container element.
  */
 ViewNode.prototype.parent = function() {
-  return App.informationTree.find(this.node.parent_id);
+  if (this.node.parent_id) {
+    return App.informationTree.find(this.node.parent_id);
+  }
 }
 
 ViewNode.prototype.kids = function() {
@@ -323,7 +321,7 @@ ViewNode.prototype.insertPredecessor = function(viewNode) {
 
 
 /*
- Create a new node on the server to be the successor/predecess/child of the node represented by <this>,
+ Create a new node on the server to be the successor/predecessor/child of the node represented by <this>,
  as indicated by mode, one of: 'insertChild', 'insertSuccessor', 'insertPredecessor',
  with attributes as specified in nodeSpec.  Use default attributes if nodeSpec is not supplied.
  Then effect the same transformation on the client side.
