@@ -293,7 +293,7 @@ ViewNode.prototype._insert = function(nodeToInsert, mode) {
 };
 
 /*
-Return true if the requested add operation is invalid.
+Return true if the requested add osperation is invalid.
 
 The operation is invalid if nodeSpec is a reference to <this>, in which
 case we would be adding ourselves to ourselves.

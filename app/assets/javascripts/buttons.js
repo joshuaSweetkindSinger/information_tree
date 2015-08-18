@@ -39,11 +39,8 @@ ButtonPanel.prototype.afterCreate = function() {
   this.followLinkButton = new FollowLink
   $this.append(this.followLinkButton)
 
-  this.trashNodeButton = new TrashNode
-  $this.append(this.trashNodeButton)
-
-  this.untrashNodeButton = new UntrashNode
-  $this.append(this.untrashNodeButton)
+  this.emptyTrashButton = new EmptyTrash
+  $this.append(this.emptyTrashButton)
 
   // Hide button panel after it is clicked on.
   $this.click(this.onClick)
@@ -51,20 +48,37 @@ ButtonPanel.prototype.afterCreate = function() {
 
 
 /*
- Move button panel to float above uiNode.
+ Move button panel to float near. uiNode.
+ Try to pop up the panel on the left of the node. If there isn't enough room, try to
+ pop it up on the right side of the node instead. If there isn't enough room there either,
+ pop it up flush left against the screen, which means it will overlap the node.
+
  Programmer's Note: In the case in which the selected node is deleted, we hide the button panel.
  If we then select a new node and change the button panel's offset before showing it, it shows up
  in the wrong place in the dom. Not sure why. But if you show the panel before setting the offset,
  then everything works okay.
- */
+p */
 ButtonPanel.prototype.popTo = function(uiNode) {
   var $this = $(this)
   $this.show(); // I'm not sure why, but showing this before doing new offset avoids a bug. See documentation above.
 
-  var offset = $(uiNode._header.contentArea).offset();
-  offset.left = offset.left - $this.width()
-  $this.offset(offset);
+  var panelWidth   = this.getBoundingClientRect().width
+  var contentArea  = uiNode._header.contentArea
+  var contentRect  = contentArea.getBoundingClientRect()
+  var left         = contentRect.left - panelWidth // First try popping up the panel to the left of the node.
+  var top          = contentRect.top // We will pop up at the same vertical level as the node.
 
+  // Not enough room on the left--try popping up on the right of node instead.
+ if (left < 0) {
+    left = contentRect.right
+  }
+
+  // Not enough room on the right--pop up over node, matching left edges.
+  if (left + panelWidth > $(window).width()) {
+    left = 0;
+  }
+
+  $this.offset({left:left, top:top});
   uiNode.enableButtonPanelOptions(this)
 }
 
@@ -247,30 +261,13 @@ AddPredecessor.prototype.onClick = function (event) {
 }
 
 // =========================================================================
-//                   Trash Node Button
+//                   Empty Trash Button
 // =========================================================================
-var TrashNode = defCustomTag('trash-node', ButtonPanelButton)
-TrashNode.prototype.onCreate = function() {
-  ButtonPanelButton.prototype.afterCreate.call(this, 'Trash!')
+var EmptyTrash = defCustomTag('empty-trash', ButtonPanelButton)
+EmptyTrash.prototype.onCreate = function() {
+  ButtonPanelButton.prototype.afterCreate.call(this, 'Empty Trash!')
 }
 
-TrashNode.prototype.onClick = function (event) {
-  App.controller.trash();
-}
-
-// =========================================================================
-//                   Untrash Node Button
-// =========================================================================
-// Pressing this button undoes the last delete operation, restoring the last trashed node to the hierarchy
-// by re-inserting it with the predecessor it had before. This is guaranteed to work if it is performed just
-// after the delete operation was performed. However, if performed later on, the predecessor itself may have been
-// moved or may have been trashed, in which case unexpected results may occur.
-var UntrashNode = defCustomTag('untrash-node', ButtonPanelButton)
-
-UntrashNode.prototype.afterCreate = function() {
-  ButtonPanelButton.prototype.afterCreate.call(this, 'Untrash')
-}
-
-UntrashNode.prototype.onClick = function (event) {
-  App.controller.restoreLastDeletedNode()
+EmptyTrash.prototype.onClick = function (event) {
+  App.controller.emptyTrash()
 }

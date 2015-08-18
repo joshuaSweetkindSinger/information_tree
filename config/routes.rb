@@ -3,8 +3,9 @@ JssNotes::Application.routes.draw do
   resources :nodes do
     collection do
       get :interactive
-      get :top, to: :get_top
-      get :trash, to: :get_trash
+      get :top
+      get :trash
+      delete :trash, to: :empty_trash
       post :back_up
       get :test_me
     end
@@ -15,7 +16,7 @@ JssNotes::Application.routes.draw do
       put    :insert_successor   # route is /nodes/:id/insert_successor
       put    :insert_predecessor # route is /nodes/:id/insert_predecessor
       put    :set_attributes  # route is /nodes/:id/set_attributes
-      delete :trash           # route is /nodes/:id/trash
+      delete :cut              # route is /nodes/:id/cut
     end
   end
 

@@ -30,6 +30,11 @@ class Trash < Node
     node
   end
 
+  # Delete everything in the trash.
+  def empty
+    delete_old_nodes 0
+  end
+
 
   # Delete all nodes in the trash that were put there longer than days_to_keep days ago.
   def delete_old_nodes (days_to_keep = DAYS_TO_KEEP_TRASHED_NODE)

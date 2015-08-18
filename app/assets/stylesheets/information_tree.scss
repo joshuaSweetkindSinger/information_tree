@@ -1,10 +1,15 @@
+.app-header {
+  height:4vh;
+}
 
+.app-footer {
+  height:0vh;
+}
 information-tree {
   display:block;
   background:#e0f0ff;
-  border:1px solid black;
   border-top:0px;
-  height:100vh;
+  height:92vh;
   overflow-y:auto;
   overflow-x:auto;
   position:relative; // important for determining position of child nodes for scrolling.

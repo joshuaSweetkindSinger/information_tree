@@ -127,7 +127,7 @@ Node.prototype.trash = function() {
 }
 
 /*
-If children have not yet been fetched, fetch the chidlren and return an array of nodereps for
+If children have not yet been fetched, fetch the children and return an array of nodereps for
 the children. If the children have been fetched, return an empty array.
 
 Thus, the return value is always an array of the children that have been fetched.

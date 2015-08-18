@@ -30,9 +30,17 @@ UiTrashNode.prototype.enableButtonPanelOptions = function(buttonPanel) {
   buttonPanel.addPredecessorButton.disable()
   buttonPanel.addSuccessorButton.disable()
   buttonPanel.cutButton.disable()
-  buttonPanel.trashNodeButton.disable()
 }
 
 UiTrashNode.prototype.onKeypress = function(event) {
   App.controller.keyPressedOnTrashNode(this, event);
+}
+
+UiTrashNode.prototype.empty = function () {
+  var self = this
+  return this.node.empty()
+    .success(function() {
+      $(self._childrenContainer).empty()
+      self.expand()
+    })
 }

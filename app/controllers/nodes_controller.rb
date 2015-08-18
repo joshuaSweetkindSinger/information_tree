@@ -98,7 +98,7 @@ class NodesController < ApplicationController
 
 
   # GET /nodes/top
-  def get_top
+  def top
     @obj = Top.top
     respond_to do |format|
       format.html {render 'show'}
@@ -107,11 +107,20 @@ class NodesController < ApplicationController
   end
 
   # GET /nodes/trash
-  def get_trash
+  def trash
     @obj = Trash.trash
     respond_to do |format|
       format.html {render 'show'}
       format.json {render json: @obj}
+    end
+  end
+
+  # DELETE /nodes/trash
+  # This deletes the contents of the trash node (its children).
+  def empty_trash
+    Trash.trash.empty
+    respond_to do |format|
+      format.json {render json:{success: true}}
     end
   end
 
@@ -171,10 +180,10 @@ class NodesController < ApplicationController
 
   # Remove self from the node hierarchy, patching up predecessor/successor links.
   # This moves the node and its children under the "Trash" node. They're not really deleted.
-  # DELETE /nodes/:id/remove
-  def trash
+  # DELETE /nodes/:id/cut
+  def cut
     @obj = Node.find(params[:id])
-    @obj.trash() if @obj # TODO: Should render an error here if the node was not found
+    @obj.cut() if @obj # TODO: Should render an error here if the node was not found
 
     respond_to do |format|
       format.html { redirect_to nodes_url }

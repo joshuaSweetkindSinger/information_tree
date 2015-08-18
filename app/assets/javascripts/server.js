@@ -80,6 +80,13 @@ Server.prototype.trashPath = function(nodeId) {
   return '/nodes/' + nodeId + '/trash.json'
 }
 
+Server.prototype.emptyTrash = function () {
+  return new Request("DELETE", this.emptyTrashPath())
+}
+
+Server.prototype.emptyTrashPath = function() {
+  return '/nodes/trash.json'
+}
 /*
  Get the child nodes of the node with id, in json format
 */

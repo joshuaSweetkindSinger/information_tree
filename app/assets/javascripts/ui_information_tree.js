@@ -1,3 +1,4 @@
+//= require trash_node
 //= require ui_top_node
 //= require ui_trash_node
 
@@ -71,7 +72,7 @@ InformationTree.prototype.init = function() {
 
       App.server.getTrash()
         .success(function(trash) {
-          self.trash = new UiTrashNode(new Node(trash))
+          self.trash = new UiTrashNode(new TrashNode(trash))
           $(self).append(self.trash)
         })
     });

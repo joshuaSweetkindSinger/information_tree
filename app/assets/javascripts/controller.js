@@ -36,13 +36,13 @@ Controller = function () {
    */
   App.informationTree.initRequest
     .success(function() {
-      $('body').append(self.buttonPanel);
+      $(App.informationTree).append(self.buttonPanel);
       $(self.buttonPanel).hide();
 
-      $('body').append(self.visitedNodeList);
+      $(App.informationTree).append(self.visitedNodeList);
       $(self.visitedNodeList).hide();
 
-      $('body').append(self.nodePathList);
+      $(App.informationTree).append(self.nodePathList);
       $(self.nodePathList).hide();
 
       self.selectNode(App.informationTree.top);
@@ -109,6 +109,10 @@ Controller.prototype.trash = function (uiNode) {
         $(this.buttonPanel).hide(); // we just deleted the selected node, so hide the button panel.
       }
     })
+}
+
+Controller.prototype.emptyTrash = function () {
+  App.informationTree.trash.empty()
 }
 
 

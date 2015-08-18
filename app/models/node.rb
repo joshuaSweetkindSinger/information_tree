@@ -59,7 +59,7 @@ class Node < ActiveRecord::Base
   def self.trash_orphans
     self.where(parent_id: nil).each do |node|
       if !node.is_system_node?
-        node.trash
+        node.cut
       end
     end
   end
@@ -276,7 +276,7 @@ class Node < ActiveRecord::Base
 
   # Remove self and children from the node hierarchy, patching up predecessor/successor links.
   # This moves the node and its children to the "trash" node. It doesn't really delete them.
-  def trash
+  def cut
     Trash.trash.insert_child(self)
   end
 
