@@ -20,8 +20,8 @@ var UiTrashNode = defCustomTag('ui-trash-node', UiNode);
  We put all the logic in our afterCreate() method, because we know we are not doing static creation, and we
  need to pass args, which can only be passed via afterCreate().
  */
-UiTrashNode.prototype.afterCreate = function(node) {
-  UiNode.prototype.afterCreate.call(this, node);
+UiTrashNode.prototype.afterCreate = function(node, state) {
+  UiNode.prototype.afterCreate.call(this, node, state);
 }
 
 

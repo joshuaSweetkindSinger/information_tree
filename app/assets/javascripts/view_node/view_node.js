@@ -41,7 +41,7 @@ var ViewNode = defCustomTag('node-view', HTMLElement);
  */
 ViewNode.createNode = function (nodeSpec) {
   var self = this;
-  return Node.createNode(nodeSpec).success(function(node) {return new self.uiClass(node)._expand()})
+  return Node.createNode(nodeSpec).success(function(node) {return new self.uiClass(node, 'expanded')})
 }
 
 
@@ -54,8 +54,15 @@ ViewNode.createNode = function (nodeSpec) {
  NOTE: afterCreate() is only called via programmatic creation of new objects, as opposed to static creation.
  We put all the logic in our afterCreate() method, because we know we are not doing static creation, and we
  need to pass args, which can only be passed via afterCreate().
+
+ NOTE: we create all notes by default in 'collapsed' state, because their children have not been fetched.
+ However, nodes that are created brand new don't have children, and can be created in expanded state.
+ The UI takes care of handling this case. See createNode() above.
+ Also, a node can't be properly expanded or collapsed until
+ it has been attached to the dom. That is handled in onAttach(). Here we just set the desired state;
+ it is the onAttach() method that actually effects it.
  */
-ViewNode.prototype.afterCreate = function(node) {
+ViewNode.prototype.afterCreate = function(node, state) {
   this.node = node; // This must precede everything, since many initializes depend on the values in this.node.
   this.id   = node.id
 
@@ -63,7 +70,8 @@ ViewNode.prototype.afterCreate = function(node) {
   $this.append(this._header = new ViewNodeHeader(this, {tooltip:"id = " + node.id + "; Created on " + node.createdAt}))
   $this.append(this._childrenContainer = new ViewNodeChildren);
 
-  this.update(node) // This needs to follow the _header and container appends above; it invokes setters that depend upon them.
+  this.update(node)                 // This needs to follow the _header and container appends above; it invokes setters that depend upon them.
+  this.state = state || 'collapsed' // See notes above.
 }
 
 // Clean up the width and height after we are attached.
@@ -71,13 +79,17 @@ ViewNode.prototype.afterCreate = function(node) {
 // during which we can pass in args, such as width and height. But, because the node is not yet
 // attached to the DOM, the computed width and height are wrong somehow (not sure of details).
 ViewNode.prototype.onAttach = function() {
-  // The conditional is a kludge: For dragging, the viewNode gets shallow-copied and won't have a _header.
+  // For dragging, the viewNode gets shallow-copied and won't have a _header.
   // In that case, we want to ignore it anyway.
-  if (this._header) {
-    this.width   = this.node.width
-    this.height  = this.node.height
+  if (!this._header) return
 
-    this.collapse();   // Note: need to call this method, not just to set state, but so that child dom element will be hidden.
+  this.width  = this.node.width
+  this.height = this.node.height
+
+  if (this.state === 'expanded') {
+    this._expand()
+  } else {
+    this.collapse();
   }
 }
 
@@ -417,8 +429,6 @@ ViewNode.prototype.expand = function(doRecursive) {
  of ensuring that this node already has its children fetched from the server.
  */
 ViewNode.prototype._expand = function() {
-  if (this.state == 'expanded') return; // Already expanded, so do nothing.
-
   this.state = 'expanded'
   $(this._childrenContainer).show('slow')
   this._header.expandCollapseButton.showExpandedStatus();

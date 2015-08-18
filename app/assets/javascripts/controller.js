@@ -165,6 +165,7 @@ Controller.prototype.createNode = function (uiNode, mode) {
  Create a new child of uiNode
  */
 Controller.prototype.createChild = function (uiNode) {
+  uiNode.expand() // Make sure node is expanded before creating child, so that it will be visible.
   return this.createNode(uiNode, 'createChild');
 }
 

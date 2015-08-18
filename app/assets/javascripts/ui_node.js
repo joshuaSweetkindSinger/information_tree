@@ -23,8 +23,8 @@ ViewNode.uiClass = UiNode; // The class to instantiate.
  We put all the logic in our afterCreate() method, because we know we are not doing static creation, and we
  need to pass args, which can only be passed via afterCreate().
  */
-UiNode.prototype.afterCreate = function(node) {
-  ViewNode.prototype.afterCreate.call(this, node)
+UiNode.prototype.afterCreate = function(node, state) {
+  ViewNode.prototype.afterCreate.call(this, node, state)
   this.bindEventHandlers()
 }
 
