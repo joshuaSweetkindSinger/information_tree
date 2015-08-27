@@ -12,7 +12,7 @@ development:
   adapter: mysql2
   encoding: utf8
   reconnect: false
-  database: jss_notes_development
+  database: information_tree_development
   pool: 5
   username: root
   password:
@@ -35,7 +35,7 @@ production:
   adapter: mysql2
   encoding: utf8
   reconnect: false
-  database: jss_notes_production
+  database: information_tree_production
   pool: 5
   username: root
   password:
