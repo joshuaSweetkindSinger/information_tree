@@ -21,11 +21,12 @@
  Note that this is handled asynchronously, which means that construction returns immediately.
  It does not block waiting for the server's response.
  */
-var Request = function(verb, url, params) {
+var Request = function(verb, url, params, headers) {
   var self      = this;
   this.verb     = verb;
   this.url      = url;
   this.params   = params;
+  this.headers  = headers || {};
   this.body     = null;
   this.pipeline = []; // Handle chained .then() calls asynchronously.
   this.request  = new XMLHttpRequest()
@@ -40,7 +41,8 @@ var Request = function(verb, url, params) {
 
   this.request.open(this.verb, this.url) // Specify verb and url for request.
 
-  if (this.body) this.request.setRequestHeader("Content-Type", "application/json")
+  if (this.body) this.headers["Content-Type"] = "application/json";
+  if (!this.isCsrfSafe()) this.headers["X-CSRF-Token"] = App.csrfToken;
 
   // Set up a callback to notify us when response is ready.
   this.request.onreadystatechange = function() {
@@ -54,8 +56,13 @@ var Request = function(verb, url, params) {
 
 // Send ourselves to the server so it can act on the request.
 Request.prototype.send = function () {
+  this.setHeaders();
   this.request.send(this.body)
   return this
+}
+
+Request.prototype.setHeaders = function() {
+  for (name in this.headers) this.request.setRequestHeader(name, this.headers[name]);
 }
 
 // Request is done: process the then() pipeline and set result to request to indicate we are done.
@@ -82,6 +89,10 @@ Request.prototype.then = function (callback) {
 Request.prototype.doCallback = function (callback) {
   var result = callback.call(this, this.result);
   if (result !== undefined) this.result = result;
+}
+
+Request.prototype.isCsrfSafe = function() {
+  return /^(GET|HEAD|OPTIONS|TRACE)$/.test(this.verb);
 }
 
 Request.prototype.isDone = function() {
