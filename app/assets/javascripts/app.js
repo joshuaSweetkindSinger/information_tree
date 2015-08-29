@@ -14,4 +14,5 @@ App.initPage = function() {
   this.server            = new Server
   this.informationTree   = $('information-tree')[0].init()
   this.controller        = new Controller
+  this.csrfToken         = $('[name="csrf-token"]').attr('content');
 }
