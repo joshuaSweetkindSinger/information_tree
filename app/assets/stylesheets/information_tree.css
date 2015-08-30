@@ -1,5 +1,12 @@
 .app-header {
   height:4vh;
+  background:blue;
+  color:white;
+  padding:10px;
+}
+.app-header-item {
+    background:blue;
+    color:white;
 }
 
 .app-footer {
@@ -12,13 +19,14 @@ information-tree {
   height:92vh;
   overflow-y:auto;
   overflow-x:auto;
-  position:relative; // important for determining position of child nodes for scrolling.
+  position:relative; /* important for determining position of child nodes for scrolling. */
 }
-
+/*
 // Custom tags derived from built-in tags
 // can't have css based on the derived tag,
 // because the derived tag is not really instantiated.
 // We must use css classes to style them instead.
+*/
 .node-content {
   display:inline-block;
   box-sizing:border-box;
@@ -27,9 +35,10 @@ information-tree {
   padding:10px;
   min-width: 10px;
   min-height:10px;
-  &:hover {
-  }
 }
+.node-content:hover {
+}
+
 
 expand-collapse {
   display:inline-block;
@@ -40,9 +49,11 @@ expand-collapse {
   border:1px solid black;
 }
 
+/*
 // Custom tags derived from parent tags
 // do not inherit the tag-based styling of their parent.
 // We have to use css classes instead.
+*/
 .button-panel-button {
   display:block;
   border:1px solid black;
@@ -53,17 +64,19 @@ expand-collapse {
   padding:5px;
   background:blue;
   color:white;
-  &:hover {
+
+}
+.button-panel-button:hover {
     background:lightblue;
-  }
 }
 
 .button-panel-button-disabled {
   background:gray;
   color:darkgray;
-  &:hover {
+
+}
+.button-panel-button-disabled:hover {
     background:gray;
-  }
 }
 
 button-panel {
@@ -86,16 +99,16 @@ node-marker {
   width:200px;
   height:30px;
   overflow:hidden;
-  &:hover {
+}
+node-marker:hover {
     background:yellow;
-  }
 }
 
 visited-node-list-dropdown {
-  &:hover {
-    background:black;
-  }
   margin:10px;
+}
+visited-node-list-dropdown:hover {
+    background:black;
 }
 
 visited-node-list {
@@ -112,9 +125,9 @@ visited-node-list {
 
 node-path-list-dropdown {
   margin:10px;
-  &:hover {
+}
+node-path-list-dropdown:hover {
     background:black;
-  }
 }
 
 node-path-list {
@@ -125,6 +138,9 @@ node-path-list {
   overflow-y:auto;
   overflow-x:hidden;
   border:1px solid black;
+}
+node-path-list:hover {
+    background:black;
 }
 
 

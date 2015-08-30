@@ -19,15 +19,12 @@ pre {
   font-size: 11px;
 }
 
-a {
-  color: #000;
-  &:visited {
+a:visited {
     color: #666;
-  }
-  &:hover {
+}
+a:hover {
     color: #fff;
     background-color: #000;
-  }
 }
 
 
@@ -48,7 +45,9 @@ a {
   padding-bottom: 0;
   margin-bottom: 20px;
   background-color: #f0f0f0;
-  h2 {
+}
+
+#error_explanation.h2 {
     text-align: left;
     font-weight: bold;
     padding: 5px 5px 5px 15px;
@@ -57,9 +56,10 @@ a {
     margin-bottom: 0px;
     background-color: #c00;
     color: #fff;
-  }
-  ul li {
+}
+
+ul li {
     font-size: 12px;
     list-style: square;
-  }
 }
+
