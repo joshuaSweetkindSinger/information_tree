@@ -169,6 +169,7 @@ Controller.prototype.createNode = function (uiNode, mode) {
  Create a new child of uiNode
  */
 Controller.prototype.createChild = function (uiNode) {
+  uiNode = uiNode || this.selectedNode
   uiNode.expand() // Make sure node is expanded before creating child, so that it will be visible.
   return this.createNode(uiNode, 'createChild');
 }
@@ -178,14 +179,14 @@ Controller.prototype.createChild = function (uiNode) {
  Create a new successor of uiNode
  */
 Controller.prototype.createSuccessor = function (uiNode) {
-  return this.createNode(uiNode, 'createSuccessor');
+  return this.createNode(uiNode || this.selectedNode, 'createSuccessor');
 }
 
 /*
  Create a new predecessor of uiNode
  */
 Controller.prototype.createPredecessor = function (uiNode) {
-  return this.createNode(uiNode, 'createPredecessor');
+  return this.createNode(uiNode || this.selectedNode, 'createPredecessor');
 }
 
 
