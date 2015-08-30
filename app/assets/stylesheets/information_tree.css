@@ -139,9 +139,6 @@ node-path-list {
   overflow-x:hidden;
   border:1px solid black;
 }
-node-path-list:hover {
-    background:black;
-}
 
 
 text-node {

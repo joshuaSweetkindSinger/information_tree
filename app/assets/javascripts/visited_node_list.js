@@ -37,6 +37,7 @@ VisitedNodeList.prototype.addVisitedNode = function (uiNode) {
 VisitedNodeList.prototype.popUp = function(element) {
   var $this = $(this)
   $this.show(); // I'm not sure why, but showing this before doing new offset avoids a bug. See documentation above.
+  $('body').append(this) // Attach to body, not info tree, because we want it to remain fixed even if tree is scrolled.
 
   var $element = $(element)
   var offset   = $element.offset()
