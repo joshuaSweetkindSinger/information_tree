@@ -87,6 +87,13 @@ TODO: Newly created nodes are not created expanded. We want them to be.
 TODO: Create an "empty trash" function for the trash node.
  */
 
-$(document).ready(function(){
+/* NOTE: We're using the $(window).load callback here rather than the more common
+   $(document).ready callback, because we have found that App.initPage can't find
+   the init() method on the information tree on most instances of chrome when you use
+   $(document).ready, because it hasn't been defined yet.
+     Not sure what the problem is, but using the $(window).load callback,
+   which occurs last in the load cycle, seems to solve the problem.
+ */
+$(window).load(function(){
   App.initPage();
 })
