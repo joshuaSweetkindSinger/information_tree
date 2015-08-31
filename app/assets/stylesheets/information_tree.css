@@ -7,6 +7,10 @@
 .app-header-item {
     background:blue;
     color:white;
+    cursor:default;
+}
+.app-header-item:hover {
+    background:#88f;
 }
 
 .app-footer {
