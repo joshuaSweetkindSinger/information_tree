@@ -92,10 +92,6 @@ class NodesController < ApplicationController
   end
 
   # ======================================== Controller Actions beyond basic crud
-  def interactive
-    @obj = Top.top
-  end
-
 
   # GET /nodes/top
   def top

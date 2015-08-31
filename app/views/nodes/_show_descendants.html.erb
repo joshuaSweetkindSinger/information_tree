@@ -1,7 +1,0 @@
-<ul>
-  <% rank = 0 %>
-  <% node.children.order(:rank).each do |c| %>
-    <% rank = c.rank %>
-    <%= render partial: 'show_node', locals: {node: c} %>
-  <% end %>
-</ul>
