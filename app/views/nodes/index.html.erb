@@ -1,31 +1,27 @@
-<h1>Listing nodes</h1>
 
-<table>
-  <tr>
-    <th>Id</th>
-    <th>Type</th>
-    <th>Parent</th>
-    <th>Rank</th>
-    <th>Content</th>
-    <th></th>
-    <th></th>
-    <th></th>
-  </tr>
+<div class="node-index-container">
+  <div class="node-index-header">
+    <div class="node-index-header-element node-index-row-element-id">Id</div>
+    <div class="node-index-header-element node-index-row-element-type">Type</div>
+    <div class="node-index-header-element node-index-row-element-parent">Parent</div>
+    <div class="node-index-header-element node-index-row-element-rank">Rank</div>
+    <div class="node-index-header-element node-index-row-element-content">Content</div>
+    <div class="node-index-header-element node-index-row-element-destroy">Destroy</div>
+  </div>
 
-<% @objects.each do |obj| %>
-  <tr>
-    <td><%= link_to(obj.id, obj) %></td>
-    <td><%= obj.type_id %></td>
-    <td><%= obj.parent_id %></td>
-    <td><%= obj.rank %></td>
-    <td><%= obj.content %></td>
-    <td><%= link_to 'Show', obj %></td>
-    <td><%= link_to 'Edit', edit_node_path(obj) %></td>
-    <td><%= link_to 'Destroy', obj, method: :delete, data: { confirm: 'Are you sure?' } %></td>
-  </tr>
-<% end %>
-</table>
-
-<br />
-
-<%= link_to 'New Node', new_node_path %>
+  <div class="node-index-body">
+    <div class="node-index-row">
+    <%= link_to 'New Node', new_node_path %>
+    </div>
+    <% @objects.each do |obj| %>
+      <div class="node-index-row">
+        <div class="node-index-row-element node-index-row-element-id"><%= link_to(obj.id, obj) %></div>
+        <div class="node-index-row-element node-index-row-element-type"><%= obj.type_id %></div>
+        <div class="node-index-row-element node-index-row-element-parent"><%= link_to(obj.parent_id, obj.parent) if obj.parent %></div>
+        <div class="node-index-row-element node-index-row-element-rank"><%= obj.rank.round(2) if obj.rank %></div>
+        <div class="node-index-row-element node-index-row-element-content"><%= obj.content %></div>
+        <div class="node-index-row-element node-index-row-element-destroy"><%= link_to 'Destroy', obj, method: :delete, data: { confirm: 'Are you sure?' } %></div>
+      </div>
+    <% end %>
+  </div>
+</div>

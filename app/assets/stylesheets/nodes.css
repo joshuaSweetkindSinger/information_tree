@@ -3,3 +3,79 @@
 // They will automatically be included in application.css.
 // You can use Sass (SCSS) here: http://sass-lang.com/
 */
+
+html body {
+    padding:0px;
+    margin:0px;
+}
+
+.node-index-container {
+    position:relative;
+    padding-top:42px;
+    margin-left:50px;
+    border:2px solid black;
+    width:746px;
+}
+
+.node-index-header {
+    position:absolute;
+    top:0;
+    background:gray;
+    height:40px;
+    width:746px;
+    border-bottom:2px solid black;
+}
+
+
+.node-index-header-element {
+    display:inline-block;
+    color:white;
+    background:transparent;
+    padding-left:5px;
+    padding-top:11px;
+}
+
+.node-index-body {
+    background:white;
+    overflow-y:scroll;
+    overflow-x:hidden;
+    background:transparent;
+    width:746px;
+    height:500px;
+}
+
+.node-index-row {
+    border-bottom:1px solid gray;
+    padding-top:10px;
+    padding-bottom:10px;
+}
+
+.node-index-row-element {
+    display:inline-block;
+    max-height:100px;
+    overflow-y:auto;
+    padding-left:5px;
+}
+
+.node-index-row-element-id {
+    width:50px;
+}
+
+.node-index-row-element-type {
+    width:50px;
+}
+.node-index-row-element-rank {
+    width:50px;
+}
+.node-index-row-element-parent {
+    width:50px;
+}
+.node-index-row-element-content {
+    width:400px;
+    max-height:100px;
+}
+
+.node-index-row-element-destroy {
+    width:76px;
+}
+

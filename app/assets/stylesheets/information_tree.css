@@ -51,6 +51,7 @@ expand-collapse {
   background:blue;
   color:white;
   border:1px solid black;
+  cursor:default;
 }
 
 /*
