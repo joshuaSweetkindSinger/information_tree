@@ -81,7 +81,7 @@ InformationTree.prototype.init = function() {
 };
 
 InformationTree.prototype.onClick = function (event) {
-  App.controller.hideAllMenus();
+  App.controller.resetMenus();
 }
 
 

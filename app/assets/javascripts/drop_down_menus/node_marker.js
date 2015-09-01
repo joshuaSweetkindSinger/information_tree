@@ -25,5 +25,6 @@ NodeMarker.prototype.afterCreate = function (uiNode) {
  node represented by the mark is at the top of the viewport.
  */
 NodeMarker.prototype.onClick = function (event) {
+  App.controller.resetMenus()
   App.controller.visitNode(this.uiNode)
 }

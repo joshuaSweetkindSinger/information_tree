@@ -1,6 +1,6 @@
 //= require buttons
-//= require visited_node_list
-//= require node_path_list
+//= require drop_down_menus/visited_node_list
+//= require drop_down_menus/node_path_list
 
 // ========================================================================
 //                   User Interface
@@ -25,9 +25,10 @@ Controller = function () {
 
   this.selectedNode    = null // The Ui maintains a "selected node", to which actions are performed.
   this.buttonPanel     = new ButtonPanel
+  this.appHeader       = $('#app-header')[0]
 
-  this.visitedNodeList = $('#visited-node-list-dropdown')[0].init().visitedNodeList
-  this.nodePathList    = $('#node-path-list-dropdown')[0].init().nodePathList
+  this.visitedNodeList = $('#visited-node-list-drop-down')[0].init().menu
+  this.nodePathList    = $('#node-path-list-drop-down')[0].init().menu
 
 
   /*
@@ -56,6 +57,7 @@ Controller.prototype.clickedLeftOnNode = function (uiNode) {
 
 // Respond to a right-click on a node. Select the node and pop up the command menu.
 Controller.prototype.clickedRightOnNode = function (uiNode, event) {
+  this.resetMenus()
   this.selectNode(uiNode);
   this.buttonPanel.popTo(uiNode);
   event.preventDefault();
@@ -95,7 +97,6 @@ Controller.prototype.selectNode = function (uiNode) {
 Controller.prototype.visitNode = function (uiNode) {
   App.informationTree.scrollTo(uiNode)
   this.selectNode(uiNode)
-  this.hideAllMenus()
 }
 
 
@@ -232,11 +233,20 @@ Controller.prototype.saveNode = function (uiNode) {
   this.setAttributes(uiNode, attributes)
 }
 
+Controller.prototype.resetMenus = function () {
+  this.hideAllMenus();
+  this.clearAllDropDowns();
+}
 
 Controller.prototype.hideAllMenus = function () {
   $(this.buttonPanel).hide()
   $(this.visitedNodeList).hide()
   $(this.nodePathList).hide()
+}
+
+// Remove highlighting from all dropdown menu item elements.
+Controller.prototype.clearAllDropDowns = function () {
+  $(this.appHeader).children().removeClass('highlight-drop-down')
 }
 
 

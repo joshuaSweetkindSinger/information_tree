@@ -2,7 +2,6 @@ JssNotes::Application.routes.draw do
 
   resources :nodes do
     collection do
-      get :interactive
       get :top
       get :trash
       delete :trash, to: :empty_trash

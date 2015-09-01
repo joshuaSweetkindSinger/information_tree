@@ -1,21 +1,101 @@
+
+/* This is the horizontal bar across the top of the app
+containing pull-down menus and other nav options.
+*/
 .app-header {
   height:4vh;
-  background:blue;
+  background:#00a;
   color:white;
   padding:10px;
 }
+
+/*
+This is one of the pull-down items or other navigational items.
+*/
 .app-header-item {
-    background:blue;
-    color:white;
+    background:#00a;
+    color:#eee;
     cursor:default;
+    margin-left:10px;
+    margin-right:20px;
+    height:50px;
+    display:inline-block;
 }
-.app-header-item:hover {
-    background:#88f;
+.app-header-item:hover, a.app-header-item:hover {
+    color:#aaf;
 }
 
+
+a.app-header-item:link, a.app-header-item:visited {
+    color:#eee;
+    text-decoration:none;
+    cursor:default;
+}
+
+
+/*
+Style a drop-down element in the app header thusly when it has been clicked on, to indicate
+that its associated menu has been opened.
+*/
+.highlight-drop-down {
+    background:#e0f0ff;
+    color:black;
+    border:1px solid #888;
+    border-bottom:none;
+}
+.highlight-drop-down:hover {
+    color:black;
+}
+
+/*
+This is the menu that pops up when you click on a drop-down menu
+item in the header bar (navbar).
+*/
+.drop-down-pop-up {
+    display:block;
+    background:#e0f0ff;
+    height:300px;
+    width:228px;
+    overflow-y:auto;
+    overflow-x:hidden;
+    border:1px solid gray;
+    border-top:none;
+}
+
+
+/*
+This is an element on one of the pull down menus. It represents a short-cut
+to a node. Clicking on it will take you to a node.
+*/
+node-marker {
+    display:block;
+    border:1px solid black;
+    background:white;
+    margin-left:5px;
+    margin-right:5px;
+    margin-top:4px;
+    padding-top:5px;
+    padding-left:10px;
+    padding-right:15px;
+    padding-bottom:10px;
+    border-radius:5px;
+    max-width:200px;
+    height:15px;
+    overflow:hidden;
+}
+node-marker:hover {
+    color:white;
+    background:gray;
+}
+
+
+/* Not used for much at the moment */
 .app-footer {
   height:0vh;
 }
+
+
+/* This is the main detail area of the information tree */
 information-tree {
   display:block;
   background:#e0f0ff;
@@ -25,11 +105,9 @@ information-tree {
   overflow-x:auto;
   position:relative; /* important for determining position of child nodes for scrolling. */
 }
+
 /*
-// Custom tags derived from built-in tags
-// can't have css based on the derived tag,
-// because the derived tag is not really instantiated.
-// We must use css classes to style them instead.
+This is the input box that holds the node's content.
 */
 .node-content {
   display:inline-block;
@@ -43,21 +121,21 @@ information-tree {
 .node-content:hover {
 }
 
-
+/*
+This is the little blue square with a triangle in it to the left of the node content input box.
+*/
 expand-collapse {
   display:inline-block;
   width:13px;
   padding-left:5px;
-  background:blue;
+  background:#00a;
   color:white;
   border:1px solid black;
   cursor:default;
 }
 
 /*
-// Custom tags derived from parent tags
-// do not inherit the tag-based styling of their parent.
-// We have to use css classes instead.
+This is a button on the menu that pops up when you right click on a node.
 */
 .button-panel-button {
   display:block;
@@ -67,14 +145,17 @@ expand-collapse {
   margin-left:0px;
   vertical-align:middle;
   padding:5px;
-  background:blue;
+  background:#00a;
   color:white;
 
 }
 .button-panel-button:hover {
-    background:lightblue;
+    background:#e0f0ff;
 }
 
+/*
+This renders a menu option grayed-out to show it is not selectable.
+*/
 .button-panel-button-disabled {
   background:gray;
   color:darkgray;
@@ -84,6 +165,9 @@ expand-collapse {
     background:gray;
 }
 
+/*
+This is the right-mouse-click menu.
+*/
 button-panel {
   display:block;
   box-sizing:border-box;
@@ -93,84 +177,47 @@ button-panel {
   border:1px solid black;
 }
 
-
-node-marker {
-  display:inline-block;
-  border:1px solid black;
-  margin:3px;
-  padding:10px;
-  background:white;
-  border-radius:5px;
-  width:200px;
-  height:30px;
-  overflow:hidden;
-}
-node-marker:hover {
-    background:yellow;
-}
-
-visited-node-list-dropdown {
-  margin:10px;
-}
-visited-node-list-dropdown:hover {
-    background:black;
-}
-
-visited-node-list {
-  display:block;
-  background:#e0f0ff;
-  height:300px;
-  width:300px;
-  overflow-y:auto;
-  overflow-x:hidden;
-  border:1px solid black;
-}
-
-
-
-node-path-list-dropdown {
-  margin:10px;
-}
-node-path-list-dropdown:hover {
-    background:black;
-}
-
-node-path-list {
-  display:block;
-  background:#e0f0ff;
-  height:300px;
-  width:300px;
-  overflow-y:auto;
-  overflow-x:hidden;
-  border:1px solid black;
-}
-
-
+/*
+This may be obsolete, based on the name, which should be ui-node. This is the entire
+container for a node, which includes its sub-nodes as children of this dom element.
+*/
 text-node {
   display:block;
   box-sizing:border-box;
 }
-
-.drop-hover {
-  background:blue;
+ui-node {
+    display:block;
+    box-sizing:border-box;
 }
 
+/*
+Style a node thusly when the the mouse is dragging another object over it as part of a drag-and-drop.
+*/
+.drop-hover {
+  background:#00a;
+}
+
+/*
+This may be obsolete. This is the container for the children of an ode.
+*/
 node-children {
   display:block;
   box-sizing:border-box;
   margin-left:40px;
 }
+/*
+This is the container for the node's content area and expand/collapse button.
+*/
 node-header {
   display:block;
   box-sizing:border-box;
 }
 
-ui-node {
-  display:block;
-  box-sizing:border-box;
-}
 
-
+/*
+No idea what this is.
+*/
 .ui-resizable-se {
   bottom: 17px;
 }
+

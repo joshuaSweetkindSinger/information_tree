@@ -1,6 +1,6 @@
 //= require server
 //= require ui_information_tree
-//= require visited_node_list
+//= require drop_down_menus/visited_node_list
 //= require controller
 
 // ========================================================================
