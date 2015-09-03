@@ -85,11 +85,9 @@ TODO: Fix bug whereby trash does not fully show at bottom of view when Top is ex
 
 TODO: Newly created nodes are not created expanded. We want them to be.
 TODO: Create an "empty trash" function for the trash node.
-TODO: Clicking on admin should pop up the admin in a new tab so that the state of the current
-tab is not lost.
 TODO: Clicking on admin should do paging.
 TODO: There should be a help nav item that explains the app and pops up help in a new tab.
-TODO:
+TODO: Clean up the aesthetics of the admin page. Give it margins, etc.
  */
 
 /* NOTE: We're using the $(window).load callback here rather than the more common
