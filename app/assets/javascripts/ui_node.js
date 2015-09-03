@@ -102,6 +102,8 @@ that pops up in response to a right click.
  */
 UiNode.prototype.enableButtonPanelOptions = function (buttonPanel) {
   buttonPanel.enableAll()
+  buttonPanel.followLinkButton.maybeDisable(this)
+  $(buttonPanel.emptyTrashButton).hide()
 }
 
 

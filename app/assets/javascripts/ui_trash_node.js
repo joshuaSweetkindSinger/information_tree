@@ -30,6 +30,9 @@ UiTrashNode.prototype.enableButtonPanelOptions = function(buttonPanel) {
   buttonPanel.addPredecessorButton.disable()
   buttonPanel.addSuccessorButton.disable()
   buttonPanel.cutButton.disable()
+  buttonPanel.followLinkButton.maybeDisable(this)
+  $(buttonPanel.emptyTrashButton).show()
+
 }
 
 UiTrashNode.prototype.onKeypress = function(event) {

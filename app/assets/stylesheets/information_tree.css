@@ -38,13 +38,13 @@ Style a drop-down element in the app header thusly when it has been clicked on, 
 that its associated menu has been opened.
 */
 .highlight-drop-down {
-    background:#e0f0ff;
-    color:black;
+    background:#25f;
+    color:#eee;
     border:1px solid #888;
     border-bottom:none;
 }
 .highlight-drop-down:hover {
-    color:black;
+    color:#eee;
 }
 
 /*
@@ -53,7 +53,7 @@ item in the header bar (navbar).
 */
 .drop-down-pop-up {
     display:block;
-    background:#e0f0ff;
+    background:#5af;
     height:300px;
     width:228px;
     overflow-y:auto;
@@ -139,18 +139,20 @@ This is a button on the menu that pops up when you right click on a node.
 */
 .button-panel-button {
   display:block;
-  border:1px solid black;
+  border:none;
   border-top:0px;
   box-sizing:border-box;
   margin-left:0px;
   vertical-align:middle;
   padding:5px;
-  background:#00a;
-  color:white;
+  background:#5af;
+  color:black;
+  cursor:default;
 
 }
 .button-panel-button:hover {
-    background:#e0f0ff;
+    background:#779;
+    color:white;
 }
 
 /*
@@ -163,6 +165,7 @@ This renders a menu option grayed-out to show it is not selectable.
 }
 .button-panel-button-disabled:hover {
     background:gray;
+    color:darkgray;
 }
 
 /*
@@ -171,10 +174,10 @@ This is the right-mouse-click menu.
 button-panel {
   display:block;
   box-sizing:border-box;
-  width:120px;
+  width:150px;
   position:absolute;
   background:green;
-  border:1px solid black;
+  border:1px solid gray;
 }
 
 /*

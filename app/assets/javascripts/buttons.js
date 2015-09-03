@@ -15,8 +15,11 @@ ButtonPanel.prototype.afterCreate = function() {
 //  this.nop = new Nop
 //  $this.append(this.nop)
 
+  /*
+  // This can cause problems when the recursion is too deep. Disabling for now.
   this.expandCollapseRecursiveButton = new ExpandCollapseRecursive
   $this.append(this.expandCollapseRecursiveButton)
+  */
 
   this.saveButton = new Save
   $this.append(this.saveButton)
@@ -100,9 +103,10 @@ ButtonPanel.prototype.enableAll = function () {
 // Base class for button panel buttons.
 var ButtonPanelButton = defCustomTag('button-panel-button', HTMLElement)
 
-ButtonPanelButton.prototype.afterCreate = function(label) {
+ButtonPanelButton.prototype.afterCreate = function(label, shortCutKey) {
   $(this).addClass('button-panel-button')
   $(this).html(label)
+  if (shortCutKey) this.title = shortCutKey
   $(this).click(this.onClick)
 }
 
@@ -156,11 +160,17 @@ Nop.prototype.onClick = function(event) {
 var FollowLink = defCustomTag('follow-link', ButtonPanelButton)
 
 FollowLink.prototype.afterCreate = function() {
-  ButtonPanelButton.prototype.afterCreate.call(this, 'Follow Link')
+  ButtonPanelButton.prototype.afterCreate.call(this, 'Follow Link', 'ctrl-f')
 }
 
 FollowLink.prototype.onClick = function (event) {
   App.controller.followLink()
+}
+
+// Disable ourselves on the popup menu if uiNode is not a followable link.
+FollowLink.prototype.maybeDisable = function(uiNode) {
+  var url = uiNode.content
+  if (!(url.slice(0,4) == 'http')) this.disable();
 }
 
 // =========================================================================
@@ -171,7 +181,7 @@ FollowLink.prototype.onClick = function (event) {
 var Save = defCustomTag('save-node', ButtonPanelButton)
 
 Save.prototype.afterCreate = function() {
-  ButtonPanelButton.prototype.afterCreate.call(this, 'Save')
+  ButtonPanelButton.prototype.afterCreate.call(this, 'Save', 'ctrl-s')
 }
 
 Save.prototype.onClick = function(event) {
@@ -186,7 +196,7 @@ Save.prototype.onClick = function(event) {
 var CutNode = defCustomTag('copy-node', ButtonPanelButton)
 
 CutNode.prototype.afterCreate = function() {
-  ButtonPanelButton.prototype.afterCreate.call(this, 'Cut')
+  ButtonPanelButton.prototype.afterCreate.call(this, 'Cut', 'ctrl-x')
 }
 
 CutNode.prototype.onClick = function (event) {
@@ -201,7 +211,7 @@ CutNode.prototype.onClick = function (event) {
 var PasteNode = defCustomTag('paste-node', ButtonPanelButton)
 
 PasteNode.prototype.afterCreate = function() {
-  ButtonPanelButton.prototype.afterCreate.call(this, 'Paste')
+  ButtonPanelButton.prototype.afterCreate.call(this, 'Paste', 'ctrl-v')
 }
 
 PasteNode.prototype.onClick = function (event) {
@@ -229,7 +239,7 @@ ExpandCollapseRecursive.prototype.onClick = function (event) {
 var AddChild = defCustomTag('create-child', ButtonPanelButton)
 
 AddChild.prototype.afterCreate = function() {
-  ButtonPanelButton.prototype.afterCreate.call(this, '+Child')
+  ButtonPanelButton.prototype.afterCreate.call(this, '+Child', 'shift-return')
 }
 
 AddChild.prototype.onClick = function (event) {
@@ -241,7 +251,7 @@ AddChild.prototype.onClick = function (event) {
 // =========================================================================
 var AddSuccessor = defCustomTag('create-successor', ButtonPanelButton)
 AddSuccessor.prototype.afterCreate = function() {
-  ButtonPanelButton.prototype.afterCreate.call(this, '+Successor')
+  ButtonPanelButton.prototype.afterCreate.call(this, '+Successor', 'return')
 }
 
 AddSuccessor.prototype.onClick = function (event) {
