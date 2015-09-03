@@ -4,7 +4,7 @@ class NodesController < ApplicationController
   # GET /nodes
   # GET /nodes.json
   def index
-    @objects = Node.all
+    @objects = Node.limit(100)
 
     respond_to do |format|
       format.html # index.html.erb

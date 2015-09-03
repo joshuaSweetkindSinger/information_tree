@@ -7,6 +7,7 @@ containing pull-down menus and other nav options.
   background:#00a;
   color:white;
   padding:10px;
+  overflow:hidden;
 }
 
 /*
@@ -18,8 +19,12 @@ This is one of the pull-down items or other navigational items.
     cursor:default;
     margin-left:10px;
     margin-right:20px;
-    height:50px;
+    padding-top:2px;
+    padding-left:5px;
+    padding-right:5px;
+    height:26px;
     display:inline-block;
+    border:1px solid #00a;
 }
 .app-header-item:hover, a.app-header-item:hover {
     color:#aaf;
@@ -99,6 +104,7 @@ node-marker:hover {
 information-tree {
   display:block;
   background:#e0f0ff;
+  padding-left:40px;
   border-top:0px;
   height:92vh;
   overflow-y:auto;

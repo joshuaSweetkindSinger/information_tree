@@ -1,23 +1,26 @@
-
-<div class="node-index-container">
-  <div class="node-index-header">
-    <div class="node-index-header-element node-index-row-element-id">Id</div>
-    <div class="node-index-header-element node-index-row-element-type">Type</div>
-    <div class="node-index-header-element node-index-row-element-parent">Parent</div>
-    <div class="node-index-header-element node-index-row-element-rank">Rank</div>
-    <div class="node-index-header-element node-index-row-element-content">Content</div>
-    <div class="node-index-header-element node-index-row-element-destroy">Destroy</div>
+<div class="node-index-common node-index-container">
+  <div class="node-index-common node-index-header">
+    <div class="node-index-common node-index-header-element node-index-row-element-id">Id</div>
+    <div class="node-index-common node-index-header-element node-index-row-element-type">Type</div>
+    <div class="node-index-common node-index-header-element node-index-row-element-parent">Parent</div>
+    <div class="node-index-common node-index-header-element node-index-row-element-predecessor">Predecessor</div>
+    <div class="node-index-header-element node-index-row-element-successor">Successor</div>
+    <div class="node-index-common node-index-common node-index-header-element node-index-row-element-rank">Rank</div>
+    <div class="node-index-common node-index-header-element node-index-row-element-content">Content</div>
+    <div class="node-index-common node-index-header-element node-index-row-element-destroy">Destroy</div>
   </div>
 
-  <div class="node-index-body">
+  <div class="node-index-common node-index-body">
     <div class="node-index-row">
-    <%= link_to 'New Node', new_node_path %>
+      <%= link_to 'New Node', new_node_path %>
     </div>
     <% @objects.each do |obj| %>
       <div class="node-index-row">
         <div class="node-index-row-element node-index-row-element-id"><%= link_to(obj.id, obj) %></div>
         <div class="node-index-row-element node-index-row-element-type"><%= obj.type_id %></div>
         <div class="node-index-row-element node-index-row-element-parent"><%= link_to(obj.parent_id, obj.parent) if obj.parent %></div>
+        <div class="node-index-row-element node-index-row-element-predecessor"><%= link_to(obj.predecessor_id, obj.predecessor) if obj.predecessor %></div>
+        <div class="node-index-row-element node-index-row-element-successor"><%= link_to(obj.successor_id, obj.successor) if obj.successor %></div>
         <div class="node-index-row-element node-index-row-element-rank"><%= obj.rank.round(2) if obj.rank %></div>
         <div class="node-index-row-element node-index-row-element-content"><%= obj.content %></div>
         <div class="node-index-row-element node-index-row-element-destroy"><%= link_to 'Destroy', obj, method: :delete, data: { confirm: 'Are you sure?' } %></div>

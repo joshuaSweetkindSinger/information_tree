@@ -9,12 +9,18 @@ html body {
     margin:0px;
 }
 
+/* =================================================================== */
+/*                      Node Index Page
+/* =================================================================== */
+
+.node-index-common {
+    width:1046px;
+}
 .node-index-container {
     position:relative;
     padding-top:42px;
     margin-left:50px;
     border:2px solid black;
-    width:746px;
 }
 
 .node-index-header {
@@ -22,8 +28,8 @@ html body {
     top:0;
     background:gray;
     height:40px;
-    width:746px;
     border-bottom:2px solid black;
+    font-size:0;
 }
 
 
@@ -31,8 +37,12 @@ html body {
     display:inline-block;
     color:white;
     background:transparent;
-    padding-left:5px;
-    padding-top:11px;
+    padding-top:10px;
+    height:30px;
+    font-size:14px;
+}
+.node-index-header-element:first-child {
+    margin-left:10px;
 }
 
 .node-index-body {
@@ -40,23 +50,27 @@ html body {
     overflow-y:scroll;
     overflow-x:hidden;
     background:transparent;
-    width:746px;
     height:500px;
 }
 
 .node-index-row {
     border-bottom:1px solid gray;
-    padding-top:10px;
-    padding-bottom:10px;
+    padding-top:13px;
+    padding-bottom:13px;
+    font-size:0;
 }
 
 .node-index-row-element {
     display:inline-block;
     max-height:100px;
     overflow-y:auto;
-    padding-left:5px;
+    padding-left:0px;
+    font-size:14px;
+    vertical-align:middle;
 }
-
+.node-index-row-element:first-child {
+    margin-left:10px;
+}
 .node-index-row-element-id {
     width:50px;
 }
@@ -70,6 +84,12 @@ html body {
 .node-index-row-element-parent {
     width:50px;
 }
+.node-index-row-element-predecessor {
+    width:100px;
+}
+.node-index-row-element-successor {
+     width:100px;
+ }
 .node-index-row-element-content {
     width:400px;
     max-height:100px;
@@ -77,5 +97,44 @@ html body {
 
 .node-index-row-element-destroy {
     width:76px;
+}
+
+/* =================================================================== */
+/*                      Show Node Page
+/* =================================================================== */
+
+/* This is the container for the Show Node Page */
+.show-node-container {
+    padding-top:20px;
+    padding-left:100px;
+    padding-bottom:20px;
+    background:#e0f0ff;
+    height:88vh;
+    overflow:auto;
+}
+/*
+The big <h1> heading for a Show Node page
+*/
+.show-node-heading {
+    max-width:800px;
+    height:50px;
+    padding:3px;
+    white-space:nowrap;
+    overflow:hidden;
+}
+
+/* This is a text box that shows the entire content of the node */
+.show-node-content {
+    max-width:600px;
+    max-height:500px;
+    overflow:auto;
+}
+
+/* This is a link to a node that shows a clipped portion of its text */
+.show-node-link {
+    max-width:500px;
+    padding:3px;
+    white-space:nowrap;
+    overflow:hidden;
 }
 

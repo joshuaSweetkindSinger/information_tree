@@ -87,7 +87,8 @@ TODO: Newly created nodes are not created expanded. We want them to be.
 TODO: Create an "empty trash" function for the trash node.
 TODO: Clicking on admin should do paging.
 TODO: There should be a help nav item that explains the app and pops up help in a new tab.
-TODO: Clean up the aesthetics of the admin page. Give it margins, etc.
+TODO: Figure out why new node does not select itself for input on heroku.
+TODO: Get hover to work on anchor links in navbar.
  */
 
 /* NOTE: We're using the $(window).load callback here rather than the more common

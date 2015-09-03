@@ -1,14 +1,17 @@
+<% max_content_snippet_length = 50 %>
+
+<div class="show-node-container">
 <p id="notice"><%= notice %></p>
+<h1 class="show-node-heading"><%= snip_content(@obj.content) %></h1>
 
+  <p>
+    <b>Id:</b>
+    <%= @obj.id %>
+  </p>
 
-<p>
+  <p class="show-node-content">
   <b>Content:</b>
   <%= @obj.content %>
-</p>
-
-<p>
-  <b>Id:</b>
-  <%= @obj.id %>
 </p>
 
 <p>
@@ -34,17 +37,18 @@
 
 <p>
   <b>Parent:</b>
-  <%= link_to(@obj.parent.content, @obj.parent) if @obj.parent %>
+  <%= link_to(snip_content(@obj.parent.content), @obj.parent) if @obj.parent %>
+  </span>
 </p>
 
 <p>
   <b>Predecessor:</b>
-  <%= link_to(@obj.predecessor.content, @obj.predecessor) if @obj.predecessor %>
+  <%= link_to(snip_content(@obj.predecessor.content), @obj.predecessor) if @obj.predecessor %>
 </p>
 
 <p>
   <b>Successor:</b>
-  <%= link_to(@obj.successor.content, @obj.successor) if @obj.successor %>
+  <%= link_to(snip_content(@obj.successor.content), @obj.successor) if @obj.successor %>
 </p>
 
 
@@ -52,7 +56,7 @@
   <b>Children:</b>
   <ul>
     <% @obj.children.order(:rank).each do |child| %>
-    <li><%= link_to(child.content, child) if child %></li>
+    <li class="show-node-link"><%= link_to(snip_content(child.content), child) if child %></li>
     <% end %>
   </ul>
 </p>
@@ -61,3 +65,4 @@
 
 <%= link_to 'Edit', edit_node_path(@obj) %> |
 <%= link_to 'Index', nodes_path %>
+</div>
