@@ -11,9 +11,6 @@
   </div>
 
   <div class="node-index-common node-index-body">
-    <div class="node-index-row">
-      <%= link_to 'New Node', new_node_path %>
-    </div>
     <% @objects.each do |obj| %>
       <div class="node-index-row">
         <div class="node-index-row-element node-index-row-element-id"><%= link_to(obj.id, obj) %></div>

@@ -2,12 +2,16 @@
 /* This is the horizontal bar across the top of the app
 containing pull-down menus and other nav options.
 */
+body, html {
+  background:#e0f0ff;
+}
 .app-header {
-  height:4vh;
   background:#00a;
   color:white;
-  padding:10px;
+  padding-top:10px;
+  padding-bottom:10px;
   overflow:hidden;
+  border-bottom:1px solid black;
 }
 
 /*
@@ -19,22 +23,18 @@ This is one of the pull-down items or other navigational items.
     cursor:default;
     margin-left:10px;
     margin-right:20px;
-    padding-top:2px;
-    padding-left:5px;
-    padding-right:5px;
-    height:26px;
     display:inline-block;
     border:1px solid #00a;
 }
-.app-header-item:hover, a.app-header-item:hover {
-    color:#aaf;
-}
-
 
 a.app-header-item:link, a.app-header-item:visited {
     color:#eee;
     text-decoration:none;
     cursor:default;
+}
+/* Note: this must follow the previous specs in order to override them */
+.app-header-item:hover, a.app-header-item:hover {
+    color:#aaf;
 }
 
 
@@ -103,7 +103,7 @@ node-marker:hover {
 /* This is the main detail area of the information tree */
 information-tree {
   display:block;
-  background:#e0f0ff;
+    background:#e0f0ff;
   padding-left:40px;
   border-top:0px;
   height:92vh;
