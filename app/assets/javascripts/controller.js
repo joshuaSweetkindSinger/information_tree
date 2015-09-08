@@ -165,9 +165,12 @@ Controller.prototype.insertPredecessor = function (uiReferenceNode, uiNodeToInse
  createSuccessor, createPredecessor.
  */
 Controller.prototype.createNode = function (uiNode, mode) {
+  console.log("Controller.createNode:", uiNode, mode)
+
   var self = this;
   return (uiNode || this.selectedNode)[mode]()
     .success(function(uiNewNode) {
+      console.log("Controller.createNode:child created and inserted:", uiNewNode)
       self.restoreFocus(uiNewNode);
     })
 }
@@ -176,6 +179,7 @@ Controller.prototype.createNode = function (uiNode, mode) {
  Create a new child of uiNode
  */
 Controller.prototype.createChild = function (uiNode) {
+  console.log("Controller.createChild")
   uiNode = uiNode || this.selectedNode
   uiNode.expand() // Make sure node is expanded before creating child, so that it will be visible.
   return this.createNode(uiNode, 'createChild');
@@ -201,6 +205,7 @@ Controller.prototype.createPredecessor = function (uiNode) {
 // Hack! For some reason, sometimes, a sequence of blur events occurs that undoes
 // the focus() to a new Node, because they occur after the focus().
 Controller.prototype.restoreFocus = function (uiNode) {
+  console.log("Controller.restoreFocus:", uiNode)
   setTimeout(function() {uiNode.focus()}, 100);
 }
 
