@@ -109,7 +109,7 @@ class Node < ActiveRecord::Base
   def write_children_as_html_list (stream, max_nodes)
     stream << '<ul>'
 
-    children.each do |child|
+    children.order(:rank).each do |child|
       max_nodes = child.write_as_html_list_helper(stream, max_nodes)
     end
 
