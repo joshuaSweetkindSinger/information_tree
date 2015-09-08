@@ -4,9 +4,9 @@
 //= require node
 
 /*
-This file defines the NodeView class.
+This file defines the ViewNode class.
 
-A NodeView is a client-side dom element that represents a single node in the information tree.
+A ViewNode is a client-side dom element that represents a single node in the information tree.
 
 This class cannot be directly instantiated, because it doesn't know anything about the UI. Instead,
 it knows about all operations that can be performed on nodes and how to execute those operations on the client side.
@@ -27,6 +27,8 @@ Structure:
 var ViewNode = defCustomTag('node-view', HTMLElement);
 
 /*
+ Note that this is a class method, not an instance method.
+
  Create a new server-side node with attributes as specified in nodeSpec, or
  with default attributes if nodeSpec is not supplied. The new node will have
  no parents (it is in "limbo" until it is added to the tree).
@@ -35,7 +37,7 @@ var ViewNode = defCustomTag('node-view', HTMLElement);
 
  NOTE: ViewNode is not an instantiable class. However, node creation is part of what this class
  knows about. So what it instantiates is this.uiClass, whose value must be set by the instantiable subclass
- of ViewNode at page load time.
+ of ViewNode at page load time. For example: ViewNode.uiClass = UiNode; This very line is in ui_node.js.
 
  NOTE: We create new nodes in expanded status, because we know, by definition, that they have no children yet.
  */
