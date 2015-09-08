@@ -69,6 +69,7 @@ Handle a blur action on a node. This means saving any changes to the node to the
 Also, if the node is empty and not dirty, trash the node on blur.
   */
 Controller.prototype.blurNode = function (uiNode) {
+  console.log("Controller.blurNode:", uiNode)
   uiNode = uiNode || this.selectedNode
   if (uiNode.isContentDirty()) this.autoSizeNode(uiNode)
   if (uiNode.isDirty()) this.saveNode(uiNode)
@@ -171,7 +172,8 @@ Controller.prototype.createNode = function (uiNode, mode) {
   return (uiNode || this.selectedNode)[mode]()
     .success(function(uiNewNode) {
       console.log("Controller.createNode:child created and inserted:", uiNewNode)
-      uiNewNode.focus()
+      uiNewNode._header.contentArea.frobulus()
+      // uiNewNode.focus()
       // self.restoreFocus(uiNewNode);
     })
 }

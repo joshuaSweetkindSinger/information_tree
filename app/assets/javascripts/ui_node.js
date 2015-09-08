@@ -45,6 +45,8 @@ UiNode.prototype.bindEventHandlers = function () {
     stop: this.dragStop
   })
 
+  $(this).on("focus", this.onFocus.bind(this))
+
   // Attach handlers to content element
   var $content = $(this._header.contentArea)
   $content.on("click", this.onClick.bind(this))
@@ -132,9 +134,10 @@ UiNode.prototype.onBlur = function(e) {
   App.controller.blurNode(this);
 }
 
-// Put browser focus on this node, for data entry.
-UiNode.prototype.focus = function () {
-  $(this._header.contentArea).focus()
+// Put browser focus on this node, for data entry. Pass along the focus to our contentArea sub-element.
+UiNode.prototype.onFocus = function () {
+  console.log("UiNode.onFocus:", this)
+  this._header.contentArea.focus()
 }
 
 UiNode.prototype.isContentDirty = function () {

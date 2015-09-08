@@ -30,7 +30,7 @@ var Request = function(verb, url, params, headers) {
   this.body     = null;
   this.pipeline = []; // Handle chained .then() calls asynchronously.
   this.request  = new XMLHttpRequest()
-  this.result   = this.request
+  this.result   = this.request // This variable is used specifically for passing return values through the .then() pipeline.
 
   // Handle params
   if (params && (verb === "GET")) {
@@ -65,7 +65,7 @@ Request.prototype.setHeaders = function() {
   for (name in this.headers) this.request.setRequestHeader(name, this.headers[name]);
 }
 
-// Request is done: process the then() pipeline and set result to request to indicate we are done.
+// Request is done: process the then() pipeline.
 Request.prototype.done = function () {
   var self = this
   this.pipeline.forEach(function (callback) {self.doCallback(callback)})
@@ -73,7 +73,11 @@ Request.prototype.done = function () {
 }
 
 
-// Run the callback on the result object when the request is done.
+// Run callback when the request is done. Multiple callbacks can be queued in a pipeline,
+// each to be run when the request finishes.
+// Each callback is passed as an argument the return value of the previous callback.  If the previous callback
+// has no return value, then the current callback is passed the return value from the last callback that does have one. The default
+// return value is the request object itself. The first callback in the pipeline is passed this value.
 Request.prototype.then = function (callback) {
   if (this.isDone()) {
     this.doCallback(callback)
