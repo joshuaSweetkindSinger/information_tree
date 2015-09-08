@@ -171,7 +171,8 @@ Controller.prototype.createNode = function (uiNode, mode) {
   return (uiNode || this.selectedNode)[mode]()
     .success(function(uiNewNode) {
       console.log("Controller.createNode:child created and inserted:", uiNewNode)
-      self.restoreFocus(uiNewNode);
+      uiNewNode.focus()
+      // self.restoreFocus(uiNewNode);
     })
 }
 
