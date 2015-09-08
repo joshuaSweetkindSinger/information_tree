@@ -130,6 +130,12 @@ Controller.prototype.followLink = function (uiNode) {
   if (url.slice(0,4) == 'http') open(url)
 }
 
+// Open selected node and its children as a static html page in a new tab.
+Controller.prototype.toHtml = function (uiNode) {
+  uiNode = (uiNode || this.selectedNode)
+  open('/nodes/' + uiNode.id + '/to_html') // TODO: get rid of hardcoded string constants.
+}
+
 /*
  Make uiNodeToInsert be a child of uiReferenceNode.
  */

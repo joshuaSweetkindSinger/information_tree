@@ -88,6 +88,8 @@ TODO: Create an "empty trash" function for the trash node.
 TODO: Clicking on admin should do paging.
 TODO: There should be a help nav item that explains the app and pops up help in a new tab.
 TODO: Figure out why new node does not select itself for input on heroku.
+TODO: Restore make backup to Admin section.
+TODO: From admin, "go back to info tree" should select existing tab.
  */
 
 /* NOTE: We're using the $(window).load callback here rather than the more common

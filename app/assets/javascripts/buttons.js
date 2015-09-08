@@ -42,6 +42,9 @@ ButtonPanel.prototype.afterCreate = function() {
   this.followLinkButton = new FollowLink
   $this.append(this.followLinkButton)
 
+  this.toHtmlButton = new ToHtml
+  $this.append(this.toHtmlButton)
+
   this.emptyTrashButton = new EmptyTrash
   $this.append(this.emptyTrashButton)
 
@@ -90,10 +93,17 @@ ButtonPanel.prototype.onClick = function() {
 }
 
 
-// Enable all buttons on the button panel.
-ButtonPanel.prototype.enableAll = function () {
+// In popTo(), above, control is given to the uiNode
+// to manipulate which context menu options should be active.
+// In many cases, the uiNode will wish to turn around and hand the
+// decision back to the button objects themselves. It does that
+// by calling this method.
+// Ask each button on the button panel whether it wants to be enabled for uiNode,
+// and, if it response true, then enable it; othewise, disable it.
+ButtonPanel.prototype.enableAppropriateButtons = function (uiNode) {
+  uiNode = uiNode || App.controller.selectedNode
   $(this).children().each(function () {
-    this.enable()
+    this.enable(this.calcEnabledState(uiNode))
   })
 }
 
@@ -136,6 +146,12 @@ ButtonPanelButton.prototype.disable = function () {
   this.enable(false)
 }
 
+// Default method for buttons to determine whether or not they should
+// be enabled for uiNode. The default is to return true, which enables them.
+ButtonPanelButton.prototype.calcEnabledState = function(uiNode) {
+  return true;
+}
+
 // =========================================================================
 //                   Nop Button
 // =========================================================================
@@ -168,10 +184,27 @@ FollowLink.prototype.onClick = function (event) {
 }
 
 // Disable ourselves on the popup menu if uiNode is not a followable link.
-FollowLink.prototype.maybeDisable = function(uiNode) {
+FollowLink.prototype.calcEnabledState = function(uiNode) {
   var url = uiNode.content
-  if (!(url.slice(0,4) == 'http')) this.disable();
+  return (url.slice(0,4) == 'http')
 }
+
+
+// =========================================================================
+//                   ToHTML Button
+// =========================================================================
+// Pressing this button automatically Renders the node and its children
+// as html in a new tab.
+var ToHtml = defCustomTag('to-html', ButtonPanelButton)
+
+ToHtml.prototype.afterCreate = function() {
+  ButtonPanelButton.prototype.afterCreate.call(this, 'To Html', 'ctrl-h')
+}
+
+ToHtml.prototype.onClick = function (event) {
+  App.controller.toHtml()
+}
+
 
 // =========================================================================
 //                   Save Button

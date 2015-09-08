@@ -26,11 +26,10 @@ UiTrashNode.prototype.afterCreate = function(node, state) {
 
 
 UiTrashNode.prototype.enableButtonPanelOptions = function(buttonPanel) {
-  buttonPanel.enableAll()
+  buttonPanel.enableAppropriateButtons(this)
   buttonPanel.addPredecessorButton.disable()
   buttonPanel.addSuccessorButton.disable()
   buttonPanel.cutButton.disable()
-  buttonPanel.followLinkButton.maybeDisable(this)
   $(buttonPanel.emptyTrashButton).show()
 
 }

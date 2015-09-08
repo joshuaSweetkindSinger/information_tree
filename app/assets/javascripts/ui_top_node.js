@@ -30,11 +30,10 @@ UiTopNode.prototype.afterCreate = function(node, state) {
  that will work at click-time.
  */
 UiTopNode.prototype.enableButtonPanelOptions = function(buttonPanel) {
-  buttonPanel.enableAll()
+  buttonPanel.enableAppropriateButtons(this)
   buttonPanel.addPredecessorButton.disable()
   buttonPanel.addSuccessorButton.disable()
   buttonPanel.cutButton.disable()
-  buttonPanel.followLinkButton.maybeDisable(this)
  $(buttonPanel.emptyTrashButton).hide()
 }
 

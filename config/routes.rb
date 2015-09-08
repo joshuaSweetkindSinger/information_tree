@@ -5,7 +5,7 @@ JssNotes::Application.routes.draw do
       get :top
       get :trash
       delete :trash, to: :empty_trash
-      post :back_up
+      post :back_up_to_json
       get :test_me
     end
 
@@ -16,6 +16,8 @@ JssNotes::Application.routes.draw do
       put    :insert_predecessor # route is /nodes/:id/insert_predecessor
       put    :set_attributes  # route is /nodes/:id/set_attributes
       delete :cut              # route is /nodes/:id/cut
+
+      get    :to_html         # route is /nodes/:id/to_html
     end
   end
 

@@ -190,7 +190,7 @@ class NodesController < ApplicationController
 
   # Make back up of the entire information tree.
   def back_up
-    Node.back_up
+    Node.back_up_to_json
     render js: 'alert("backup saved")'
   end
 
@@ -199,6 +199,14 @@ class NodesController < ApplicationController
       format.html {render inline: "Returning html!"}
       format.js {render js: 'alert("this is a test!");', content_type: 'application/javascript'}
     end
+  end
+
+
+  # Render the node with id params[:id], and its children, and their children, etc., as html, in a separate tab.
+  # Stop at a max limit of a certain number of nodes to prevent crashing when the scale is too large.
+  def to_html
+    @object = Node.find(params[:id])
+    render inline: @object.to_html
   end
 
   # ============================================= HELPERS

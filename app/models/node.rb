@@ -67,9 +67,9 @@ class Node < ActiveRecord::Base
 
 # ======================================
 
-  # Make a backup of the entire information tree.
-  def self.back_up
-    File.open(self.back_up_pathname, 'w') do |f|
+  # Make a backup of the entire information tree in json format.
+  def self.back_up_to_json
+    File.open(self.back_up_pathname + '.json', 'w') do |f|
       f << Node.all.to_json
     end
   end
@@ -79,6 +79,46 @@ class Node < ActiveRecord::Base
   end
 
   # ===================================== Instance Methods
+  MAX_NODES_TO_EXPAND = 1000 # For write_as_html_list, restrict expansion to html to this many nodes, then abort.
+
+  # Write self to stream (which can also be a string) using html list format, but not writing more than max_nodes.
+  # Return the stream as the output value.
+  def to_html (stream = '', max_nodes = MAX_NODES_TO_EXPAND)
+    write_as_html_list_helper stream, max_nodes
+  ensure
+    return stream
+  end
+
+
+  # Write self to stream (which can also be a string) using html list format, but not writing more than max_nodes.
+  # Return the number of nodes left that can still be written without exceeding max_nodes.
+  def write_as_html_list_helper (stream, max_nodes)
+    stream << "<li>#{content}</li>"
+    max_nodes -= 1
+
+    if max_nodes <= 0
+      raise "Limit reached on max nodes to expand"
+    end
+
+    max_nodes = write_children_as_html_list(stream, max_nodes) if !children.empty?
+
+    max_nodes
+  end
+
+
+  def write_children_as_html_list (stream, max_nodes)
+    stream << '<ul>'
+
+    children.each do |child|
+      max_nodes = child.write_as_html_list_helper(stream, max_nodes)
+    end
+
+    max_nodes
+
+  ensure
+    stream << '</ul>'
+  end
+
   def is_system_node?
     SYSTEM_NODE_TYPES.include?(type_id)
   end

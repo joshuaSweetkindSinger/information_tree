@@ -101,8 +101,7 @@ In this case, all buttons should be enable. Certain subclasses of UiNode may not
 that pops up in response to a right click.
  */
 UiNode.prototype.enableButtonPanelOptions = function (buttonPanel) {
-  buttonPanel.enableAll()
-  buttonPanel.followLinkButton.maybeDisable(this)
+  buttonPanel.enableAppropriateButtons(this)
   $(buttonPanel.emptyTrashButton).hide()
 }
 
