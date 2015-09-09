@@ -168,9 +168,7 @@ Controller.prototype.createNode = function (uiNode, mode) {
   var self = this;
   return (uiNode || this.selectedNode)[mode]()
     .success(function(uiNewNode) {
-      uiNewNode._header.contentArea.frobulus()
-      // uiNewNode.focus()
-      // self.restoreFocus(uiNewNode);
+      uiNewNode.afterAttach.then(function(uiNewNode) {uiNewNode.focus()})
     })
 }
 
@@ -196,15 +194,6 @@ Controller.prototype.createSuccessor = function (uiNode) {
  */
 Controller.prototype.createPredecessor = function (uiNode) {
   return this.createNode(uiNode || this.selectedNode, 'createPredecessor');
-}
-
-
-// Restore the focus to the specified viewNode, which somehow gets lost on new node creation.
-// Hack! For some reason, sometimes, a sequence of blur events occurs that undoes
-// the focus() to a new Node, because they occur after the focus().
-Controller.prototype.restoreFocus = function (uiNode) {
-  console.log("Controller.restoreFocus:", uiNode)
-  setTimeout(function() {uiNode.focus()}, 100);
 }
 
 

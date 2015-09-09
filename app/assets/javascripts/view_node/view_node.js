@@ -2,6 +2,7 @@
 //= require view_node/view_node_content
 //= require view_node/view_node_children
 //= require node
+//= require utils
 
 /*
 This file defines the ViewNode class.
@@ -72,8 +73,9 @@ ViewNode.prototype.afterCreate = function(node, state) {
   $this.append(this._header = new ViewNodeHeader(this, {tooltip:"id = " + node.id + "; Created on " + node.createdAt}))
   $this.append(this._childrenContainer = new ViewNodeChildren);
 
-  this.update(node)                 // This needs to follow the _header and container appends above; it invokes setters that depend upon them.
-  this.state = state || 'collapsed' // See notes above.
+  this.update(node)                    // This needs to follow the _header and container appends above; it invokes setters that depend upon them.
+  this.state = state || 'collapsed'    // See notes above.
+  this.afterAttach = new FunctionQueue // A queue of callbacks to process after we are attached to the dom.
 }
 
 // Clean up the width and height after we are attached.
@@ -93,8 +95,9 @@ ViewNode.prototype.onAttach = function() {
   } else {
     this.collapse();
   }
-  this.attached = true // TODO: refactor this
+  this.afterAttach.done(true, this) // Tell the function queue we are done attaching so it can process callbacks.
 }
+
 
 /*
 Update ourselves to reflect the info in node. If node is not specified,

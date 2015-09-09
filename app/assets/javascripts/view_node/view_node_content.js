@@ -14,14 +14,3 @@ ViewNodeContent.prototype.afterCreate = function(viewNode, options) {
 
   $(this).addClass('node-content'); // Since we are extending a textarea element, we can't put css on the node-content tag--there isn't one in the dom!
 }
-
-
-ViewNodeContent.prototype.frobulus = function () {
-  var self = this;
-  console.log("ViewNodeContent.frobulus")
-  if (this.viewNode.attached) {
-    this.focus()
-  } else {
-    setTimeout(function() {self.frobulus()}, 100);
-  }
-}
