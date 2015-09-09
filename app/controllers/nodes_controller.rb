@@ -120,30 +120,35 @@ class NodesController < ApplicationController
     end
   end
 
-
+  # GET /nodes/:id/children
   def children
     @obj      = Node.find(params[:id])
-    @children = @obj.children.order(:rank)
 
     respond_to do |format|
       format.html
-      format.json {render json: @children}
+      format.json {render json: @obj.children.order(:rank)}
     end
   end
 
-
+  # PUT /nodes/:id/insert_child
+  # Insert the node params[:node][:id] as a new child of params[:id]
   def insert_child
     insert_node('insert_child')
   end
 
+  # PUT /nodes/:id/insert_successor
+  # Insert the node params[:node][:id] as a new successor of params[:id]
   def insert_successor
     insert_node('insert_successor')
   end
 
+  # PUT /nodes/:id/insert_predecessor
+  # Insert the node params[:node][:id] as a new predecessor of params[:id]
   def insert_predecessor
     insert_node('insert_predecessor')
   end
 
+  # PUT /nodes/:id/set_attributes
   # Set one or more attributes of the object whose id is params[:id].
   # The attributes and their values are passed in as a sub-hash on params[:node], e.g.
   # params = {id: 123, node: {content: "Beautiful Sky", width:200, height:100, type_id: 1}}
@@ -202,11 +207,20 @@ class NodesController < ApplicationController
   end
 
 
-  # Render the node with id params[:id], and its children, and their children, etc., as html, in a separate tab.
+  # GET /nodes/:id/recursive/:max_depth
+  # Render the node with id params[:id], and its children, and their children, etc.
   # Stop at a max limit of a certain number of nodes to prevent crashing when the scale is too large.
-  def to_html
-    @object = Node.find(params[:id])
-    render inline: @object.to_html
+  def recursive
+    @obj = Node.find(params[:id])
+    respond_to do |format|
+      format.html {render inline: @obj.to_html(max_depth: params[:max_depth])}
+      format.json {render json: @obj}
+    end
+
+  end
+
+  def to_json
+    render json: Node.find(params[:id])
   end
 
   # ============================================= HELPERS

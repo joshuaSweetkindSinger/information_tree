@@ -79,45 +79,34 @@ class Node < ActiveRecord::Base
   end
 
   # ===================================== Instance Methods
-  MAX_NODES_TO_EXPAND = 1000 # For write_as_html_list, restrict expansion to html to this many nodes, then abort.
+  MAX_DEPTH = 3 # For write_as_html_list, restrict expansion to html to this depth.
 
   # Write self to stream (which can also be a string) using html list format, but not writing more than max_nodes.
   # Return the stream as the output value.
-  def to_html (stream = '', max_nodes = MAX_NODES_TO_EXPAND)
-    write_as_html_list_helper stream, max_nodes
-  ensure
-    return stream
+  def to_html (options)
+    stream    = options[:stream] || ''
+    max_depth = options[:max_depth] ? options[:max_depth].to_f : MAX_DEPTH
+
+    to_html_helper stream, max_depth
   end
 
 
   # Write self to stream (which can also be a string) using html list format, but not writing more than max_nodes.
   # Return the number of nodes left that can still be written without exceeding max_nodes.
-  def write_as_html_list_helper (stream, max_nodes)
+  def to_html_helper (stream, max_depth)
     stream << "<li>#{content}</li>"
-    max_nodes -= 1
 
-    if max_nodes <= 0
-      raise "Limit reached on max nodes to expand"
+    if max_depth > 0 && !children.empty?
+      stream << '<ul>'
+      children.order(:rank).each do |child|
+        child.to_html_helper(stream, max_depth - 1)
+      end
+      stream << '</ul>'
     end
 
-    max_nodes = write_children_as_html_list(stream, max_nodes) if !children.empty?
-
-    max_nodes
+    stream
   end
 
-
-  def write_children_as_html_list (stream, max_nodes)
-    stream << '<ul>'
-
-    children.order(:rank).each do |child|
-      max_nodes = child.write_as_html_list_helper(stream, max_nodes)
-    end
-
-    max_nodes
-
-  ensure
-    stream << '</ul>'
-  end
 
   def is_system_node?
     SYSTEM_NODE_TYPES.include?(type_id)

@@ -87,9 +87,12 @@ TODO: Newly created nodes are not created expanded. We want them to be.
 TODO: Create an "empty trash" function for the trash node.
 TODO: Clicking on admin should do paging.
 TODO: There should be a help nav item that explains the app and pops up help in a new tab.
-TODO: Figure out why new node does not select itself for input on heroku.
 TODO: Restore make backup to Admin section.
 TODO: From admin, "go back to info tree" should select existing tab.
+TODO: download node and children as local file in json.
+TODO: upload json containing node and children to server.
+TODO: change trash to "basket". Don't need a separate pointer to a "cut" object. Just use top of trash.
+TODO: merge set_attributes with update() in nodes controller.
  */
 
 /* NOTE: We're using the $(window).load callback here rather than the more common

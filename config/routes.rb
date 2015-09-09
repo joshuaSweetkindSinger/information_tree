@@ -17,12 +17,13 @@ JssNotes::Application.routes.draw do
       put    :set_attributes  # route is /nodes/:id/set_attributes
       delete :cut              # route is /nodes/:id/cut
 
-      get    :to_html         # route is /nodes/:id/to_html
+      get    :to_json         # route is /nodes/:id/to_json
     end
   end
 
   root to: 'information_tree_page#information_tree_page'
   match '/information_tree', via: :get, to: 'information_tree_page#information_tree_page'
+  match '/nodes/:id/recursive/(:max_depth)', via: :get, to: 'nodes#recursive'
 
 
   # The priority is based upon order of creation:
