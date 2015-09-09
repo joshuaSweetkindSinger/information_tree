@@ -93,8 +93,7 @@ ViewNode.prototype.onAttach = function() {
   } else {
     this.collapse();
   }
-  this.attached = true
-  console.log("ViewNode.onAttach:done")
+  this.attached = true // TODO: refactor this
 }
 
 /*
