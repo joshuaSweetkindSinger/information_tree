@@ -95,54 +95,29 @@ class Node < ActiveRecord::Base
   # =============================================================================
   MAX_DEPTH = 3 # For write_as_html_list, restrict expansion to html to this depth.
 
-  # Write self and children recursively to stream (which can also be a string) using html list format, but not writing more than
-  # options[:max_depth].
-  # Return the stream as the output value.
-  def to_html_recursively (options)
-    stream    = options[:stream] || ''
-    max_depth = options[:max_depth] ? options[:max_depth].to_f : MAX_DEPTH
-
-    to_html_helper stream, max_depth
-  end
-
-
-  # Write self and children recursively to stream (which can also be a string) using html list format, but not writing more than
-  # max_depth
-  # Return the stream as the output value.
-  def to_html_helper (stream, max_depth)
-    stream << "<li>#{content}</li>"
-
-    if max_depth > 0 && !children.empty?
-      stream << '<ul>'
-      children.order(:rank).each do |child|
-        child.to_html_helper(stream, max_depth - 1)
-      end
-      stream << '</ul>'
-    end
-
-    stream
-  end
-
-
-  # Render self and children recursively as hash tables pointing to hash tables, but not rendering
+  # Render self and children recursively as NodeRep objects, but not rendering
   # more than max_depth levels deep.
-  # Return the top-level hash table that represents self.
-  def to_hash_recursively (max_depth = MAX_DEPTH)
-    result = {}
-    result[:type_id]  = type_id
-    result[:content]  = content
-    result[:height]   = height
-    result[:width]    = width
-    result[:children] = []
+  # Return the top-level NodeRep that represents self.
+  def render_recursively (max_depth = nil)
+    max_depth ||= MAX_DEPTH  # We don't assign this as a default in the arglist, because we allow the caller to pass nil, meaning: 'please use the default'
+    result = NodeRep.new
+    result.type_id  = type_id
+    result.content  = content
+    result.height   = height
+    result.width    = width
+    result.children = []
 
     if max_depth > 0 && !children.empty?
       children.order(:rank).each do |child|
-        result[:children] << child.to_hash_recursively(max_depth - 1)
+        result.children << child.render_recursively(max_depth - 1)
       end
     end
 
     result
   end
+
+
+
 
   # =============================================================================
   #                                   Misc
@@ -469,5 +444,39 @@ class SplicePositionSuccessor < SplicePosition
     @parent      = @node.parent
     @predecessor = @node.predecessor
     @successor   = @node
+  end
+end
+
+
+# =============================================================================
+#                                   NodeRep
+# =============================================================================
+# This is a helper class used by the method render_recursively() above. It allows us
+# to realize a node and its children explicitly so that it can then be rendered as json, or html,
+# or in whatever format we desire. By contrast, the ActiveRecord Node class doesn't realize its children
+# until it needs to, and the to_json() method doesn't work on it as desired.
+class NodeRep
+  attr_accessor :type_id, :content, :height, :width, :children
+end
+
+# =============================================================================
+#                                   NodeRep To Html
+# =============================================================================
+# This module knows how to convert a NodeRep and its children to an html representation.
+module NodeRepToHtml
+  # Render self and children as html.
+  def self.convert (nodeRep)
+    result = ''
+    result << "<li>#{nodeRep.content}</li>"
+
+    if !nodeRep.children.empty?
+      result << '<ul>'
+      nodeRep.children.each do |child|
+        result << convert(child)
+      end
+      result << '</ul>'
+    end
+
+    result
   end
 end

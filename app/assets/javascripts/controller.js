@@ -131,9 +131,9 @@ Controller.prototype.followLink = function (uiNode) {
 }
 
 // Open selected node and its children as a static html page in a new tab.
-Controller.prototype.toHtml = function (uiNode) {
+Controller.prototype.renderRecursivelyAsHtml = function (uiNode) {
   uiNode = (uiNode || this.selectedNode)
-  open('/nodes/' + uiNode.id + '/to_html') // TODO: get rid of hardcoded string constants.
+  open(App.server.renderRecursivelyAsHtmlPath(uiNode.id))
 }
 
 /*

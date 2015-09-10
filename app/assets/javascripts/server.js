@@ -107,3 +107,13 @@ Server.prototype.setNodeAttributes = function (nodeId, options) {
 Server.prototype.setAttributesPath = function(nodeId) {
   return '/nodes/' + nodeId + '/set_attributes.json'
 }
+
+// TODO: None of these Path() methods is DRY, because the server knows them.
+// We should generate them automatically from the routes.rb file, or some such.
+Server.prototype.renderRecursivelyAsHtmlPath = function (nodeId) {
+  return '/nodes/' + nodeId + '/recursive.html'
+}
+
+Server.prototype.renderRecursivelyAsJsonPath = function (nodeId) {
+  return '/nodes/' + nodeId + '/recursive.json'
+}

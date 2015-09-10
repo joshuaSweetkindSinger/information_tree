@@ -202,7 +202,7 @@ ToHtml.prototype.afterCreate = function() {
 }
 
 ToHtml.prototype.onClick = function (event) {
-  App.controller.toHtml()
+  App.controller.renderRecursivelyAsHtml()
 }
 
 

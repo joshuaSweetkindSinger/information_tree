@@ -210,11 +210,13 @@ class NodesController < ApplicationController
   # GET /nodes/:id/recursive/:max_depth
   # Render the node with id params[:id], and its children, and their children, etc.
   # Stop at a max limit of a certain number of nodes to prevent crashing when the scale is too large.
-  def recursive
+  def render_recursively
     @obj = Node.find(params[:id])
+    max_depth = params[:max_depth].to_f if params[:max_depth]
+
     respond_to do |format|
-      format.html {render inline: @obj.to_html_recursively(max_depth: params[:max_depth])}
-      format.json {render json: @obj.to_hash_recursively}
+      format.html {render inline: NodeRepToHtml::convert(@obj.render_recursively(max_depth))}
+      format.json {render json: @obj.render_recursively(max_depth)}
     end
 
   end

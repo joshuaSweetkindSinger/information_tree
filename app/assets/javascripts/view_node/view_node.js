@@ -66,8 +66,8 @@ ViewNode.createNode = function (nodeSpec) {
  it is the onAttach() method that actually effects it.
  */
 ViewNode.prototype.afterCreate = function(node, state) {
-  this.node = node; // This must precede everything, since many initializes depend on the values in this.node.
-  this.id   = node.id
+  this.node = node; // This must precede everything, since many initializations depend on the values in this.node.
+  this.id   = node.id // Although not DRY, we need the id on the dom element for jquery.
 
   var $this  = $(this)
   $this.append(this._header = new ViewNodeHeader(this, {tooltip:"id = " + node.id + "; Created on " + node.createdAt}))

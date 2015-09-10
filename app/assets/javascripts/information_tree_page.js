@@ -93,6 +93,7 @@ TODO: download node and children as local file in json.
 TODO: upload json containing node and children to server.
 TODO: change trash to "basket". Don't need a separate pointer to a "cut" object. Just use top of trash.
 TODO: merge set_attributes with update() in nodes controller.
+TODO: None of these Path() methods in server.js is DRY, because the server knows them.
  */
 
 /* NOTE: We're using the $(window).load callback here rather than the more common
