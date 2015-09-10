@@ -213,8 +213,8 @@ class NodesController < ApplicationController
   def recursive
     @obj = Node.find(params[:id])
     respond_to do |format|
-      format.html {render inline: @obj.to_html(max_depth: params[:max_depth])}
-      format.json {render json: @obj}
+      format.html {render inline: @obj.to_html_recursively(max_depth: params[:max_depth])}
+      format.json {render json: @obj.to_hash_recursively}
     end
 
   end

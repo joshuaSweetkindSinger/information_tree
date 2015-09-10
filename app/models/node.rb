@@ -81,9 +81,10 @@ class Node < ActiveRecord::Base
   # ===================================== Instance Methods
   MAX_DEPTH = 3 # For write_as_html_list, restrict expansion to html to this depth.
 
-  # Write self to stream (which can also be a string) using html list format, but not writing more than max_nodes.
+  # Write self and children recursively to stream (which can also be a string) using html list format, but not writing more than
+  # options[:max_depth].
   # Return the stream as the output value.
-  def to_html (options)
+  def to_html_recursively (options)
     stream    = options[:stream] || ''
     max_depth = options[:max_depth] ? options[:max_depth].to_f : MAX_DEPTH
 
@@ -91,8 +92,9 @@ class Node < ActiveRecord::Base
   end
 
 
-  # Write self to stream (which can also be a string) using html list format, but not writing more than max_nodes.
-  # Return the number of nodes left that can still be written without exceeding max_nodes.
+  # Write self and children recursively to stream (which can also be a string) using html list format, but not writing more than
+  # max_depth
+  # Return the stream as the output value.
   def to_html_helper (stream, max_depth)
     stream << "<li>#{content}</li>"
 
@@ -105,6 +107,27 @@ class Node < ActiveRecord::Base
     end
 
     stream
+  end
+
+
+  # Render self and children recursively as hash tables pointing to hash tables, but not rendering
+  # more than max_depth levels deep.
+  # Return the top-level hash table that represents self.
+  def to_hash_recursively (max_depth = MAX_DEPTH)
+    result = {}
+    result[:type_id]  = type_id
+    result[:content]  = content
+    result[:height]   = height
+    result[:width]    = width
+    result[:children] = []
+
+    if max_depth > 0 && !children.empty?
+      children.order(:rank).each do |child|
+        result[:children] << child.to_hash_recursively(max_depth - 1)
+      end
+    end
+
+    result
   end
 
 
