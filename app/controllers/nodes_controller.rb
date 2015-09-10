@@ -245,7 +245,8 @@ class NodesController < ApplicationController
 
   # Upload new nodes to the information tree.
   def import
-    Node.create_sub_tree params[:tree]
+    Node.create_sub_tree JSON.parse(File.open(params[:file_to_upload].tempfile.path))
+    render inline: "Nodes successfully imported into information tree.", layout:false
   end
 
 
