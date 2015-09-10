@@ -29,8 +29,6 @@ class NodesController < ApplicationController
   # GET /nodes/new.json
   def new
     @obj = Node.new
-    @obj.parent_id = params[:parent]
-    @obj.rank      = params[:rank]
 
     respond_to do |format|
       format.html # new.html.erb
@@ -54,7 +52,7 @@ class NodesController < ApplicationController
 
     respond_to do |format|
       if @obj.save
-        format.html { redirect_to interactive_nodes_path, notice: 'Node was successfully created.' }
+        format.html { redirect_to @obj, notice: 'Node was successfully created.' }
         format.json { render json: @obj, status: :created, location: @obj }
       else
         format.html { render action: "new" }
@@ -88,7 +86,7 @@ class NodesController < ApplicationController
     @obj.destroy
 
     respond_to do |format|
-      format.html { redirect_to nodes_url }
+      format.html { redirect_to :back}
       format.json { head :no_content }
     end
   end
@@ -195,12 +193,6 @@ class NodesController < ApplicationController
   end
 
 
-  # Make back up of the entire information tree.
-  def back_up
-    Node.back_up_to_json
-    render js: 'alert("backup saved")'
-  end
-
   def test_me
     respond_to do |format|
       format.html {render inline: "Returning html!"}
@@ -223,9 +215,29 @@ class NodesController < ApplicationController
 
   end
 
-  def to_json
-    render json: Node.find(params[:id])
+  # POST /nodes/create_sub_tree
+  # POST /nodes.json
+  # Valid attributes to set for a node are :content, :type_id, :width, :height.
+  # New nodes are created "in limbo", without parent, predecessor, or successor links.
+  def create_sub_tree
+    @obj = Node.create_sub_tree(params[:sub_tree])
+
+    respond_to do |format|
+        format.html { redirect_to @obj, notice: 'Node was successfully created.' }
+        format.json { render json: @obj, status: :created, location: @obj }
+    end
   end
+
+  # An admin function: produce a table of broken nodes, or return an array of those nodes if
+  # the response format is json.
+  def show_broken_nodes
+    @objects = Node.find_broken_nodes
+    respond_to do |format|
+      format.html
+      format.json {render json: @objects}
+    end
+  end
+
 
   # ============================================= HELPERS
   private

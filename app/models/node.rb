@@ -23,7 +23,7 @@ class Node < ActiveRecord::Base
 
   # Only pass white-listed parameters to super for initialization, which means we don't raise an error if params
   # contains other properties.
-  def initialize (params)
+  def initialize (params = {})
     super(params.select {|k| [:content, :type_id, :width, :height].include?(k)})
 
     # Defaults
@@ -43,6 +43,31 @@ class Node < ActiveRecord::Base
   # =============================================================================
 
 
+  # =============================================================================
+  #                                   Create Sub-Tree
+  # =============================================================================
+  # Create an entire sub-tree "in limbo", with no node parent for the root of the sub-tree,
+  # based on node_spec, which should be a hash representing the root of the sub-tree. This hash should have a
+  # :children property that consists of an array of other hashes representing its children, and so on.
+  # Return the new Node that is at the root of the newly created sub-tree.
+  def self.create_sub_tree (node_spec)
+    transaction do
+      self.create_sub_tree_helper(node_spec)
+    end
+  end
+
+  def self.create_sub_tree_helper (node_spec)
+    node = Node.new(node_spec)
+    node.save!
+
+    node_spec[:children].each do |child_spec|
+      node.insert_child(create_sub_tree_helper(child_spec), true)
+    end
+
+    node
+  end
+
+
   # ========================= Tools for debugging / cleaning db
   # Print a quick and dirty report to stdout that shows nodes with inconsistent
   # links or missing rank. Inconsistent links means that the predecessor/successor links
@@ -51,22 +76,34 @@ class Node < ActiveRecord::Base
   # just parent links.
   # TODO: Make this method efficient.
   def self.find_broken_nodes
-    result = []
-    self.all.each do |node|
-      if node.predecessor && node.predecessor.successor != node && !result.include?(node)
-        result.push(node);
-      end
 
-      if node.successor && node.successor.predecessor != node && !result.include?(node)
-        result.push(node);
-      end
-
-      if !node.rank && !result.include?(node)
-        result.push(node);
-      end
-    end
-    result
+    Node.find_by_sql %q(
+      select n1.*
+      from nodes n1
+      left join nodes pred on (n1.predecessor_id = pred.id)
+      left join nodes succ on (n1.successor_id   = succ.id)
+      where ((n1.predecessor_id is not null) and (pred.successor_id <> n1.id)) or
+            ((n1.successor_id is not null) and (succ.predecessor_id <> n1.id)) or
+            n1.rank is null
+                     )
   end
+
+  #  result = []
+  #  self.all.each do |node|
+  #    if node.predecessor && node.predecessor.successor != node && !result.include?(node)
+  #      result.push(node);
+  #    end
+  #
+  #    if node.successor && node.successor.predecessor != node && !result.include?(node)
+  #      result.push(node);
+  #    end
+  #
+  #    if !node.rank && !result.include?(node)
+  #      result.push(node);
+  #    end
+  #  end
+  #  result
+  #end
 
   # Move to the trash all nodes that have no parent, except for system nodes like top node and trash node.
   def self.trash_orphans
@@ -275,31 +312,6 @@ class Node < ActiveRecord::Base
   def cut
     Trash.trash.insert_child(self)
   end
-
-  # =============================================================================
-  #                                   Create Sub-Tree
-  # =============================================================================
-  # Create an entire sub-tree "in limbo", with no node parent for the root of the sub-tree,
-  # based on node_spec, which should be a hash representing the root of the sub-tree. This hash should have a
-  # :children property that consists of an array of other hashes representing its children, and so on.
-  # Return the new Node that is at the root of the newly created sub-tree.
-  def create_sub_tree (node_spec)
-    transaction do
-      create_sub_tree_helper(node_spec)
-    end
-  end
-
-  def create_sub_tree_helper (node_spec)
-    node = Node.new(node_spec)
-    node.save!
-
-    node_spec[:children].each do |child_spec|
-      node.insert_child(create_sub_tree_helper(child_spec), true)
-    end
-
-    node
-  end
-
 
 
   # =============================================================================

@@ -2,11 +2,14 @@ JssNotes::Application.routes.draw do
 
   resources :nodes do
     collection do
-      get :top
-      get :trash
-      delete :trash, to: :empty_trash
-      post :back_up_to_json
+      get :top                         # /nodes/top
+      get :trash                       # /nodes/trash
+      get :show_broken_nodes           # /nodes/show_broken_nodes
       get :test_me
+
+      post :create_sub_tree            # /nodes/create_sub_tree
+
+      delete :trash, to: :empty_trash  # /nodes/trash -> NodesController.empty_trash()
     end
 
     member do

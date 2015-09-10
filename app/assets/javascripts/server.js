@@ -41,6 +41,14 @@ Server.prototype.createNodePath = function() {
   return '/nodes.json'
 }
 
+Server.prototype.createSubTree = function (treeSpec) {
+  return new JsonRequest("POST", this.createSubTreePath(), {tree: treeSpec})
+}
+
+Server.prototype.createSubTreePath = function() {
+  return '/nodes/create_sub_tree.json'
+}
+
 /*
  The three methods below insert an existing node on the server at a new location.
  Attach it to the text node tree at a position relative to the referenceNode
