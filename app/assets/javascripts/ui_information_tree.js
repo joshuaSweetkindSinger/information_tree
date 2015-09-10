@@ -65,20 +65,27 @@ InformationTree.prototype.init = function() {
   and "Trash" nodes.
    */
   var self = this;
-  this.initRequest = App.server.getTop()
-    .success(function(top) {
-      self.top = new UiTopNode(new Node(top))
-      $(self).append(self.top);
-
-      App.server.getTrash()
-        .success(function(trash) {
-          self.trash = new UiTrashNode(new TrashNode(trash))
-          $(self).append(self.trash)
-        })
-    });
-
+  this.initRequest = App.server.getTopNodes()
+    .success(function(topNodeRefs) {
+      topNodeRefs.forEach(function (node) {
+        if (node.type_id == self.TOP_NODE_TYPE_ID) {
+          self.top = new UiTopNode(new Node(node))
+        } else if (node.type_id == self.TRASH_NODE_TYPE_ID) {
+          self.trash = new UiTrashNode(new TrashNode(node))
+        } else {
+          var uiNode = new UiNode(new Node(node))
+          $(self).append(uiNode)
+        }
+      })
+      $(self).prepend(self.top)
+      $(self).append(self.trash)
+    })
   return this;
 };
+
+// TODO: This is not DRY. Should ask the server to tell us this.
+InformationTree.prototype.TOP_NODE_TYPE_ID   = -1
+InformationTree.prototype.TRASH_NODE_TYPE_ID = -2
 
 InformationTree.prototype.onClick = function (event) {
   App.controller.resetMenus();

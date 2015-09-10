@@ -96,6 +96,10 @@ TODO: merge set_attributes with update() in nodes controller.
 TODO: None of these Path() methods in server.js is DRY, because the server knows them.
 TODO: Add new yield to admin header for page-specific options.
 TODO: Add paging to node index
+TODO: Client should ask server to give it symbolic constants it needs, like ids of system node types,
+      and routing table paths.
+TODO: Top Node isn't really a type. It's an attribute that is a function of having no parent. Get rid of this type and refactor.
+      Note that Top < Node is also a class. Get rid of the class.
  */
 
 /* NOTE: We're using the $(window).load callback here rather than the more common

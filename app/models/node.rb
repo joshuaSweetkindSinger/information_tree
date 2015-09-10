@@ -41,7 +41,10 @@ class Node < ActiveRecord::Base
   #                                   Class Methods
   # =============================================================================
   # =============================================================================
-
+  # Return an array of nodes that have no parent
+  def self.top_nodes
+    self.where('parent_id is null')
+  end
 
   # =============================================================================
   #                                   Create Sub-Tree
@@ -69,15 +72,13 @@ class Node < ActiveRecord::Base
 
 
   # ========================= Tools for debugging / cleaning db
-  # Print a quick and dirty report to stdout that shows nodes with inconsistent
-  # links or missing rank. Inconsistent links means that the predecessor/successor links
+  # Find all nodes with inconsistent links or missing rank.
+  # Inconsistent links means that the predecessor/successor links
   # are broken, since these are the only links that can be inconsistent at this point
   # in the architecture. Parent/child links can't be broken because we don't have child links,
   # just parent links.
-  # TODO: Make this method efficient.
   def self.find_broken_nodes
-
-    Node.find_by_sql %q(
+    self.find_by_sql %q(
       select n1.*
       from nodes n1
       left join nodes pred on (n1.predecessor_id = pred.id)

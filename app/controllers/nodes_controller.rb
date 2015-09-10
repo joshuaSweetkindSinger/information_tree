@@ -94,11 +94,12 @@ class NodesController < ApplicationController
   # ======================================== Controller Actions beyond basic crud
 
   # GET /nodes/top
+  # Return an array of all top nodes: those that have no parent.
   def top
-    @obj = Top.top
+    @objects = Node.top_nodes
     respond_to do |format|
-      format.html {render 'show'}
-      format.json {render json: @obj}
+      format.html
+      format.json {render json: @objects}
     end
   end
 

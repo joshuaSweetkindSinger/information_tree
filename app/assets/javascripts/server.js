@@ -5,12 +5,12 @@ var Server = function () {
 
 }
 
-Server.prototype.getTop = function() {
-  return new JsonRequest("GET", this.topNodePath())
+Server.prototype.getTopNodes = function() {
+  return new JsonRequest("GET", this.topNodesPath())
 }
 
 
-Server.prototype.topNodePath = function() {
+Server.prototype.topNodesPath = function() {
   return '/nodes/top.json'
 }
 
