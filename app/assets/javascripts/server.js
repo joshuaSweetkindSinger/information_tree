@@ -22,6 +22,8 @@ Server.prototype.getTrash = function() {
 Server.prototype.trashNodePath = function() {
   return '/nodes/trash.json'
 }
+
+
 /*
 Create a new node on the server with attributes specified in nodeSpec,
 or with default attributes if nodeSpec is not supplied.

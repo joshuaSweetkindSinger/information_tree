@@ -8,15 +8,19 @@ class Node < ActiveRecord::Base
   TRASH_TYPE_ID     = -2 # system-designated type id for trash node.
   SYSTEM_NODE_TYPES = [TRASH_TYPE_ID, TOP_TYPE_ID]
 
-  BULLET_TYPE_ID    =  1 # type_id of this value indicates a bullet item.
-  PARAGRAPH_TYPE_ID =  2 # type_id of this value indicates a paragraph item.
+  BULLET_TYPE_ID    =  1 # type_id of this value indicates a bullet item. The use of multiple types is not implemented yet.
+
+  # Cosmetics for html rendering
+  NODE_WIDTH = 500
+  NODE_HEIGHT = 100
 
   # Default node spec for creation of new nodes.
   DEFAULT_SPEC = {content:'',
-                  width:500,
-                  height:100}
+                  type_id:BULLET_TYPE_ID,
+                  width:NODE_WIDTH,
+                  height:NODE_HEIGHT}
 
-  attr_accessible :content, :parent_id, :rank, :type_id, :predecessor_id, :successor_id, :width, :height
+  attr_accessible :content, :type_id, :width, :height
   belongs_to :parent, class_name: 'Node'
   belongs_to :predecessor, class_name: 'Node'
   belongs_to :successor, class_name: 'Node'
@@ -91,13 +95,16 @@ class Node < ActiveRecord::Base
 
 
   # =============================================================================
-  #                                   Methods To Render In Different Formats
+  #                                   Render Recursively
   # =============================================================================
   MAX_DEPTH = 3 # For write_as_html_list, restrict expansion to html to this depth.
 
   # Render self and children recursively as NodeRep objects, but not rendering
   # more than max_depth levels deep.
-  # Return the top-level NodeRep that represents self.
+  # Return the top-level NodeRep that represents the root of the sub-tree that has been
+  # rendered. Use converter functions like NodeRepToHtml::convert to convert the sub-tree to
+  # different formats.
+  #
   def render_recursively (max_depth = nil)
     max_depth ||= MAX_DEPTH  # We don't assign this as a default in the arglist, because we allow the caller to pass nil, meaning: 'please use the default'
     result = NodeRep.new
@@ -115,8 +122,6 @@ class Node < ActiveRecord::Base
 
     result
   end
-
-
 
 
   # =============================================================================
@@ -238,9 +243,9 @@ class Node < ActiveRecord::Base
     siblings_to_save.each {|node| node.save!}
   end
 
-# Blow away parent and sibling info. Return siblings that were non-nil
-# before bashing so that the caller can save them at the proper time
-# as part of an insert() operation.
+  # Blow away parent and sibling info. Return siblings that were non-nil
+  # before bashing so that the caller can save them at the proper time
+  # as part of an insert() operation.
   def _untether
     siblings_to_save = [predecessor, successor].select {|node| node}
     self.parent      = nil
@@ -304,7 +309,6 @@ class Node < ActiveRecord::Base
   # to express rank, and there is nothing significant about the absolute value of
   # the rank. It is useful only relative to the other ranks. By sorting them,
   # the children of a node are returned from the db in proper order.
-
 
 
   # Calculate node's splice-rank. This is the most-used rank method so far.
@@ -454,7 +458,8 @@ end
 # This is a helper class used by the method render_recursively() above. It allows us
 # to realize a node and its children explicitly so that it can then be rendered as json, or html,
 # or in whatever format we desire. By contrast, the ActiveRecord Node class doesn't realize its children
-# until it needs to, and the to_json() method doesn't work on it as desired.
+# until it needs to, and the to_json() method doesn't work on it as desired. Also, by explicitly rendering
+# into a new object type, we can control the depth to which the tree is rendered.
 class NodeRep
   attr_accessor :type_id, :content, :height, :width, :children
 end

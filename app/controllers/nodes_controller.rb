@@ -4,7 +4,7 @@ class NodesController < ApplicationController
   # GET /nodes
   # GET /nodes.json
   def index
-    @objects = Node.limit(100)
+    @objects = Node.limit(100) # TODO: Add paging
 
     respond_to do |format|
       format.html # index.html.erb
