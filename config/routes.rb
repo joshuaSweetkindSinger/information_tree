@@ -6,8 +6,10 @@ JssNotes::Application.routes.draw do
       get :trash                       # /nodes/trash
       get :show_broken_nodes           # /nodes/show_broken_nodes
       get :test_me
+      get :import, to: :show_import_form
 
       post :create_sub_tree            # /nodes/create_sub_tree
+      post :import
 
       delete :trash, to: :empty_trash  # /nodes/trash -> NodesController.empty_trash()
     end

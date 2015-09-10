@@ -239,6 +239,15 @@ class NodesController < ApplicationController
     end
   end
 
+  # Show a form that allows the user to specify a json file for uploading new nodes to the information tree.
+  def show_import_form
+  end
+
+  # Upload new nodes to the information tree.
+  def import
+    Node.create_sub_tree params[:tree]
+  end
+
 
   # ============================================= HELPERS
   private
