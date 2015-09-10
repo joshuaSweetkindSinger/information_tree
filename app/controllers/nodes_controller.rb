@@ -50,7 +50,7 @@ class NodesController < ApplicationController
   # Valid attributes to set for a node are :content, :type_id, :width, :height.
   # New nodes are created "in limbo", without parent, predecessor, or successor links.
   def create
-    @obj = Node.new(params[:node] || Node.DEFAULT_SPEC)
+    @obj = Node.new(params[:node])
 
     respond_to do |format|
       if @obj.save
@@ -217,8 +217,8 @@ class NodesController < ApplicationController
     max_depth = params[:max_depth].to_f if params[:max_depth]
 
     respond_to do |format|
-      format.html {render inline: NodeRepToHtml::convert(@obj.render_recursively(max_depth))}
-      format.json {render json: @obj.render_recursively(max_depth)}
+      format.html {render inline: NodeRepToHtml::convert(NodeRep.new(@obj, max_depth))}
+      format.json {render json: NodeRep.new(@obj, max_depth)}
     end
 
   end

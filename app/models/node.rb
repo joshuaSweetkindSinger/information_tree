@@ -11,14 +11,9 @@ class Node < ActiveRecord::Base
   BULLET_TYPE_ID    =  1 # type_id of this value indicates a bullet item. The use of multiple types is not implemented yet.
 
   # Cosmetics for html rendering
-  DEFAULT_NODE_WIDTH  = 500
-  DEFAULT_NODE_HEIGHT = 100
+  DEFAULT_WIDTH  = 500
+  DEFAULT_HEIGHT = 100
 
-  # Default node spec for creation of new nodes.
-  DEFAULT_SPEC = {content:'',
-                  type_id:BULLET_TYPE_ID,
-                  width:DEFAULT_NODE_WIDTH,
-                  height:DEFAULT_NODE_HEIGHT}
 
   attr_accessible :content, :type_id, :width, :height
   belongs_to :parent, class_name: 'Node'
@@ -26,9 +21,19 @@ class Node < ActiveRecord::Base
   belongs_to :successor, class_name: 'Node'
   has_many :children, class_name: 'Node', foreign_key: :parent_id
 
-  after_initialize do |node|
-    node.type_id ||= BULLET_TYPE_ID # By default, new nodes are bullets rather than paragraphs or other types.
+  # Only pass white-listed parameters to super for initialization, which means we don't raise an error if params
+  # contains other properties.
+  def initialize (params)
+    super(params.select {|k| [:content, :type_id, :width, :height].include?(k)})
+
+    # Defaults
+    self.type_id ||= BULLET_TYPE_ID # By default, new nodes are bullets rather than paragraphs or other types.
+    self.content ||= ''
+    self.width   ||= DEFAULT_WIDTH
+    self.height  ||= DEFAULT_HEIGHT
   end
+
+
 
 
   # =============================================================================
@@ -94,35 +99,6 @@ class Node < ActiveRecord::Base
   # =============================================================================
 
 
-  # =============================================================================
-  #                                   Render Recursively
-  # =============================================================================
-  MAX_DEPTH = 3 # For write_as_html_list, restrict expansion to html to this depth.
-
-  # Render self and children recursively as NodeRep objects, but not rendering
-  # more than max_depth levels deep.
-  # Return the top-level NodeRep that represents the root of the sub-tree that has been
-  # rendered. Use converter functions like NodeRepToHtml::convert to convert the sub-tree to
-  # different formats.
-  #
-  def render_recursively (max_depth = nil)
-    max_depth ||= MAX_DEPTH  # We don't assign this as a default in the arglist, because we allow the caller to pass nil, meaning: 'please use the default'
-    result = NodeRep.new
-    result.type_id  = type_id
-    result.content  = content
-    result.height   = height
-    result.width    = width
-    result.children = []
-
-    if max_depth > 0 && !children.empty?
-      children.order(:rank).each do |child|
-        result.children << child.render_recursively(max_depth - 1)
-      end
-    end
-
-    result
-  end
-
 
   # =============================================================================
   #                                   Misc
@@ -160,8 +136,8 @@ class Node < ActiveRecord::Base
   # =============================================================================
 
 
-  # Add node to the node hierarchy, to be a new child
-  # of self. If node is already in the hierarchy, then its existing parent- and sibling-links
+  # Re-insert node into the node hierarchy, to be a new child
+  # of self. Its existing parent- and sibling-links
   # will be detached and re-hooked-up to fit with its new position.
   # node is added onto the beginning of self's set of children, unless last
   # is true, in which case it is added onto the end.
@@ -170,28 +146,28 @@ class Node < ActiveRecord::Base
   end
 
 
-  # Add node to the node hierarchy to be the successor
-  # of self. If node is already in the hierarchy, then its existing parent- and sibling-links
+  # Re-insert node to the node hierarchy to be the successor
+  # of self. Its existing parent- and sibling-links
   # will be detached and re-hooked-up to fit with its new position.
   def insert_successor (node)
     insert(node, SplicePositionPredecessor.new(self))
   end
 
 
-  # Add node to the node hierarchy to be the predecessor
-  # of self. If node is already in the hierarchy, then its existing parent- and sibling-links
+  # Re-insert node to the node hierarchy to be the predecessor
+  # of self. Its existing parent- and sibling-links
   # will be detached and re-hooked-up to fit with its new position.
   def insert_predecessor (node)
     insert(node, SplicePositionSuccessor.new(self))
   end
 
 
-  # Insert node into the node hierarchy relative to ourselves, as indicated by
+  # Re-insert node into the node hierarchy relative to ourselves, as indicated by
   # splice-position, which is a SplicePosition instance.
   #
-  # This method fixes all the predecessor and successor links, calculates the rank of node,
-  # and causes node to be saved to the db if it was not already in the db, along with mods
-  # to the sibling nodes on either side of it. If node was already in the db, its previous
+  # This method re-calculates all the predecessor and successor links, calculates the rank of node,
+  # and causes node to be re-saved to the db, along with mods
+  # to the sibling nodes on either side of it. Its previous
   # relationship links are unhooked.
   #
   # This method also reranks all the children of the node's parent, to prevent underflow.
@@ -243,7 +219,7 @@ class Node < ActiveRecord::Base
     siblings_to_save.each {|node| node.save!}
   end
 
-  # Blow away parent and sibling info. Return siblings that were non-nil
+  # Blow away parent and sibling info as part of the unhook operation. Return siblings that were non-nil
   # before bashing so that the caller can save them at the proper time
   # as part of an insert() operation.
   def _untether
@@ -254,10 +230,8 @@ class Node < ActiveRecord::Base
     siblings_to_save
   end
 
-  # Make our predecessor and successor be each other's predecessor and successor,
-  # in preparation for unhooking ourselves from the tree.
-  # NOTE: We only need to patch the successor if it exists, because the _set_predecessor() method
-  # will patch the predecessor for us. If the successor does not exist, then we set the predecessor to nil.
+  # Make our predecessor and successor be each other's predecessor and successor
+  # as part of the unhook operation.
   def _repatch_siblings
     if successor
       successor._set_predecessor(predecessor)
@@ -301,6 +275,32 @@ class Node < ActiveRecord::Base
   def cut
     Trash.trash.insert_child(self)
   end
+
+  # =============================================================================
+  #                                   Create Sub-Tree
+  # =============================================================================
+  # Create an entire sub-tree "in limbo", with no node parent for the root of the sub-tree,
+  # based on node_spec, which should be a hash representing the root of the sub-tree. This hash should have a
+  # :children property that consists of an array of other hashes representing its children, and so on.
+  # Return the new Node that is at the root of the newly created sub-tree.
+  def create_sub_tree (node_spec)
+    transaction do
+      create_sub_tree_helper(node_spec)
+    end
+  end
+
+  def create_sub_tree_helper (node_spec)
+    node = Node.new(node_spec)
+    node.save!
+
+    node_spec[:children].each do |child_spec|
+      node.insert_child(create_sub_tree_helper(child_spec), true)
+    end
+
+    node
+  end
+
+
 
   # =============================================================================
   #                                   Rank Calculation
@@ -455,14 +455,42 @@ end
 # =============================================================================
 #                                   NodeRep
 # =============================================================================
-# This is a helper class used by the method render_recursively() above. It allows us
+# This is a class that allows us
 # to realize a node and its children explicitly so that it can then be rendered as json, or html,
 # or in whatever format we desire. By contrast, the ActiveRecord Node class doesn't realize its children
 # until it needs to, and the to_json() method doesn't work on it as desired. Also, by explicitly rendering
 # into a new object type, we can control the depth to which the tree is rendered.
 class NodeRep
   attr_accessor :type_id, :content, :height, :width, :children
+
+  MAX_DEPTH = 10 # For write_as_html_list, restrict expansion to html to this depth.
+
+  # Create a new NodeRep and its children recursively, but not rendering
+  # more than max_depth levels deep.
+  # Return the top-level NodeRep that represents the root of the sub-tree that has been
+  # rendered. Use converter functions like NodeRepToHtml::convert to convert the sub-tree to
+  # different formats.
+  # Inputs:
+  #  node_or_hash may be either a Node object or a hash with appropriate properties defined.
+  #  max_depth specifies the number of recursion levels to realize the children of the sub-tree. If nil, the default
+  #    MAX_DEPTH is used.
+  def initialize (node, max_depth = nil)
+    max_depth ||= MAX_DEPTH  # We don't assign this as a default in the arglist, because we allow the caller to pass nil, meaning: 'please use the default'
+
+    self.type_id  = node.type_id
+    self.content  = node.content
+    self.height   = node.height
+    self.width    = node.width
+    self.children = []
+
+    if max_depth > 0 && !node.children.empty?
+      node.children.order(:rank).each do |child|
+        self.children << NodeRep.new(child, max_depth - 1)
+      end
+    end
+  end
 end
+
 
 # =============================================================================
 #                                   NodeRep To Html
