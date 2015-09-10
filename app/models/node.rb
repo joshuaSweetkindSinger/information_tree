@@ -26,8 +26,12 @@ class Node < ActiveRecord::Base
     node.type_id ||= BULLET_TYPE_ID # By default, new nodes are bullets rather than paragraphs or other types.
   end
 
-  # ===================================== Class Methods
 
+  # =============================================================================
+  # =============================================================================
+  #                                   Class Methods
+  # =============================================================================
+  # =============================================================================
 
 
   # ========================= Tools for debugging / cleaning db
@@ -78,7 +82,17 @@ class Node < ActiveRecord::Base
     "backups/information_tree_backup_#{Time.now.strftime("%Y-%m-%d_%H-%M-%S")}"
   end
 
-  # ===================================== Instance Methods
+
+  # =============================================================================
+  # =============================================================================
+  #                                   Instance Methods
+  # =============================================================================
+  # =============================================================================
+
+
+  # =============================================================================
+  #                                   Methods To Render In Different Formats
+  # =============================================================================
   MAX_DEPTH = 3 # For write_as_html_list, restrict expansion to html to this depth.
 
   # Write self and children recursively to stream (which can also be a string) using html list format, but not writing more than
@@ -130,10 +144,67 @@ class Node < ActiveRecord::Base
     result
   end
 
-
+  # =============================================================================
+  #                                   Misc
+  # =============================================================================
   def is_system_node?
     SYSTEM_NODE_TYPES.include?(type_id)
   end
+
+
+  def to_s
+    "[Node: #{id},  parent:(#{parent_id}), predecessor: (#{predecessor_id}), successor: (#{successor_id}), content: #{content}]"
+  end
+
+
+  def last_child
+    children.where('successor_id is null').first
+  end
+
+
+  def first_child
+    children.where('predecessor_id is null').first
+  end
+
+
+  # Destroy yourself and all your children from the hierarchy, and their children, recursively.
+  def destroy_self_and_children!
+    children.each do |node|
+      node.destroy
+    end
+    destroy
+  end
+
+  # =============================================================================
+  #                                   Insertion Methods
+  # =============================================================================
+
+
+  # Add node to the node hierarchy, to be a new child
+  # of self. If node is already in the hierarchy, then its existing parent- and sibling-links
+  # will be detached and re-hooked-up to fit with its new position.
+  # node is added onto the beginning of self's set of children, unless last
+  # is true, in which case it is added onto the end.
+  def insert_child (node, last = false)
+    insert(node, SplicePositionChild.new(self, last))
+  end
+
+
+  # Add node to the node hierarchy to be the successor
+  # of self. If node is already in the hierarchy, then its existing parent- and sibling-links
+  # will be detached and re-hooked-up to fit with its new position.
+  def insert_successor (node)
+    insert(node, SplicePositionPredecessor.new(self))
+  end
+
+
+  # Add node to the node hierarchy to be the predecessor
+  # of self. If node is already in the hierarchy, then its existing parent- and sibling-links
+  # will be detached and re-hooked-up to fit with its new position.
+  def insert_predecessor (node)
+    insert(node, SplicePositionSuccessor.new(self))
+  end
+
 
   # Insert node into the node hierarchy relative to ourselves, as indicated by
   # splice-position, which is a SplicePosition instance.
@@ -245,9 +316,20 @@ class Node < ActiveRecord::Base
   end
 
 
-  def to_s
-    "[Node: #{id},  parent:(#{parent_id}), predecessor: (#{predecessor_id}), successor: (#{successor_id}), content: #{content}]"
+  # Remove self and children from the node hierarchy, patching up predecessor/successor links.
+  # This moves the node and its children to the "trash" node. It doesn't really delete them.
+  def cut
+    Trash.trash.insert_child(self)
   end
+
+  # =============================================================================
+  #                                   Rank Calculation
+  # =============================================================================
+  # Rank is the order of a node among its siblings. Currently, I use real numbers
+  # to express rank, and there is nothing significant about the absolute value of
+  # the rank. It is useful only relative to the other ranks. By sorting them,
+  # the children of a node are returned from the db in proper order.
+
 
 
   # Calculate node's splice-rank. This is the most-used rank method so far.
@@ -297,58 +379,6 @@ class Node < ActiveRecord::Base
         node.save!
       end
     end
-  end
-
-
-  # Add node to the node hierarchy, to be a new child
-  # of self. If node is already in the hierarchy, then its existing parent- and sibling-links
-  # will be detached and re-hooked-up to fit with its new position.
-  # node is added onto the beginning of self's set of children, unless last
-  # is true, in which case it is added onto the end.
-  def insert_child (node, last = false)
-    insert(node, SplicePositionChild.new(self, last))
-  end
-
-
-  # Add node to the node hierarchy to be the successor
-  # of self. If node is already in the hierarchy, then its existing parent- and sibling-links
-  # will be detached and re-hooked-up to fit with its new position.
-  def insert_successor (node)
-    insert(node, SplicePositionPredecessor.new(self))
-  end
-
-
-  # Add node to the node hierarchy to be the predecessor
-  # of self. If node is already in the hierarchy, then its existing parent- and sibling-links
-  # will be detached and re-hooked-up to fit with its new position.
-  def insert_predecessor (node)
-    insert(node, SplicePositionSuccessor.new(self))
-  end
-
-
-  # Remove self and children from the node hierarchy, patching up predecessor/successor links.
-  # This moves the node and its children to the "trash" node. It doesn't really delete them.
-  def cut
-    Trash.trash.insert_child(self)
-  end
-
-
-  # Destroy yourself and all your children from the hierarchy, and their children, recursively.
-  def destroy_self_and_children!
-    children.each do |node|
-      node.destroy
-    end
-    destroy
-  end
-
-
-  def last_child
-    children.where('successor_id is null').first
-  end
-
-
-  def first_child
-    children.where('predecessor_id is null').first
   end
 end
 
