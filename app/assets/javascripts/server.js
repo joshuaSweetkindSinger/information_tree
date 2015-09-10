@@ -30,6 +30,8 @@ or with default attributes if nodeSpec is not supplied.
 
 Returns a JsonRequest object for asynchronous continuation to handle the
 returned node representation from the server.
+
+Valid attributes to set for a node are :content, :type_id, :width, :height.
  */
 Server.prototype.createNode = function(nodeSpec) {
   return new JsonRequest("POST", this.createNodePath(), nodeSpec ? {node: nodeSpec} : {});

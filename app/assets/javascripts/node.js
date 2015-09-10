@@ -24,6 +24,7 @@ var Node = function (nodeRep) {
 // Default json spec for a new node
 Node.defaultSpec = {
   content:'',
+  type_id:1,
   width:500,
   height:100
 }
@@ -31,8 +32,10 @@ Node.defaultSpec = {
 /*
 Create a new server-side node with attributes as specified in nodeSpec, or
 with default attributes if nodeSpec is not supplied, then effect the same changes
-on the client side, creating a new client-side Node object. The new node, on both server and client,
+on the client side, creating a new client-side Node object. Valid attributes to set are
+'content', 'type_id', 'width', 'height'. The new node, on both server and client,
 will have no parents (it is in "limbo" until it is added to the tree).
+
 This method returns a request object for asynchronous continuation to further process the client-side
 Node object.
  */

@@ -47,6 +47,8 @@ class NodesController < ApplicationController
 
   # POST /nodes
   # POST /nodes.json
+  # Valid attributes to set for a node are :content, :type_id, :width, :height.
+  # New nodes are created "in limbo", without parent, predecessor, or successor links.
   def create
     @obj = Node.new(params[:node] || Node.DEFAULT_SPEC)
 

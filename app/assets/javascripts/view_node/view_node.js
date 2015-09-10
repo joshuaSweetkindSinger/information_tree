@@ -31,8 +31,10 @@ var ViewNode = defCustomTag('node-view', HTMLElement);
  Note that this is a class method, not an instance method.
 
  Create a new server-side node with attributes as specified in nodeSpec, or
- with default attributes if nodeSpec is not supplied. The new node will have
- no parents (it is in "limbo" until it is added to the tree).
+ with default attributes if nodeSpec is not supplied.  Valid attributes to set are
+ 'content', 'type_id', 'width', 'height'.
+
+ The new node will have no parents (it is in "limbo" until it is added to the tree).
  This method returns a request object for asynchronous continuation to process the node representation
  returned by the server (a hash object).
 

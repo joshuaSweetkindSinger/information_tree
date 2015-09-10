@@ -11,14 +11,14 @@ class Node < ActiveRecord::Base
   BULLET_TYPE_ID    =  1 # type_id of this value indicates a bullet item. The use of multiple types is not implemented yet.
 
   # Cosmetics for html rendering
-  NODE_WIDTH = 500
-  NODE_HEIGHT = 100
+  DEFAULT_NODE_WIDTH  = 500
+  DEFAULT_NODE_HEIGHT = 100
 
   # Default node spec for creation of new nodes.
   DEFAULT_SPEC = {content:'',
                   type_id:BULLET_TYPE_ID,
-                  width:NODE_WIDTH,
-                  height:NODE_HEIGHT}
+                  width:DEFAULT_NODE_WIDTH,
+                  height:DEFAULT_NODE_HEIGHT}
 
   attr_accessible :content, :type_id, :width, :height
   belongs_to :parent, class_name: 'Node'
