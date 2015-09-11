@@ -13,7 +13,7 @@ var NodeMarker = defCustomTag('node-marker', HTMLElement)
  Create a new  node marker and initialize it from the specified UiNode object.
  */
 NodeMarker.prototype.afterCreate = function (uiNode) {
-  this.uiNode          = uiNode
+  this.uiNode = uiNode
 
   var $this = $(this)
   $this.html(uiNode.snipContent())

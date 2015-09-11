@@ -20,11 +20,13 @@ var VisitedNodeList = defCustomTag('visited-node-list', DropDownPopUp)
 
 
 VisitedNodeList.prototype.addVisitedNode = function (uiNode) {
-  var $this = $(this)
+  var $this     = $(this)
+  var $children = $this.children()
+
+  if ($children.length > 0 && $children[0].uiNode === uiNode) return; // If uiNode is already on the top of the visited list, don't add it again.
+
+  if ($children.length >= 10) $children.last().remove()
   $this.prepend(new NodeMarker(uiNode, this))
-  if ($this.children().length > 10) {
-    $this.children().last().remove()
-  }
 }
 
 

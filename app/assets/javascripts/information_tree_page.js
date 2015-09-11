@@ -102,7 +102,6 @@ TODO: Top Node isn't really a type. It's an attribute that is a function of havi
       Note that Top < Node is also a class. Get rid of the class.
 TODO: Scroll to visited node even if it is collapsed.
 TODO: Center node content vertically within input frame.
-TODO: Don't add node to visited list if it's already on top.
  */
 
 /* NOTE: We're using the $(window).load callback here rather than the more common
