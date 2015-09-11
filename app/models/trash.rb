@@ -39,7 +39,7 @@ class Trash < Node
   # Delete all nodes in the trash that were put there longer than days_to_keep days ago.
   def delete_old_nodes (days_to_keep = DAYS_TO_KEEP_TRASHED_NODE)
     children.where('updated_at < ?', Time.now - days_to_keep.day).each do |node|
-      node.destroy
+      node.destroy_self_and_children!
     end
   end
 
