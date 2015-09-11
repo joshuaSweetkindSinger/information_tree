@@ -102,12 +102,9 @@ InformationTree.prototype.expandedViewNodes = function() {
 }
 
 /*
-Find the lowest node in the information tree above y-position y, expressed in "scrolled"
-tree coords.
-
-PROGRAMMER NOTES
-The information tree div is scrollable. In the "scrolled" coordinate system, the upper left visible
-corner of the tree is always 0,0. Nodes that scrolled offscreen above this have negative top values.
+Find the lowest node in the information tree above y-position y, expressed in document coords.
+The upper left of the document is always 0,0. But the information tree div is scrollable.
+If an object is scrolled above the top of the document, it will have a negative y coord.
  */
 InformationTree.prototype.findLowestNodeAbove = function(y) {
   var nodes = this.expandedViewNodes().reverse();
@@ -119,7 +116,7 @@ InformationTree.prototype.findLowestNodeAbove = function(y) {
       continue;
     }
 
-    if ($(node).position().top < y) {
+    if ($(node).offset().top < y) {
       return node;
     }
   };

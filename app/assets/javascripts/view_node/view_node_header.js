@@ -5,15 +5,15 @@
  ViewNodeHeader is a container for the node view's content and buttons.
  */
 var ViewNodeHeader = defCustomTag('node-header', HTMLElement)
-ViewNodeHeader.prototype.afterCreate = function(nodeView, options) {
+ViewNodeHeader.prototype.afterCreate = function(viewNode, options) {
   var $this = $(this)
-  this.viewNode = nodeView
-  this.id = 'ViewNodeHeader-' + nodeView.node.id;
+  this.viewNode = viewNode
+  this.id = 'ViewNodeHeader-' + viewNode.node.id;
 
-  this.expandCollapseButton = new ExpandCollapse(nodeView)
+  this.expandCollapseButton = new ExpandCollapse(viewNode)
   $this.append(this.expandCollapseButton)
 
-  this.contentArea = new ViewNodeContent(nodeView, options);
+  this.contentArea = new ViewNodeContent(viewNode, options);
   $this.append(this.contentArea)
 }
 
@@ -25,8 +25,8 @@ ViewNodeHeader.prototype.afterCreate = function(nodeView, options) {
 // =========================================================================
 var ExpandCollapse = defCustomTag('expand-collapse', HTMLElement)
 
-ExpandCollapse.prototype.afterCreate = function(nodeView) {
-  this.viewNode = nodeView
+ExpandCollapse.prototype.afterCreate = function(viewNode) {
+  this.viewNode = viewNode
 
   this.showCollapsedStatus();
 

@@ -39,10 +39,10 @@ to instantiate your on click handler. You don't need to bind it, because the par
  */
 UiNode.prototype.bindEventHandlers = function () {
   $(this).draggable({
-    revert: true,
-    helper: "clone",
-    start: this.dragStart,
-    stop: this.dragStop
+    revert: this.handleRevert.bind(this),
+    // helper: "clone",
+    start: this.onDragStart,
+    stop: this.onDragStop
   })
 
   // Attach handlers to content element
@@ -55,27 +55,47 @@ UiNode.prototype.bindEventHandlers = function () {
     tolerance: "pointer",
     hoverClass: "drop-hover",
     greedy: true,
-    drop: this.handleDrop.bind(this)
+    drop: this.onDrop.bind(this)
   })
 }
 
 
 /*
- A drag event just started. Erase the last drop target.
- This function is called whenever a new drag event is initiated.
+ Advise the controller that this UiNode object just started being dragged.
  */
-UiNode.prototype.dragStart = function() {
-  App.controller.adviseDragStart(this)
+UiNode.prototype.onDragStart = function() {
+  App.controller.onDragStart(this)
 }
 
 
 /*
-Advise the controller that a drag event just stopped.
-In particular, this UiNode object just finished being dragged. If it was dragged on
+Advise the controller that this UiNode object just finished being dragged. If it was dragged on
 top of another object, the controller will handle the drop event.
  */
-UiNode.prototype.dragStop = function(event, helperUiNode) {
-  App.controller.adviseDragStop(event, helperUiNode, this)
+UiNode.prototype.onDragStop = function(event, helperUiNode) {
+  App.controller.onDragStop(event, helperUiNode, this)
+}
+
+
+/*
+ Advise the controller that a node was just dropped on top of <this> node.
+
+ Note: It seems that a single mouse-release can generate two drop events, one of them a phantom.
+ Not sure why. But the "true" drop event is recognizable because the associated node will have an id.
+ We only forward to the controller for the true drop event.
+ */
+UiNode.prototype.onDrop = function(event, ui) {
+  if (this.id) {
+    App.controller.onDrop(this);
+  }
+}
+
+/*
+ Advise the controller that this UiNode object just finished being dragged and should handle
+ revert logic for the dragged node.
+ */
+UiNode.prototype.handleRevert = function() {
+  App.controller.handleRevert(this)
 }
 
 
@@ -111,19 +131,6 @@ UiNode.prototype.onKeypress = function(event) {
 }
 
 
-/*
- A drop event just occurred.  A node was just dropped on top of <this> node.
- Advise the controller so it can take action.
-
- Note: It seems that a single mouse-release can generate two drop events, one of them a phantom.
- Not sure why. But the "true" drop event is recognizable because the associated node will have an id.
- We only forward to the controller for the true drop event.
- */
-UiNode.prototype.handleDrop = function(event, ui) {
-  if (this.id) {
-    App.controller.adviseDrop(this);
-  }
-}
 
 
 // This event-handler is bound to the object's blur event.

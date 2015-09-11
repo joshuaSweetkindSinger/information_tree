@@ -86,7 +86,8 @@ ViewNode.prototype.afterCreate = function(node, state) {
 // during which we can pass in args, such as width and height. But, because the node is not yet
 // attached to the DOM, the computed width and height are wrong somehow (not sure of details).
 ViewNode.prototype.onAttach = function() {
-  // For dragging, the viewNode gets shallow-copied and won't have a _header.
+  // For dragging, the viewNode gets cloned but won't have any member variables of the original,
+  // such as node, id, _header, _childrenContainer.
   // In that case, we want to ignore it anyway.
   if (!this._header) return
 
@@ -313,12 +314,13 @@ ViewNode.prototype._insert = function(nodeToInsert, mode) {
 
   return this.node[mode](nodeToInsert.node)
     .success(function(node) {
-      return nodeToInsert._attachToTree();
+      nodeToInsert._attachToTree();
+      return nodeToInsert
     })
 };
 
 /*
-Return true if the requested add osperation is invalid.
+Return true if the requested add operation is invalid.
 
 The operation is invalid if nodeSpec is a reference to <this>, in which
 case we would be adding ourselves to ourselves.

@@ -272,55 +272,77 @@ Controller.prototype.nop = function() {
 // Called by node when a drag operation starts to let the controller
 // know about it. In this case, we clear the previous drop target
 // because a new drop is possibly about to occur.
-Controller.prototype.adviseDragStart = function (uiNode) {
-  this.dropTarget = null;
+Controller.prototype.onDragStart = function (uiNode) {
+  this.dropTarget        = null     // The node that uiNode was dropped on top of, if any.
+  this.predecessorTarget = null     // The node immediately about uiNode's release position, if any and no drop target.
 }
 
 
 /*
-Advise the controller that a drag event just ended.
-Determine whether helperUiNode was dropped on top of another node,
- or let go beneath a node, and do either an insertChild() or an insertSuccessor() accordingly on
- originalNode.
+Called by a UiNode to advise the controller that a drag event just ended.
+Determine whether uiNode was dropped on top of another node,
+or let go beneath a node, and do either an insertChild() or an insertSuccessor() accordingly.
+Handle smooth animation of uiNode to its new position in the tree.
 
  Inputs:
    event:        is the drag event object.
-   helperUiNode: is a throw-away node created by jquery to give visual feedback on the dragged node
-                 while the user is dragging it, without dragging the actual, original node that was clicked on.
-   originalNode: is that original node that was clicked on by the user to initiate the drag event.
-
-PROGRAMMER NOTES
-MATH: helperUiNode.position().top is in coordinates relative to the top of the information tree, which
-is 0,0 in this coordinate system. Nodes near the bottom of the information tree will
-have a high top value. We convert this value to "scrolled" information-tree coords
-before passing it to findLowestNodeAbove(). The information-tree is a div that sits beneath the top
-menu bar, and it is scrollable. Any node in the tree can be asked its tree coords via $(node).position().
-These values will be expressed in pixels relative to the scroll position of the tree. The upper left corner
-of the tree that is visible in the view is always 0,0 in this coord system.
-Nodes off-screen above this will have negative top values in "scrolled" tree coords.
-
-We use $(tree).scrollTop() to get the current values of the scroll offsets so we can do the conversion.
+   ignoreHelper: Not sure what this is, since we don't have helper mode enabled for dragging.
+   uiNode:       is the original node that was clicked on by the user to initiate the drag event.
  */
-Controller.prototype.adviseDragStop = function (event, helperUiNode, originalUiNode) {
-  var uiReferenceNode
+Controller.prototype.onDragStop = function (event, ignoreHelper, uiNode) {
+  var request         = null
+  var $uiNode         = $(uiNode)
+  var previousOffset  = $uiNode.offset()  // Remember where the node was before we changed its position in the tree.
 
   // There's a drop target: add originalNode as a child
-  if (uiReferenceNode = this.dropTarget) {
-    this.insertChild(uiReferenceNode, originalUiNode)
+  if (this.dropTarget) {
+    request = this.insertChild(this.dropTarget, uiNode)
 
   // There's a node above us: add originalNode as a successor
-  } else if (uiReferenceNode = App.informationTree.findLowestNodeAbove(helperUiNode.position.top - $(App.informationTree).scrollTop())) {
-    this.insertSuccessor(uiReferenceNode, originalUiNode)
+  } else if (this.predecessorTarget) {
+    request = this.insertSuccessor(this.predecessorTarget, uiNode)
   }
+
+  // Handle animation to new position
+  if (request) {
+    request.then(function() {
+      $uiNode.offset(previousOffset)
+      $uiNode.animate({left:'0px', top:'0px'})
+    })
+  }
+
 }
 
 /*
  Record the drop target so that it can be added as a parent when the drag event finishes.
  */
-Controller.prototype.adviseDrop = function(uiNode) {
+Controller.prototype.onDrop = function(uiNode) {
   this.dropTarget = uiNode;
 }
 
+
+/*
+ Figure out whether uiNode should revert back to its original position, returning true if so.
+ In the process, figure out whether uiNode is beneath another node, and, if so, set this.predecessorTarget
+ accordingly.
+ If there is a dropTarget or a predecessorTarget, then uiNode should not revert to its original position.
+
+ PROGRAMMER NOTES
+ MATH: helperUiNode.position().top is in coordinates relative to the top of the information tree, which
+ is 0,0 in this coordinate system. Nodes near the bottom of the information tree will
+ have a high top value. We convert this value to "scrolled" information-tree coords
+ before passing it to findLowestNodeAbove(). The information-tree is a div that sits beneath the top
+ menu bar, and it is scrollable. Any node in the tree can be asked its tree coords via $(node).position().
+ These values will be expressed in pixels relative to the scroll position of the tree. The upper left corner
+ of the tree that is visible in the view is always 0,0 in this coord system.
+ Nodes off-screen above this will have negative top values in "scrolled" tree coords.
+
+ We use $(tree).scrollTop() to get the current values of the scroll offsets so we can do the conversion.
+ */
+Controller.prototype.handleRevert = function(uiNode) {
+  var tree = App.informationTree
+  return !this.dropTarget && !(this.predecessorTarget = tree.findLowestNodeAbove($(uiNode).offset().top))
+}
 
 /*
 Establish command key shortcuts for the ui.
