@@ -100,8 +100,8 @@ TODO: Client should ask server to give it symbolic constants it needs, like ids 
       and routing table paths.
 TODO: Top Node isn't really a type. It's an attribute that is a function of having no parent. Get rid of this type and refactor.
       Note that Top < Node is also a class. Get rid of the class.
-TODO: Scroll to visited node even if it is collapsed.
 TODO: Center node content vertically within input frame.
+TODO: dragged node loses html while dragging.
  */
 
 /* NOTE: We're using the $(window).load callback here rather than the more common

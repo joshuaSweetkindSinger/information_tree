@@ -78,6 +78,7 @@ ViewNode.prototype.afterCreate = function(node, state) {
   this.update(node)                    // This needs to follow the _header and container appends above; it invokes setters that depend upon them.
   this.state = state || 'collapsed'    // See notes above.
   this.afterAttach = new FunctionQueue // A queue of callbacks to process after we are attached to the dom.
+                                       // This is for .then(), .success(), .failure() callbacks.
 }
 
 // Clean up the width and height after we are attached.
@@ -163,13 +164,13 @@ Object.defineProperties(ViewNode.prototype, {
 
 /*
 Return the list of expanded ViewNodes, in descending vertical order.
-In other words, the Top node is returned first, and then then node beneath it,
+In other words, the Top node is returned first, and then the node beneath it,
 and so on. Only expanded nodes are in the list, i.e., those that are rendered somewhere
 in the display area.
  */
 ViewNode.prototype.expandedViewNodes = function(result) {
   result.push(this);
-  if (this.state == 'expanded') {
+  if (this.isExpanded()) {
     this.kids().forEach(function(node) {
       node.expandedViewNodes(result);
     });
@@ -427,11 +428,6 @@ ViewNode.prototype.trash = function() {
  - attach them to this node as children on the client side.
  - make sure they are displayed and not hidden.
  - if doRecursive is true, then recursively invoke expand() on each of the child nodes.
- PROGRAMMER's NOTE: As written, the recursive expansion won't reveal smoothly in the dom,
- because it launches several server-side threads asynchronously and updates the dom as they finish.
- To do this correctly, we would need to launch all the asynchronous threads but have a manager in charge
- that noticed when the last one finished, only then invoking the show() that would expand the toplevel
- node. Another approach would be to have the server calls block until they are finished.
  */
 ViewNode.prototype.expand = function(doRecursive) {
   var self = this;
@@ -475,11 +471,24 @@ ViewNode.prototype.collapse = function(doRecursive) {
 }
 
 ViewNode.prototype.toggleExpandCollapse = function(doRecursive) {
-  if (this.state == 'expanded') {
+  if (this.isExpanded()) {
     this.collapse(doRecursive)
   } else {
     this.expand(doRecursive)
   }
+}
+
+// Return true if this node is expanded, else false.
+ViewNode.prototype.isExpanded = function () {
+  return this.state === 'expanded'
+}
+
+
+// Cause this node to be revealed, by expanding its parent(s) if necessary.
+ViewNode.prototype.reveal = function () {
+  if (!this.parent()) return; // We are a top-level node, so we are revealed.
+  this.parent().expand()
+  this.parent().reveal()
 }
 
 
