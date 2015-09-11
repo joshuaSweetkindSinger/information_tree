@@ -177,6 +177,22 @@ ViewNode.prototype.expandedViewNodes = function(result) {
   return result;
 }
 
+ViewNode.prototype.DEFAULT_MAX_CONTENT_SNIPPET_LENGTH = 25  // The maximum length to show of a node's content
+
+/*
+Return a new, possibly clipped content string, limited to max_length chars. If the original
+content has been clipped, then the last three chars of the returned string will be '...'
+*/
+
+ViewNode.prototype.snipContent = function (max_length) {
+  max_length = max_length || this.DEFAULT_MAX_CONTENT_SNIPPET_LENGTH
+  var result = this.content.slice(0, max_length)
+  if (this.content.length > max_length) {
+    result = result.slice(0, -3) + '...'
+  }
+  return result
+}
+
 
 // =========================================================================
 //        Tree Hierarchy Accessors And Manipulation Methods

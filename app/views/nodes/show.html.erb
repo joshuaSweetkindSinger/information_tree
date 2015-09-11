@@ -1,7 +1,7 @@
 <% max_content_snippet_length = 50 %>
 
 <p id="notice"><%= notice %></p>
-<h1 class="show-node-heading"><%= snip_content(@obj.content) %></h1>
+<h1 class="show-node-heading"><%= (@obj.snip_content) %></h1>
 
   <p>
     <b>Id:</b>
@@ -36,18 +36,18 @@
 
 <p>
   <b>Parent:</b>
-  <%= link_to(snip_content(@obj.parent.content), @obj.parent) if @obj.parent %>
+  <%= link_to(@obj.parent.snip_content, @obj.parent) if @obj.parent %>
   </span>
 </p>
 
 <p>
   <b>Predecessor:</b>
-  <%= link_to(snip_content(@obj.predecessor.content), @obj.predecessor) if @obj.predecessor %>
+  <%= link_to(@obj.predecessor.snip_content, @obj.predecessor) if @obj.predecessor %>
 </p>
 
 <p>
   <b>Successor:</b>
-  <%= link_to(snip_content(@obj.successor.content), @obj.successor) if @obj.successor %>
+  <%= link_to(@obj.successor.snip_content, @obj.successor) if @obj.successor %>
 </p>
 
 

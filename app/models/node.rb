@@ -155,6 +155,19 @@ class Node < ActiveRecord::Base
     destroy
   end
 
+  DEFAULT_MAX_CONTENT_SNIPPET_LENGTH = 50  # The maximum length to show of a node's content
+  # when it is being shown as a snippet. See snip_content() below.
+
+  # Return a new, possibly clipped content string, limited to max_length chars. If the original
+  # content has been clipped, then the last three chars of the returned string will be '...'
+  def snip_content (max_length = DEFAULT_MAX_CONTENT_SNIPPET_LENGTH)
+    result = content[0, max_length]
+    if content.length > max_length
+      result[-3,3] = '...'
+    end
+    result
+  end
+
   # =============================================================================
   #                                   Insertion Methods
   # =============================================================================

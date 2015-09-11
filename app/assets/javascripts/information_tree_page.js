@@ -100,8 +100,9 @@ TODO: Client should ask server to give it symbolic constants it needs, like ids 
       and routing table paths.
 TODO: Top Node isn't really a type. It's an attribute that is a function of having no parent. Get rid of this type and refactor.
       Note that Top < Node is also a class. Get rid of the class.
-STATUS: Import nodes from json file. Have stubs set up. Need to figure out how to upload a file to server then have it
-be parsed as json. Use diet tracker as an example.
+TODO: Scroll to visited node even if it is collapsed.
+TODO: Center node content vertically within input frame.
+TODO: Don't add node to visited list if it's already on top.
  */
 
 /* NOTE: We're using the $(window).load callback here rather than the more common

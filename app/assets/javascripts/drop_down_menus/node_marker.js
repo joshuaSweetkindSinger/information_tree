@@ -16,7 +16,7 @@ NodeMarker.prototype.afterCreate = function (uiNode) {
   this.uiNode          = uiNode
 
   var $this = $(this)
-  $this.html(uiNode.content)
+  $this.html(uiNode.snipContent())
   $this.on('click', this.onClick.bind(this))
 }
 
