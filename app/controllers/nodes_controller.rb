@@ -216,18 +216,7 @@ class NodesController < ApplicationController
 
   end
 
-  # POST /nodes/create_sub_tree
-  # POST /nodes.json
-  # Valid attributes to set for a node are :content, :type_id, :width, :height.
-  # New nodes are created "in limbo", without parent, predecessor, or successor links.
-  def create_sub_tree
-    @obj = Node.create_sub_tree(params[:sub_tree])
 
-    respond_to do |format|
-        format.html { redirect_to @obj, notice: 'Node was successfully created.' }
-        format.json { render json: @obj, status: :created, location: @obj }
-    end
-  end
 
   # An admin function: produce a table of broken nodes, or return an array of those nodes if
   # the response format is json.
@@ -243,12 +232,17 @@ class NodesController < ApplicationController
   def show_import_form
   end
 
-  # Upload new nodes to the information tree.
+  # POST /nodes/import
+  # POST /nodes/import.json
+  # Create an entire sub-tree by importing a json structure representing the root of the sub-tree.
   def import
-    Node.create_sub_tree JSON.parse(File.open(params[:file_to_upload].tempfile.path))
-    render inline: "Nodes successfully imported into information tree.", layout:false
-  end
+    @obj = Node.create_sub_tree JSON.parse(File.read(params[:file_to_upload].tempfile.path), symbolize_names: true)
 
+    respond_to do |format|
+      format.html { redirect_to @obj, notice: 'Node was successfully created.' }
+      format.json { render json: @obj, status: :created, location: @obj }
+    end
+  end
 
   # ============================================= HELPERS
   private

@@ -21,9 +21,9 @@ class Node < ActiveRecord::Base
   belongs_to :successor, class_name: 'Node'
   has_many :children, class_name: 'Node', foreign_key: :parent_id
 
-  # Only pass white-listed parameters to super for initialization, which means we don't raise an error if params
-  # contains other properties.
   def initialize (params = {})
+    # Only pass white-listed parameters to super for initialization, which means we don't raise an error if params
+    # contains other properties.
     super(params.select {|k| [:content, :type_id, :width, :height].include?(k)})
 
     # Defaults
