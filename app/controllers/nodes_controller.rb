@@ -220,8 +220,8 @@ class NodesController < ApplicationController
 
   # An admin function: produce a table of broken nodes, or return an array of those nodes if
   # the response format is json.
-  def show_broken_nodes
-    @objects = Node.find_broken_nodes
+  def show_broken
+    @objects = Node.find_broken
     respond_to do |format|
       format.html
       format.json {render json: @objects}

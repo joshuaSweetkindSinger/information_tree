@@ -4,7 +4,7 @@ JssNotes::Application.routes.draw do
     collection do
       get :top                         # /nodes/top
       get :trash                       # /nodes/trash
-      get :show_broken_nodes           # /nodes/show_broken_nodes
+      get :show_broken                 # /nodes/show_broken_nodes
       get :test_me
       get :import, to: :show_import_form
 

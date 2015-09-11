@@ -72,39 +72,25 @@ class Node < ActiveRecord::Base
 
 
   # ========================= Tools for debugging / cleaning db
-  # Find all nodes with inconsistent links or missing rank.
-  # Inconsistent links means that the predecessor/successor links
-  # are broken, since these are the only links that can be inconsistent at this point
-  # in the architecture. Parent/child links can't be broken because we don't have child links,
-  # just parent links.
-  def self.find_broken_nodes
+  # Find all nodes with inconsistent sibling links, missing parents, or missing rank.
+  # Inconsistent sibling links means that the predecessor/successor links
+  # are broken in the architecture.
+  # Parent/child links can't be broken because we don't have child links,
+  # just parent links, but the parent can be missing.
+  def self.find_broken
     self.find_by_sql %q(
-      select n1.*
-      from nodes n1
-      left join nodes pred on (n1.predecessor_id = pred.id)
-      left join nodes succ on (n1.successor_id   = succ.id)
-      where ((n1.predecessor_id is not null) and (pred.successor_id <> n1.id)) or
-            ((n1.successor_id is not null) and (succ.predecessor_id <> n1.id)) or
-            n1.rank is null
-                     )
+      select n.*
+      from nodes n
+      left join nodes pred   on (n.predecessor_id = pred.id)
+      left join nodes succ   on (n.successor_id   = succ.id)
+      left join nodes parent on (n.parent_id      = parent.id)
+      where ((n.predecessor_id is not null) and (pred.successor_id <> n.id))   or
+            ((n.successor_id is not null)   and (succ.predecessor_id <> n.id)) or
+            ((n.parent_id is not null)      and (parent.id is null))            or
+            n.rank is null
+      )
   end
 
-  #  result = []
-  #  self.all.each do |node|
-  #    if node.predecessor && node.predecessor.successor != node && !result.include?(node)
-  #      result.push(node);
-  #    end
-  #
-  #    if node.successor && node.successor.predecessor != node && !result.include?(node)
-  #      result.push(node);
-  #    end
-  #
-  #    if !node.rank && !result.include?(node)
-  #      result.push(node);
-  #    end
-  #  end
-  #  result
-  #end
 
   # Move to the trash all nodes that have no parent, except for system nodes like top node and trash node.
   def self.trash_orphans
