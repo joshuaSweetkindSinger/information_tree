@@ -95,7 +95,7 @@ UiNode.prototype.onDrop = function(event, ui) {
  revert logic for the dragged node.
  */
 UiNode.prototype.handleRevert = function() {
-  App.controller.handleRevert(this)
+  return App.controller.handleRevert(this)
 }
 
 

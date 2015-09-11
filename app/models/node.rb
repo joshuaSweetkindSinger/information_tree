@@ -215,7 +215,7 @@ class Node < ActiveRecord::Base
   def insert (node, splice_position)
     transaction do
       _insert(node, splice_position)
-      node.parent.rerank_children
+      node.parent.rerank_children if node.parent
     end
 
     node
@@ -226,7 +226,7 @@ class Node < ActiveRecord::Base
   def _insert (node, splice_position)
     transaction do
       node._attach(splice_position)
-      node.rank = node.parent.calc_child_rank(node)
+      node.rank = node.parent.calc_child_rank(node) if node.parent
       node.save!
     end
 
