@@ -53,10 +53,8 @@ The name nodeRep indicates that a representation of the now-existing object has 
 */
 
 /*
- TODO: Make New Node get deleted on blur if nothing changed.
  TODO: look for refs to stopPropagation() and preventDefault() and make sure they're necessary.
 
- TODO: hitting return on an empty node should delete the node.
  TODO: Consider having hit return on a node put you in edit mode for the node, equal to clicking on it.
  This presupposes we're not always in edit mode.
  TODO: implement cut/copy/paste, and put cut nodes in "the basket".
@@ -66,7 +64,6 @@ The name nodeRep indicates that a representation of the now-existing object has 
 TODO: There are annoying flashes when a node is saved. Probably because of the round-trip to server, and maybe
 because of the timing of when they are added to the dom.
 
-TODO: find all nodes with null parents and delete them (except trash and top)
 TODO: Feature: Add intra-tree node links, e.g., "see Application-Specific-Passwords", which, when clicked on,
 would navigate to the referenced node in the information tree.
 TODO: Modify schema so that each node has a has_children boolean. Whenever a node becomes the parent of a child,
@@ -80,28 +77,20 @@ This is a very flexible structure. We just hash each json node into the client s
 visible on the client side when it has a path to Top. A node without a known parent can go into an "orphans"
 system node.
 
-TODO: Fix bug whereby trash does not expand smoothly on first go
-TODO: Fix bug whereby trash does not fully show at bottom of view when Top is expanded.
 
-TODO: Newly created nodes are not created expanded. We want them to be.
-TODO: Create an "empty trash" function for the trash node.
 TODO: Clicking on admin should do paging.
 TODO: There should be a help nav item that explains the app and pops up help in a new tab.
 TODO: Restore make backup to Admin section.
 TODO: From admin, "go back to info tree" should select existing tab.
-TODO: download node and children as local file in json.
-TODO: upload json containing node and children to server.
 TODO: change trash to "basket". Don't need a separate pointer to a "cut" object. Just use top of trash.
 TODO: merge set_attributes with update() in nodes controller.
 TODO: None of these Path() methods in server.js is DRY, because the server knows them.
 TODO: Add new yield to admin header for page-specific options.
-TODO: Add paging to node index
 TODO: Client should ask server to give it symbolic constants it needs, like ids of system node types,
       and routing table paths.
 TODO: Top Node isn't really a type. It's an attribute that is a function of having no parent. Get rid of this type and refactor.
       Note that Top < Node is also a class. Get rid of the class.
 TODO: Center node content vertically within input frame.
-TODO: dragged node loses html while dragging.
 TODO: refactor callbacks that are part of expand/reveal/scrollTo as deferreds using .then(). The PseudoRequest
       you set up is a start, but it should be renamed. We really want a class like Deferred, because these are not
       requests that are going to the server.
