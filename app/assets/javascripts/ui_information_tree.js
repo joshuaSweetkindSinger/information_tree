@@ -176,12 +176,19 @@ InformationTree.prototype.addUiNodes = function(nodes) {
 Set the information tree's scroll parameters such that uiNode is at the top of the tree's div.
 
  MATH NOTES:
- To do this, we set the scroll parameters for the node's parent, which is the information-tree element
- (it's the scroll parent because it has a position:relative style attribute), to be its current scrollTop plus
- the element's position.top, which states how many pixels below the current scroll top the element lies.
+ To do this, we set the scroll parameters of the information-tree element
+ to be its current scrollTop plus the element's top in view coords, which scrolls the element up that many pixels.
+ Then, to correct for the fact that the info tree is beneath a header div element, we subtract the position of the
+ tree top itself.
  */
 InformationTree.prototype.scrollTo = function (uiNode) {
-  uiNode.reveal()       // Make sure this node is revealed in the dom; otherwise, we can't scroll to it.
-  var $this = $(this)
-  $this.scrollTop($this.scrollTop() + $(uiNode).position().top)
+
+  var self = this
+
+  // Make sure this node is revealed in the dom; otherwise, we can't scroll to it.
+  // We wait until all expansions are completed before calculating the proper scroll position.
+  uiNode.reveal(function() {
+    var scrollTarget = self.scrollTop + uiNode.getBoundingClientRect().top - self.getBoundingClientRect().top
+    $(self).animate({scrollTop:scrollTarget})
+  })
 }

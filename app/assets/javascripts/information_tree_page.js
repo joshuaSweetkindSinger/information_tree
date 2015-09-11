@@ -102,6 +102,9 @@ TODO: Top Node isn't really a type. It's an attribute that is a function of havi
       Note that Top < Node is also a class. Get rid of the class.
 TODO: Center node content vertically within input frame.
 TODO: dragged node loses html while dragging.
+TODO: refactor callbacks that are part of expand/reveal/scrollTo as deferreds using .then(). The PseudoRequest
+      you set up is a start, but it should be renamed. We really want a class like Deferred, because these are not
+      requests that are going to the server.
  */
 
 /* NOTE: We're using the $(window).load callback here rather than the more common

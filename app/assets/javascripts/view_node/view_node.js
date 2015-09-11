@@ -430,16 +430,19 @@ ViewNode.prototype.trash = function() {
  - attach them to this node as children on the client side.
  - make sure they are displayed and not hidden.
  - if doRecursive is true, then recursively invoke expand() on each of the child nodes.
+ - When expansion animation is done on client side, call callback, if specified.
  */
-ViewNode.prototype.expand = function(doRecursive) {
+ViewNode.prototype.expand = function(doRecursive, callback) {
   var self = this;
   this.node.fetchChildren()
     .success(function(children) {
       App.informationTree.addUiNodes(children)
-      self._expand()
-      if (doRecursive) {
-        self.kids().forEach(function(nodeView) {nodeView.expand(true)});
-      }
+      self._expand(function() {
+        if (doRecursive) {
+          self.kids().forEach(function(nodeView) {nodeView.expand(true)});
+        }
+        if (callback) callback()
+      })
     })
 }
 
@@ -450,26 +453,28 @@ ViewNode.prototype.expand = function(doRecursive) {
  This is a helper method called by expand(). The parent method takes care
  of ensuring that this node already has its children fetched from the server.
  */
-ViewNode.prototype._expand = function() {
+ViewNode.prototype._expand = function(callback) {
   this.state = 'expanded'
-  $(this._childrenContainer).show('slow')
+  $(this._childrenContainer).show('slow', callback)
   this._header.expandCollapseButton.showExpandedStatus();
   return this;
 }
 
 
 // Collapse this node, which means hiding its children and hiding its button panel.
-ViewNode.prototype.collapse = function(doRecursive) {
+// When done, call callback, if specified.
+ViewNode.prototype.collapse = function(doRecursive, callback) {
   this.state = 'collapsed'
   var $childrenContainer = $(this._childrenContainer)
-  $childrenContainer.hide('slow')
+  $childrenContainer.hide('slow', function() {
+    if (doRecursive) {
+      $childrenContainer.children().each(function(index) {
+        this.collapse(doRecursive)
+      })
+    }
+    if (callback) callback()
+  })
   this._header.expandCollapseButton.showCollapsedStatus();
-
-  if (doRecursive) {
-    $childrenContainer.children().each(function(index) {
-      this.collapse(doRecursive)
-    })
-  }
 }
 
 ViewNode.prototype.toggleExpandCollapse = function(doRecursive) {
@@ -487,10 +492,17 @@ ViewNode.prototype.isExpanded = function () {
 
 
 // Cause this node to be revealed, by expanding its parent(s) if necessary.
-ViewNode.prototype.reveal = function () {
-  if (!this.parent()) return; // We are a top-level node, so we are revealed.
-  this.parent().expand()
-  this.parent().reveal()
+// Then call callback when done, if specified.
+ViewNode.prototype.reveal = function (callback) {
+  if (!this.parent()) {
+    if (callback) callback()
+    return;
+  } // We are a top-level node, so we are revealed.
+
+  var self = this
+  this.parent().expand(false, function() {
+    self.parent().reveal(callback)
+  })
 }
 
 
