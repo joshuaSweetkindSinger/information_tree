@@ -94,6 +94,7 @@ TODO: Center node content vertically within input frame.
 TODO: refactor callbacks that are part of expand/reveal/scrollTo as deferreds using .then(). The PseudoRequest
       you set up is a start, but it should be renamed. We really want a class like Deferred, because these are not
       requests that are going to the server.
+TODO: Center text in content area vertically.
  */
 
 /* NOTE: We're using the $(window).load callback here rather than the more common

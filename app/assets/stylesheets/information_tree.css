@@ -118,14 +118,20 @@ This is the input box that holds the node's content.
 */
 .node-content {
   display:inline-block;
-  box-sizing:border-box;
   margin:3px;
   vertical-align:middle;
-  padding:10px;
-  min-width: 10px;
-  min-height:10px;
+  padding-top:10px;
+  padding-left:10px;
+  padding-right:10px;
+  min-width: 0px;
+  min-height:0px;
+  resize:both;
+  overflow:auto;
 }
 .node-content:hover {
+}
+.node-content:focus {
+    outline:2px solid green;
 }
 
 /*
