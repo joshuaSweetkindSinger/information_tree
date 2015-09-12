@@ -15,6 +15,8 @@ ViewNodeHeader.prototype.afterCreate = function(viewNode, options) {
 
   this.contentArea = new ViewNodeContent(viewNode, options);
   $this.append(this.contentArea)
+
+  $this.addClass('node-header')
 }
 
 

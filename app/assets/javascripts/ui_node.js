@@ -26,6 +26,7 @@ ViewNode.uiClass = UiNode; // The class to instantiate.
 UiNode.prototype.afterCreate = function(node, state) {
   ViewNode.prototype.afterCreate.call(this, node, state)
   this.bindEventHandlers()
+  $(this).addClass('ui-node')
 }
 
 /*

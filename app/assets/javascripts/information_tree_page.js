@@ -2,13 +2,13 @@
 
 /*
 This is the toplevel javascript file for client-side tree manipulation.
-NOTE: For the class that implements the toplevel dom object with tag name 'information-tree', see ui_tree.js.
+NOTE: For the class that implements the toplevel dom object with tag name 'information-tree', see ui_information_tree.js.
 
 High-level description of architecture:
  Main Components:
  Controller: handles all client-side UI interactions
  Server: client side object that mediates interactions with the server.
- Tree: client-side object only: represents the entire tree.
+ InformationTree: client-side object only: represents the entire tree.
  UiNode: Ui-aware class, dom element representing a node in the tree.
  Node: non-viewable, non-dom-element, core node functionality and relationships.
 
@@ -24,7 +24,7 @@ High-level description of architecture:
  The UI gets its job done as follows. User actions are intercepted by event handlers on UiNode dom
  elements. These dom elements are formally part of the ui layer. Each dom element will handle the event
  by passing it to the ui controller, which will coordinate all actions.
- The majority of user-actions entail modification of a node. This achieved by sending a message to the associated
+ The majority of user-actions entail modification of a node. This is achieved by sending a message to the associated
  client-side node object, which is NOT part of the UI. This is the middle layer, which is the client
  side model. These client-side objects, in turn, get their job done by making api calls to the server
  to effect changes on the server side. They also handle responses from the server to update their
@@ -90,11 +90,9 @@ TODO: Client should ask server to give it symbolic constants it needs, like ids 
       and routing table paths.
 TODO: Top Node isn't really a type. It's an attribute that is a function of having no parent. Get rid of this type and refactor.
       Note that Top < Node is also a class. Get rid of the class.
-TODO: Center node content vertically within input frame.
 TODO: refactor callbacks that are part of expand/reveal/scrollTo as deferreds using .then(). The PseudoRequest
       you set up is a start, but it should be renamed. We really want a class like Deferred, because these are not
       requests that are going to the server.
-TODO: Center text in content area vertically.
  */
 
 /* NOTE: We're using the $(window).load callback here rather than the more common

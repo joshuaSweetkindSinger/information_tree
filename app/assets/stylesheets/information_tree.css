@@ -113,6 +113,29 @@ information-tree {
   position:relative; /* important for determining position of child nodes for scrolling. */
 }
 
+
+.ui-node {
+    display:block;
+    box-sizing:border-box;
+}
+/*
+This may be obsolete. This is the container for the children of an ode.
+*/
+node-children {
+    display:block;
+    box-sizing:border-box;
+    margin-left:40px;
+}
+/*
+This is the container for the node's content area and expand/collapse button.
+*/
+node-header {
+    display:block;
+}
+.node-header {
+}
+
+
 /*
 This is the input box that holds the node's content.
 */
@@ -134,6 +157,13 @@ This is the input box that holds the node's content.
     outline:2px solid green;
 }
 
+
+/*
+Style a node thusly when the the mouse is dragging another object over it as part of a drag-and-drop.
+*/
+.drop-hover {
+    background:#00a;
+}
 /*
 This is the little blue square with a triangle in it to the left of the node content input box.
 */
@@ -197,43 +227,12 @@ button-panel {
 This may be obsolete, based on the name, which should be ui-node. This is the entire
 container for a node, which includes its sub-nodes as children of this dom element.
 */
+/*
 text-node {
   display:block;
   box-sizing:border-box;
 }
-ui-node {
-    display:block;
-    box-sizing:border-box;
-}
-
-/*
-Style a node thusly when the the mouse is dragging another object over it as part of a drag-and-drop.
 */
-.drop-hover {
-  background:#00a;
-}
-
-/*
-This may be obsolete. This is the container for the children of an ode.
-*/
-node-children {
-  display:block;
-  box-sizing:border-box;
-  margin-left:40px;
-}
-/*
-This is the container for the node's content area and expand/collapse button.
-*/
-node-header {
-  display:block;
-  box-sizing:border-box;
-}
 
 
-/*
-No idea what this is.
-*/
-.ui-resizable-se {
-  bottom: 17px;
-}
 
