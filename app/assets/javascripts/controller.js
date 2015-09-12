@@ -269,12 +269,14 @@ Controller.prototype.nop = function() {
   console.log("Controller.nop")
 }
 
-// Called by node when a drag operation starts to let the controller
+// Called by uiNode when a drag operation starts to let the controller
 // know about it. In this case, we clear the previous drop target
 // because a new drop is possibly about to occur.
 Controller.prototype.onDragStart = function (uiNode) {
   this.dropTarget        = null     // The node that uiNode was dropped on top of, if any.
   this.predecessorTarget = null     // The node immediately about uiNode's release position, if any and no drop target.
+  this.selectNode(uiNode)
+  $(uiNode).zIndex(10)                // Put draggable on top of everything. // TODO: find a place for this hardcoded constant.
 }
 
 
@@ -308,9 +310,11 @@ Controller.prototype.onDragStop = function (event, ignoreHelper, uiNode) {
     request.then(function() {
       $uiNode.offset(previousOffset)
       $uiNode.animate({left:'0px', top:'0px'})
+      $uiNode.zIndex(0) // Restore node to normal z-index. We had set it high for the drag operation so it would be on top.
     })
+  } else {
+    $uiNode.zIndex(0) // Restore node to normal z-index. We had set it high for the drag operation so it would be on top.
   }
-
 }
 
 /*
