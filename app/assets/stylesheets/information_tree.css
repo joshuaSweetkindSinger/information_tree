@@ -2,9 +2,7 @@
 /* This is the horizontal bar across the top of the app
 containing pull-down menus and other nav options.
 */
-body, html {
-  background:#e0f0ff;
-}
+
 .app-header {
   background:#00a;
   color:white;
@@ -104,7 +102,8 @@ node-marker:hover {
 /* This is the main detail area of the information tree */
 information-tree {
   display:block;
-    background:#e0f0ff;
+  /* background:#e0f0ff; */
+  background:#bbb;
   padding-left:40px;
   border-top:0px;
   height:92vh;
