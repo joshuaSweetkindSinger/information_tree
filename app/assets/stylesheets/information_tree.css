@@ -150,6 +150,7 @@ This is the input box that holds the node's content.
   min-height:0px;
   resize:both;
   overflow:auto;
+  font-family: arial, helvetica, sans-serif;
 }
 .node-content:hover {
 }
