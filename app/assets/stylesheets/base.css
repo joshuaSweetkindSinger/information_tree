@@ -1,14 +1,8 @@
 body {
-  font-family: verdana, arial, helvetica, sans-serif;
+  font-family: arial, helvetica, sans-serif;
   font-size: 13px;
   line-height: 18px;
   overflow:hidden;
-}
-
-p, ol, ul {
-  font-family: verdana, arial, helvetica, sans-serif;
-  font-size: 13px;
-  line-height: 18px;
 }
 
 pre {
