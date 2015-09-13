@@ -22,6 +22,7 @@ var UiTrashNode = defCustomTag('ui-trash-node', UiNode);
  */
 UiTrashNode.prototype.afterCreate = function(node, state) {
   UiNode.prototype.afterCreate.call(this, node, state);
+  $(this).draggable('disable') // Can't drag the trash node.
 }
 
 

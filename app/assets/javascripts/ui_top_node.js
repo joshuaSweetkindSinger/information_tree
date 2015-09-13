@@ -22,6 +22,7 @@ var UiTopNode = defCustomTag('ui-top-node', UiNode);
  */
 UiTopNode.prototype.afterCreate = function(node, state) {
   UiNode.prototype.afterCreate.call(this, node, state);
+  $(this).draggable('disable') // Can't drag the top node.
 }
 
 /*
