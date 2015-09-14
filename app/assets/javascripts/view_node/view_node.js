@@ -13,13 +13,13 @@ This class cannot be directly instantiated, because it doesn't know anything abo
 it knows about all operations that can be performed on nodes and how to execute those operations on the client side.
 But it doesn't know which mouse clicks or keyboard clicks invoke those actions.
 
-To add knowledge about the ui, this class has a subclass called UiNode.
+To add knowledge about the ui, this class has a subclass called UiSubtree.
 
 Structure:
  A ViewNode has two child elements, called ViewNodeHeader and ViewNodeChildren.
  ViewNodeHeader: represents content for the node.
  ViewNodeChildren: represents a container for sub-nodes. The container only contains dom elements instantiated
-                   from class UiNode.
+                   from class UiSubtree.
 
 */
 // =========================================================================
@@ -40,7 +40,7 @@ var ViewNode = defCustomTag('view-node', HTMLElement);
 
  NOTE: ViewNode is not an instantiable class. However, node creation is part of what this class
  knows about. So what it instantiates is this.uiClass, whose value must be set by the instantiable subclass
- of ViewNode at page load time. For example: ViewNode.uiClass = UiNode; This very line is in ui_node.js.
+ of ViewNode at page load time. For example: ViewNode.uiClass = UiSubtree; This very line is in ui_node.js.
 
  NOTE: We create new nodes in expanded status, because we know, by definition, that they have no children yet.
  */
@@ -436,7 +436,7 @@ ViewNode.prototype.expand = function(doRecursive, callback) {
   var self = this;
   this.node.fetchChildren()
     .success(function(children) {
-      App.informationTree.addUiNodes(children)
+      App.informationTree.addUiSubtrees(children)
       self._expand(function() {
         if (doRecursive) {
           self.kids().forEach(function(nodeView) {nodeView.expand(true)});

@@ -2,13 +2,13 @@
 
 /*
 This file define the class UiBasketNode, which is the client-side representation of the basket node of the tree.
-This is a thin modification of UiNode, with some special functionality related to being the basket node.
+This is a thin modification of UiSubtree, with some special functionality related to being the basket node.
 */
 
 // =========================================================================
 //                   Ui Node
 // =========================================================================
-var UiBasketNode = defCustomTag('ui-basket-node', UiNode);
+var UiBasketNode = defCustomTag('ui-basket-node', UiSubtree);
 
 
 /*
@@ -21,7 +21,7 @@ var UiBasketNode = defCustomTag('ui-basket-node', UiNode);
  need to pass args, which can only be passed via afterCreate().
  */
 UiBasketNode.prototype.afterCreate = function(node, state) {
-  UiNode.prototype.afterCreate.call(this, node, state);
+  UiSubtree.prototype.afterCreate.call(this, node, state);
   $(this).draggable('disable') // Can't drag the basket node.
 }
 

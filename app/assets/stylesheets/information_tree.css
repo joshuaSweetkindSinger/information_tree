@@ -129,8 +129,19 @@ node-children {
 This is the container for the node's content area and expand/collapse button.
 */
 node-header {
-    display:block;
+    background-color: #DDD;
+    border: 1px solid transparent;
+    border-radius: 1em;
+    display: inline-block;
+    margin-top: 5px;
+    padding: 5px;
 }
+
+node-header.selected {
+    background-color: #D0D0D0;
+    border-color: #00A;
+}
+
 .node-header {
 }
 
@@ -139,6 +150,8 @@ node-header {
 This is the input box that holds the node's content.
 */
 .node-content {
+  border: 1px solid #FFF;
+  border-radius: 1em;
   display:inline-block;
   margin:3px;
   vertical-align:middle;
@@ -155,7 +168,8 @@ This is the input box that holds the node's content.
 .node-content:hover {
 }
 .node-content:focus {
-    outline:2px solid blue;
+  border: 1px solid blue;
+  outline: none;
 }
 
 

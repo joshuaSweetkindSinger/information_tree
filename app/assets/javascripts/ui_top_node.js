@@ -2,13 +2,13 @@
 
 /*
 This file define the class UiTopNode, which is the client-side representation of the top node of the tree.
-This is a thin modification of UiNode, with some special functionality related to being the top node.
+This is a thin modification of UiSubtree, with some special functionality related to being the top node.
 */
 
 // =========================================================================
 //                   Ui Node
 // =========================================================================
-var UiTopNode = defCustomTag('ui-top-node', UiNode);
+var UiTopNode = defCustomTag('ui-top-node', UiSubtree);
 
 
 /*
@@ -21,13 +21,13 @@ var UiTopNode = defCustomTag('ui-top-node', UiNode);
  need to pass args, which can only be passed via afterCreate().
  */
 UiTopNode.prototype.afterCreate = function(node, state) {
-  UiNode.prototype.afterCreate.call(this, node, state);
+  UiSubtree.prototype.afterCreate.call(this, node, state);
   $(this).draggable('disable') // Can't drag the top node.
 }
 
 /*
  This somewhat awkward intermediary is necessary because, at create time, we don't have
- a pointer to the Node parent from the UiNodeContent object. So we create a delegator
+ a pointer to the Node parent from the UiSubtreeContent object. So we create a delegator
  that will work at click-time.
  */
 UiTopNode.prototype.enableButtonPanelOptions = function(buttonPanel) {

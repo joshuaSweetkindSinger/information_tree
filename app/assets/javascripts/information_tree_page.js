@@ -9,19 +9,19 @@ High-level description of architecture:
  Controller: handles all client-side UI interactions
  Server: client side object that mediates interactions with the server.
  InformationTree: client-side object only: represents the entire tree.
- UiNode: Ui-aware class, dom element representing a node in the tree.
+ UiSubtree: Ui-aware class, dom element representing a subtree.
  Node: non-viewable, non-dom-element, core node functionality and relationships.
 
  Top layer is the UI. It orchestrates all user-initiated action. It handles all events. It introduces
  ui concepts like cut/paste, the clipboard, the basket, etc. Any data-entry or modification of the
- tree must be mediated by the ui. The ui consists of a controller and UiNode objects,
- the latter of which are dom elements representing the nodes in the tree. These UiNode objects
+ tree must be mediated by the ui. The ui consists of a controller and UiSubtree objects,
+ the latter of which are dom elements representing the nodes in the tree. These UiSubtree objects
  are wrappers on underlying Node objects that are *not* dom elements.
  These client-side Node objects represent the fundamental objects
  that are the nodes of the tree, their relationships to each other, and the tree object itself.
  These objects, in turn, are backed by server-side cognates.
 
- The UI gets its job done as follows. User actions are intercepted by event handlers on UiNode dom
+ The UI gets its job done as follows. User actions are intercepted by event handlers on UiSubtree dom
  elements. These dom elements are formally part of the ui layer. Each dom element will handle the event
  by passing it to the ui controller, which will coordinate all actions.
  The majority of user-actions entail modification of a node. This is achieved by sending a message to the associated
@@ -36,8 +36,8 @@ High-level description of architecture:
 The dom elements comprising the information tree are as follows:
 information-tree: a single node of this type is put in a static html file, which initiates the dynamic
           creation of a InformationTree object when the html file is loaded into the browser, via its custom tag constructor.
-          An information tree is made up of UiNodes.
-UiNode: A dynamically instantiated dom-element that represents a node in the information tree.
+          An information tree is made up of UiSubtrees.
+UiSubtree: A dynamically instantiated dom-element that represents a subtree in the information tree.
 
 On the server side, nodes are stored in the db in the nodes table. When the client-side expands a node, it asks the db for its children,
 which get sent as json, and then the client builds the nodes on the browser.

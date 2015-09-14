@@ -10,7 +10,7 @@ in the information tree. By clicking on it, the user is taken to that node in th
 var NodeMarker = defCustomTag('node-marker', HTMLElement)
 
 /*
- Create a new  node marker and initialize it from the specified UiNode object.
+ Create a new  node marker and initialize it from the specified UiSubtree object.
  */
 NodeMarker.prototype.afterCreate = function (uiNode) {
   this.uiNode = uiNode

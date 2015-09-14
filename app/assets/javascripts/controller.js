@@ -23,7 +23,7 @@
 Controller = function () {
   var self = this;
 
-  this.selectedNode    = null // The Ui maintains a "selected node", to which actions are performed.
+  this.selectedNodes   = []; // The Ui maintains "selected nodes", to which actions are performed.
   this.buttonPanel     = new ButtonPanel
   this.appHeader       = $('#app-header')[0]
 
@@ -69,25 +69,30 @@ Handle a blur action on a node. This means saving any changes to the node to the
 Also, if the node is empty and not dirty, basket the node on blur.
   */
 Controller.prototype.blurNode = function (uiNode) {
-  uiNode = uiNode || this.selectedNode
-  if (uiNode.isContentDirty()) this.autoSizeNode(uiNode)
+  if (uiNode.isContentDirty()) uiNode.autoSize()
   if (uiNode.isDirty()) this.saveNode(uiNode)
   if (!uiNode.isDirty() && uiNode.content === '') this.basket(uiNode)
-}
-
-
-Controller.prototype.autoSizeNode = function (uiNode) {
-  (uiNode || this.selectedNode).autoSize()
 }
 
 /*
  Select the specified node.
  */
 Controller.prototype.selectNode = function (uiNode) {
-  this.selectedNode = uiNode
-  $(uiNode).focus()
+  // TODO Perhaps we should not check if already selected here
+  if (_.includes(this.selectedNodes, uiNode)) return this.deselectNode(uiNode);
+  this.selectedNodes.push(uiNode);
+  uiNode._header.classList.add('selected');
   this.visitedNodeList.addVisitedNode(uiNode)
-  this.nodePathList.setPath(uiNode)
+  if (this.selectedNodes.length == 1) this.nodePathList.setPath(uiNode);
+}
+
+/*
+ Deselect the specified node.
+ */
+Controller.prototype.deselectNode = function (uiNode) {
+  uiNode._header.classList.remove('selected');
+  this.selectedNodes = _.without(this.selectedNodes, uiNode);
+  if (this.selectedNodes.length == 1) this.nodePathList.setPath(uiNode);
 }
 
 
@@ -102,14 +107,12 @@ Controller.prototype.visitNode = function (uiNode) {
 
 // Trash the selected node.
 Controller.prototype.basket = function (uiNode) {
-  uiNode = uiNode || this.selectedNode
+  // FIXME: Should this recursively basket children?
   uiNode.basket()
     .success(function() {
-      if (uiNode === this.selectedNode) {
-        this.selectedNode = null;   // We just deleted the selected node, so now there is none.
-        $(this.buttonPanel).hide(); // we just deleted the selected node, so hide the button panel.
-      }
-    })
+      this.selectedNodes = _.without(this.selectedNodes, uiNode);
+      if (this.selectedNodes.length == 0) $(this.buttonPanel).hide();
+    });
 }
 
 Controller.prototype.emptyBasket = function () {
@@ -119,26 +122,26 @@ Controller.prototype.emptyBasket = function () {
 
 // Toggle the expanded-collapsed state of node.
 Controller.prototype.toggleNodeExpandCollapse = function (uiNode) {
-  (uiNode || this.selectedNode).toggleExpandCollapse();
+  // FIXME Is this needed?
+  uiNode.toggleExpandCollapse();
 }
 
 
 // Open up in a new tab (or window) the URL represented by our node's content.
 Controller.prototype.followLink = function (uiNode) {
-  uiNode = (uiNode || this.selectedNode)
   var url = uiNode.content
   if (url.slice(0,4) == 'http') open(url)
 }
 
 // Open selected node and its children as a static html page in a new tab.
 Controller.prototype.renderRecursivelyAsHtml = function (uiNode) {
-  uiNode = (uiNode || this.selectedNode)
-  open(App.server.renderRecursivelyAsHtmlPath(uiNode.id))
+  // FIXME Does this still work?
+  open(App.server.renderRecursivelyAsHtmlPath(uiNode.id));
 }
 
 // Create a sub-tree in a new tab with uiNode as the top node
 Controller.prototype.toSubTree = function (uiNode) {
-  uiNode = (uiNode || this.selectedNode)
+  // FIXME Does this still work?
   open(App.server.treePath(uiNode.id))
 }
 
@@ -172,7 +175,7 @@ Controller.prototype.insertPredecessor = function (uiReferenceNode, uiNodeToInse
  */
 Controller.prototype.createNode = function (uiNode, mode) {
   var self = this;
-  return (uiNode || this.selectedNode)[mode]()
+  return uiNode[mode]()
     .success(function(uiNewNode) {
       uiNewNode.afterAttach.then(function(uiNewNode) {uiNewNode.focus()})
     })
@@ -182,7 +185,6 @@ Controller.prototype.createNode = function (uiNode, mode) {
  Create a new child of uiNode
  */
 Controller.prototype.createChild = function (uiNode) {
-  uiNode = uiNode || this.selectedNode
   uiNode.expand() // Make sure node is expanded before creating child, so that it will be visible.
   return this.createNode(uiNode, 'createChild');
 }
@@ -192,20 +194,19 @@ Controller.prototype.createChild = function (uiNode) {
  Create a new successor of uiNode
  */
 Controller.prototype.createSuccessor = function (uiNode) {
-  return this.createNode(uiNode || this.selectedNode, 'createSuccessor');
+  return this.createNode(uiNode, 'createSuccessor');
 }
 
 /*
  Create a new predecessor of uiNode
  */
 Controller.prototype.createPredecessor = function (uiNode) {
-  return this.createNode(uiNode || this.selectedNode, 'createPredecessor');
+  return this.createNode(uiNode, 'createPredecessor');
 }
 
 
 // Cut node == copy + delete
 Controller.prototype.cutNode = function (uiNode) {
-  uiNode = (uiNode || this.selectedNode);
   this.copyNode(uiNode);
   this.basket(uiNode);
 }
@@ -213,14 +214,18 @@ Controller.prototype.cutNode = function (uiNode) {
 
 // Copy node into the copiedNode holding area.
 Controller.prototype.copyNode = function (uiNode) {
-  this.copiedNode = (uiNode || this.selectedNode);
+  // FIXME. Should this handle multiple nodes?
+  //this.copiedNode = (uiNode || this.selectedNode);
+  this.copiedNode = uiNode;
 }
 
 
 // Paste the copiedNode onto node.
 Controller.prototype.pasteNode = function (uiNode) {
+  // FIXME. Handle multiple nodes?
   if (this.copiedNode) {
-    (uiNode || this.selectedNode).paste(this.copiedNode)
+    //(uiNode || this.selectedNode).paste(this.copiedNode)
+    uiNode.paste(this.copiedNode);
   } else {
     alert("There is no node in the paste buffer to paste.")
   }
@@ -228,7 +233,8 @@ Controller.prototype.pasteNode = function (uiNode) {
 
 
 Controller.prototype.saveNode = function (uiNode) {
-  uiNode = uiNode || this.selectedNode;
+  // FIXME. Handle multiple nodes?
+  //uiNode = uiNode || this.selectedNode;
   var attributes = {
     content: uiNode.content,
     width:   uiNode.width,
@@ -255,7 +261,7 @@ Controller.prototype.clearAllDropDowns = function () {
 
 
 Controller.prototype.toggleExpandCollapseAll = function (uiNode) {
-  (uiNode || this.selectedNode).toggleExpandCollapse(true)
+  uiNode.toggleExpandCollapse(true)
 }
 
 
@@ -266,7 +272,7 @@ Controller.prototype.restoreLastDeletedNode = function() {
 }
 
 Controller.prototype.setAttributes = function (uiNode, attributes) {
-  (uiNode || this.selectedNode).setAttributes(attributes)
+  uiNode.setAttributes(attributes);
 }
 
 
@@ -287,7 +293,7 @@ Controller.prototype.onDragStart = function (uiNode) {
 
 
 /*
-Called by a UiNode to advise the controller that a drag event just ended.
+Called by a UiSubtree to advise the controller that a drag event just ended.
 Determine whether uiNode was dropped on top of another node,
 or let go beneath a node, and do either an insertChild() or an insertSuccessor() accordingly.
 Handle smooth animation of uiNode to its new position in the tree.
@@ -338,7 +344,7 @@ Controller.prototype.onDrop = function(uiNode) {
  If there is a dropTarget or a predecessorTarget, then uiNode should not revert to its original position.
 
  PROGRAMMER NOTES
- MATH: helperUiNode.position().top is in coordinates relative to the top of the information tree, which
+ MATH: helperUiSubtree.position().top is in coordinates relative to the top of the information tree, which
  is 0,0 in this coordinate system. Nodes near the bottom of the information tree will
  have a high top value. We convert this value to "scrolled" information-tree coords
  before passing it to findLowestNodeAbove(). The information-tree is a div that sits beneath the top
@@ -354,49 +360,57 @@ Controller.prototype.handleRevert = function(uiNode) {
   return !this.dropTarget && !(this.predecessorTarget = tree.findLowestNodeAbove($(uiNode).offset().top))
 }
 
+Controller.prototype.nodeEventHandler = function(uiNode, event) {
+  console.log(event.type);
+  if (event.type == 'cut') this.cutNode(uiNode);
+  else if (event.type == 'copy') this.copyNode(uiNode);
+  else if (event.type == 'paste') this.pasteNode(uiNode);
+};
+
 /*
 Establish command key shortcuts for the ui.
  */
 Controller.prototype.keyPressedOnNode = function (uiNode, event) {
+  console.log('key pressed', event.keyCode);
   // carriage return -- create new successor node of uiNode
-  if (event.charCode == 13 && !event.altKey && !event.shiftKey && !event.ctrlKey) {
+  if (event.keyCode == 13 && !event.altKey && !event.shiftKey && !event.ctrlKey) {
     event.preventDefault();
     this.createSuccessor(uiNode);
 
   // shift-return -- create new child node of uiNode
-  } else if (event.charCode == 13 && !event.altKey && event.shiftKey && !event.ctrlKey) {
+  } else if (event.keyCode == 13 && !event.altKey && event.shiftKey && !event.ctrlKey) {
     event.preventDefault();
     this.createChild(uiNode);
 
     // control-c -- copy uiNode
-  } else if (event.charCode == 'c'.charCodeAt(0) && !event.altKey && !event.shiftKey && event.ctrlKey) {
-    event.preventDefault();
-    this.copyNode(uiNode);
+  //} else if (event.keyCode == 'c'.charCodeAt(0) && !event.altKey && !event.shiftKey && event.ctrlKey) {
+  //  event.preventDefault();
+  //  this.copyNode(uiNode);
 
   // control-f -- follow link
-  } else if (event.charCode == 'f'.charCodeAt(0) && !event.altKey && !event.shiftKey && event.ctrlKey) {
+  } else if (event.keyCode == 'f'.charCodeAt(0) && !event.altKey && !event.shiftKey && event.ctrlKey) {
     event.preventDefault();
     this.followLink(uiNode);
 
   // control-v -- paste the copied node onto uiNode.
-  } else if (event.charCode == 'v'.charCodeAt(0) && !event.altKey && !event.shiftKey && event.ctrlKey) {
-    event.preventDefault();
-    this.pasteNode(uiNode);
+  //} else if (event.keyCode == 'v'.charCodeAt(0) && !event.altKey && !event.shiftKey && event.ctrlKey) {
+  //  event.preventDefault();
+  //  this.pasteNode(uiNode);
 
     // control-x -- cut uiNode
-  } else if (event.charCode == 'x'.charCodeAt(0) && !event.altKey && !event.shiftKey && event.ctrlKey) {
-    event.preventDefault();
-    this.cutNode(uiNode);
+  //} else if (event.keyCode == 'x'.charCodeAt(0) && !event.altKey && !event.shiftKey && event.ctrlKey) {
+  //  event.preventDefault();
+  //  this.cutNode(uiNode);
 
     // control-s -- save uiNode
-  }  else if (event.charCode == 's'.charCodeAt(0) && !event.altKey && !event.shiftKey && event.ctrlKey) {
+  }  else if (event.keyCode == 's'.charCodeAt(0) && !event.altKey && !event.shiftKey && event.ctrlKey) {
     event.preventDefault();
     this.saveNode(uiNode);
 
     // control-a -- autosize uiNode
-  }  else if (event.charCode == 'a'.charCodeAt(0) && !event.altKey && !event.shiftKey && event.ctrlKey) {
+  }  else if (event.keyCode == 'a'.charCodeAt(0) && !event.altKey && !event.shiftKey && event.ctrlKey) {
     event.preventDefault();
-    this.autoSizeNode(uiNode);
+    uiNode.autoSize();
   }
 }
 
@@ -405,15 +419,15 @@ Establish command key shortcuts for the top node.
  */
 Controller.prototype.keyPressedOnTopNode = function (uiTopNode, event) {
   // carriage return -- create new successor node is disallowed for top node.
-  if (event.charCode == 13 && !event.altKey && !event.shiftKey && !event.ctrlKey) {
+  if (event.keyCode == 13 && !event.altKey && !event.shiftKey && !event.ctrlKey) {
     event.preventDefault();
 
     // control-c -- copy this node is disallowed for top node.
-  } else if (event.charCode == 'c'.charCodeAt(0) && !event.altKey && !event.shiftKey && event.ctrlKey) {
+  } else if (event.keyCode == 'c'.charCodeAt(0) && !event.altKey && !event.shiftKey && event.ctrlKey) {
     event.preventDefault();
 
     // control-x -- cut this node is disallowed for top node
-  } else if (event.charCode == 'x'.charCodeAt(0) && !event.altKey && !event.shiftKey && event.ctrlKey) {
+  } else if (event.keyCode == 'x'.charCodeAt(0) && !event.altKey && !event.shiftKey && event.ctrlKey) {
     event.preventDefault();
 
     // Do standard node handling.

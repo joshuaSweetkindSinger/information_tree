@@ -8,23 +8,23 @@ client side for the information tree. It has no server-side counterpart.
 
 It's main job is to intercept certain user events and pass them to the controller, and to provide
 tree-level functionality, which means functionality that spans two or more individual nodes.
-(All node-level functionality is handled by UiNode.) The most important such functionality is
+(All node-level functionality is handled by UiSubtree.) The most important such functionality is
 that of attaching new nodes to the tree, or moving nodes from one place in the tree to another.
 
 RELEVANT CLASSES
 InformationTree - toplevel Ui object on client side, a dom element.
-UiNode - the children of the InformationTree dom element are UiNode dom elements.
-ViewNode - a superclass of UiNode, this implements all standard client-side functionality for
+UiSubtree - the children of the InformationTree dom element are UiSubtree dom elements.
+ViewNode - a superclass of UiSubtree, this implements all standard client-side functionality for
            a node that is represented by a dom element. No ui-specific functionality is defined here.
-           That functionality is defined in the UiNode subclass.
+           That functionality is defined in the UiSubtree subclass.
 Node    - a client side encapsulation of a server-side node representation. This is not a dom element.
           It just contains the information returned by the server about a node, along with relevant methods
           for operating on itself, such as updating itself with new information from the server.
 
 NODE ATTACHMENT
-In theory, certain kinds of node attachment could be handled by class UiNode. For example, when a UiNode
+In theory, certain kinds of node attachment could be handled by class UiSubtree. For example, when a UiSubtree
 expands, it asks the server for its children. It could simply attach those children to itself. But that's not
-the way we handle it. Instead, *all* new node attachment goes through InformationTree.AddUiNode() or InformationTree.AddUiNodes().
+the way we handle it. Instead, *all* new node attachment goes through InformationTree.AddUiSubtree() or InformationTree.AddUiSubtree().
 
 When a Node object comes back from the server, it contains all the information necessary to
 specify where it should go in the tree. So, rather than assuming that it belongs to a particular node parent, just
@@ -32,7 +32,7 @@ because that parent asked for its children, we instead look at the node coming b
 put the node where it says it belongs.
 
 Since the node might, in principle, go anywhere in the tree, we let this functionality be handled by the InformationTree,
-rather than by any individual UiNode in the tree.
+rather than by any individual UiSubtree in the tree.
 
 MORE ABOUT NODE ATTACHMENT
 There are is only one way that a node comes into being on the client-side: via expansion. When the node's
@@ -41,7 +41,7 @@ along with representations of all the parent's children. The client side then cr
 
 Once a node exists on the client side, it can be moved around via the insert() operations: insertChild(),
 insertPredecessor(), insertSuccessor(). Each of these passes the request down the hierarchy: from controller
-to UiNode to ViewNode to Node to Server, which sends the request from client side to server. The server
+to UiSubtree to ViewNode to Node to Server, which sends the request from client side to server. The server
 performs the necessary insert operation on the server side, updates the node's parent and sibling links,
 and then sends a node rep back to the client, from whence it trickles back up the hierarchy, from node to ViewNode.
 
@@ -90,7 +90,7 @@ InformationTree.prototype.afterCreate = function(topNodeId) {
 
       // We found a normal node
       } else {
-        uiNode = new UiNode(new Node(node))
+        uiNode = new UiSubtree(new Node(node))
       }
       $(self).append(uiNode)
     })
@@ -140,7 +140,7 @@ InformationTree.prototype.findLowestNodeAbove = function(y) {
 
 
 /*
- If it currently exists in the dom, return the UiNode with the specified id.
+ If it currently exists in the dom, return the UiSubtree with the specified id.
  If it does not exist, behavior depends on options. Default is to throw an error
  unless options.noError is true.
  */
@@ -156,36 +156,36 @@ InformationTree.prototype.find = function(id, options) {
 }
 
 /*
- If it currently exists in the dom, merely update the UiNode whose id is node.id
+ If it currently exists in the dom, merely update the UiSubtree whose id is node.id
  with the other information contained in node, and return it.
 
- If no such UiNode yet exists in the dom, create one based on node, which is an instance
- of class Node, and return the new UiNode. Note if a new UiNode is created, it will be returned
+ If no such UiSubtree yet exists in the dom, create one based on node, which is an instance
+ of class Node, and return the new UiSubtree. Note if a new UiSubtree is created, it will be returned
  unattached to the information tree.
  */
-InformationTree.prototype._findOrCreateUiNode = function(node) {
-  var foundUiNode = this.find(node.id, {noError:true});
-  return foundUiNode ? foundUiNode.update(node) : new UiNode(node);
+InformationTree.prototype._findOrCreateUiSubtree = function(node) {
+  var foundUiSubtree = this.find(node.id, {noError:true});
+  return foundUiSubtree ? foundUiSubtree.update(node) : new UiSubtree(node);
 }
 
 
 /*
- If it currently exists in the dom, merely update the UiNode whose id is node.id
+ If it currently exists in the dom, merely update the UiSubtree whose id is node.id
  with the other information contained in node, and return it.
 
- If no such UiNode yet exists in the dom, create one based on node, which is an instance
- of class Node, and return the new UiNode after attaching it to the information tree in its proper position.
+ If no such UiSubtree yet exists in the dom, create one based on node, which is an instance
+ of class Node, and return the new UiSubtree after attaching it to the information tree in its proper position.
 
  Input: node is a Node object.
  */
 // TODO: InformationTree should not be accepting node Reps and doing find or create. Maybe Tree should do this.
-InformationTree.prototype.addUiNode = function(node) {
-  return this._findOrCreateUiNode(node)._attachToTree();
+InformationTree.prototype.addUiSubtree = function(node) {
+  return this._findOrCreateUiSubtree(node)._attachToTree();
 }
 
 
-InformationTree.prototype.addUiNodes = function(nodes) {
-  return nodes.map(this.addUiNode.bind(this));
+InformationTree.prototype.addUiSubtrees = function(nodes) {
+  return nodes.map(this.addUiSubtree.bind(this));
 }
 
 /*
