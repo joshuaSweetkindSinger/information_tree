@@ -1,3 +1,11 @@
 <div id="admin-header" class="app-header">
-  <span style= "margin-left:10px">Admin</span>
+  <a class="app-header-item"
+     title="This page allows you to look at the underlying db record for each node."
+     href=<%= nodes_path %>
+   >Admin</a>
+  <a class="app-header-item"
+     title="This page allows you to look at the broken db records: those with inconsistent linkages."
+     href=<%= show_broken_nodes_path %>
+  >Show Broken Nodes</a>
 </div>
+
