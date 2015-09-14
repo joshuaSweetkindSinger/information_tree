@@ -14,7 +14,7 @@ ViewNodeHeader.prototype.afterCreate = function(viewNode, options) {
   $this.append(this.dragArea)
 
   this.expandCollapseButton = new ExpandCollapse(viewNode)
-  $(this.dragArea).append(this.expandCollapseButton)
+  $(this).append(this.expandCollapseButton)
 
   this.contentArea = new ViewNodeContent(viewNode, options);
   $this.append(this.contentArea)

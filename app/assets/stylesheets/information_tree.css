@@ -168,11 +168,10 @@ Style a node thusly when the the mouse is dragging another object over it as par
 
 .drag-area {
     display:inline-block;
-    width:16px;
-    height:40px;
-    background:#ccc;
+    width:10px;
+    height:20px;
+    background:#744;
     color:white;
-    border:1px solid black;
     cursor:default;
     vertical-align:middle;
     overflow:hidden;
@@ -184,7 +183,6 @@ expand-collapse {
   display:inline-block;
   width:13px;
   padding-left:5px;
-  margin-top:10px;
   background:#00a;
   color:white;
   border:1px solid black;
