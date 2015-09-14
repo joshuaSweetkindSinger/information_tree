@@ -10,8 +10,11 @@ ViewNodeHeader.prototype.afterCreate = function(viewNode, options) {
   this.viewNode = viewNode
   this.id = 'ViewNodeHeader-' + viewNode.node.id;
 
+  this.dragArea = new DragArea(viewNode)
+  $this.append(this.dragArea)
+
   this.expandCollapseButton = new ExpandCollapse(viewNode)
-  $this.append(this.expandCollapseButton)
+  $(this.dragArea).append(this.expandCollapseButton)
 
   this.contentArea = new ViewNodeContent(viewNode, options);
   $this.append(this.contentArea)
@@ -19,6 +22,18 @@ ViewNodeHeader.prototype.afterCreate = function(viewNode, options) {
   $this.addClass('node-header')
 }
 
+
+// =========================================================================
+//                   Drag Area Button
+// =========================================================================
+var DragArea = defCustomTag('drag-area', HTMLElement)
+
+DragArea.prototype.afterCreate = function(viewNode) {
+  this.viewNode = viewNode
+  this.id = 'DragArea-' + viewNode.node.id;
+
+  $(this).addClass('drag-area')
+}
 
 
 
@@ -29,11 +44,12 @@ var ExpandCollapse = defCustomTag('expand-collapse', HTMLElement)
 
 ExpandCollapse.prototype.afterCreate = function(viewNode) {
   this.viewNode = viewNode
+  this.id = 'ExpandCollapse-' + viewNode.node.id;
+
 
   this.showCollapsedStatus();
-
-  $(this).click(function(event) {this.onClick(event)})
 }
+
 
 ExpandCollapse.prototype.showExpandedStatus = function () {
   $(this).html('v');
@@ -44,6 +60,4 @@ ExpandCollapse.prototype.showCollapsedStatus = function () {
 }
 
 
-ExpandCollapse.prototype.onClick = function() {
-  App.controller.toggleNodeExpandCollapse(this.viewNode);
-}
+

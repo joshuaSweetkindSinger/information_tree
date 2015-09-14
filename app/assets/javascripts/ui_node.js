@@ -48,7 +48,7 @@ UiNode.prototype.bindEventHandlers = function () {
 
   // Attach handlers to content element
   var $content = $(this._header.contentArea)
-  $content.on("click", this.onClick.bind(this))
+  $content.on("click", this.onContentClick.bind(this))
   $content.on("blur", this.onBlur.bind(this))
   $content.on("contextmenu", this.onContextMenu.bind(this))
   $content.on("keypress", this.onKeypress.bind(this))
@@ -58,8 +58,45 @@ UiNode.prototype.bindEventHandlers = function () {
     greedy: true,
     drop: this.onDrop.bind(this)
   })
+
+  // Attach handlers to expand-collapse element
+  var $expandCollapse = $(this._header.expandCollapseButton)
+  $expandCollapse.on('click', this.onExpandCollapseClick.bind(this))
+
+  // For proper dragging logic.
+  $(this).on('mousemove', this.onMouseMove.bind(this))
+  $(this).on('mousedown', this.onMouseDown.bind(this))
 }
 
+
+UiNode.prototype.onExpandCollapseClick = function() {
+  App.controller.toggleNodeExpandCollapse(this);
+}
+
+/*
+ Block the jquery draggable property from initiating a drag event
+ on mouse move events when noDrag is true. See onMouseDown below.
+*/
+UiNode.prototype.onMouseMove = function(event) {
+  if (App.controller.noDrag) {
+    event.preventDefault()
+    event.stopPropagation()
+  }
+}
+
+/*
+Unless the mousedown occurs in a DragArea element, set a flag that blocks a drag event from being initiated
+by the jquery draggable property while the mouse moves around.
+ */
+UiNode.prototype.onMouseDown = function(event) {
+  if (!$(event.target).is('drag-area')) {
+    App.controller.noDrag = true; // TODO: this is ugly! We're setting a flag on another object. But we need a "global" state var here.
+    event.preventDefault()
+    event.stopPropagation()
+  } else {
+    App.controller.noDrag = false; // TODO: equally ugly, but at least the noDrag logic is local ot this method.
+  }
+}
 
 /*
  Advise the controller that this UiNode object just started being dragged.
@@ -100,8 +137,7 @@ UiNode.prototype.handleRevert = function() {
 }
 
 
-// Handle a left click in the text area.
-UiNode.prototype.onClick = function (event) {
+UiNode.prototype.onContentClick = function (event) {
   App.controller.clickedLeftOnNode(this)
 }
 

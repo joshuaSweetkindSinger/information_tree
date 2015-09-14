@@ -165,6 +165,18 @@ Style a node thusly when the the mouse is dragging another object over it as par
 .drop-hover {
     background:#00a;
 }
+
+.drag-area {
+    display:inline-block;
+    width:16px;
+    height:40px;
+    background:#ccc;
+    color:white;
+    border:1px solid black;
+    cursor:default;
+    vertical-align:middle;
+    overflow:hidden;
+}
 /*
 This is the little blue square with a triangle in it to the left of the node content input box.
 */
@@ -172,10 +184,12 @@ expand-collapse {
   display:inline-block;
   width:13px;
   padding-left:5px;
+  margin-top:10px;
   background:#00a;
   color:white;
   border:1px solid black;
   cursor:default;
+  vertical-align:middle;
 }
 
 /*
