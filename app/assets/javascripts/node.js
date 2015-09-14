@@ -125,8 +125,8 @@ Node.prototype.reportError = function() {
 }
 
 
-Node.prototype.trash = function() {
-  return App.server.trash(this.id)
+Node.prototype.basket = function() {
+  return App.server.basket(this.id)
 }
 
 /*

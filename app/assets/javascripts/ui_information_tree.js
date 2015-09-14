@@ -1,6 +1,6 @@
-//= require trash_node
+//= require basket_node
 //= require ui_top_node
-//= require ui_trash_node
+//= require ui_basket_node
 
 /*
 This file defines class InformationTree, which is the toplevel dom element container on the
@@ -70,22 +70,22 @@ InformationTree.prototype.init = function() {
       topNodeRefs.forEach(function (node) {
         if (node.type_id == self.TOP_NODE_TYPE_ID) {
           self.top = new UiTopNode(new Node(node))
-        } else if (node.type_id == self.TRASH_NODE_TYPE_ID) {
-          self.trash = new UiTrashNode(new TrashNode(node))
+        } else if (node.type_id == self.BASKET_NODE_TYPE_ID) {
+          self.basket = new UiBasketNode(new BasketNode(node))
         } else {
           var uiNode = new UiNode(new Node(node))
           $(self).append(uiNode)
         }
       })
       $(self).prepend(self.top)
-      $(self).append(self.trash)
+      $(self).append(self.basket)
     })
   return this;
 };
 
 // TODO: This is not DRY. Should ask the server to tell us this.
-InformationTree.prototype.TOP_NODE_TYPE_ID   = -1
-InformationTree.prototype.TRASH_NODE_TYPE_ID = -2
+InformationTree.prototype.TOP_NODE_TYPE_ID    = -1
+InformationTree.prototype.BASKET_NODE_TYPE_ID = -2
 
 InformationTree.prototype.onClick = function (event) {
   App.controller.resetMenus();

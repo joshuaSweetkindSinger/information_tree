@@ -123,7 +123,7 @@ that pops up in response to a right click.
  */
 UiNode.prototype.enableButtonPanelOptions = function (buttonPanel) {
   buttonPanel.enableAppropriateButtons(this)
-  $(buttonPanel.emptyTrashButton).hide()
+  $(buttonPanel.emptyBasketButton).hide()
 }
 
 

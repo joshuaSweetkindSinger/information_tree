@@ -3,7 +3,7 @@ JssNotes::Application.routes.draw do
   resources :nodes do
     collection do
       get :top                         # /nodes/top
-      get :trash                       # /nodes/trash
+      get :basket                       # /nodes/basket
       get :show_broken                 # /nodes/show_broken_nodes
       get :test_me
       get :import, to: :show_import_form
@@ -11,7 +11,7 @@ JssNotes::Application.routes.draw do
       post :create_sub_tree            # /nodes/create_sub_tree
       post :import
 
-      delete :trash, to: :empty_trash  # /nodes/trash -> NodesController.empty_trash()
+      delete :basket, to: :empty_basket  # /nodes/basket -> NodesController.empty_basket()
     end
 
     member do

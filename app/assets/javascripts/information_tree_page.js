@@ -13,7 +13,7 @@ High-level description of architecture:
  Node: non-viewable, non-dom-element, core node functionality and relationships.
 
  Top layer is the UI. It orchestrates all user-initiated action. It handles all events. It introduces
- ui concepts like cut/paste, the clipboard, the trash, etc. Any data-entry or modification of the
+ ui concepts like cut/paste, the clipboard, the basket, etc. Any data-entry or modification of the
  tree must be mediated by the ui. The ui consists of a controller and UiNode objects,
  the latter of which are dom elements representing the nodes in the tree. These UiNode objects
  are wrappers on underlying Node objects that are *not* dom elements.
@@ -82,7 +82,7 @@ TODO: Clicking on admin should do paging.
 TODO: There should be a help nav item that explains the app and pops up help in a new tab.
 TODO: Restore make backup to Admin section.
 TODO: From admin, "go back to info tree" should select existing tab.
-TODO: change trash to "basket". Don't need a separate pointer to a "cut" object. Just use top of trash.
+TODO: change basket to "basket". Don't need a separate pointer to a "cut" object. Just use top of basket.
 TODO: merge set_attributes with update() in nodes controller.
 TODO: None of these Path() methods in server.js is DRY, because the server knows them.
 TODO: Add new yield to admin header for page-specific options.

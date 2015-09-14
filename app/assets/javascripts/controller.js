@@ -66,13 +66,13 @@ Controller.prototype.clickedRightOnNode = function (uiNode, event) {
 
 /*
 Handle a blur action on a node. This means saving any changes to the node to the server.
-Also, if the node is empty and not dirty, trash the node on blur.
+Also, if the node is empty and not dirty, basket the node on blur.
   */
 Controller.prototype.blurNode = function (uiNode) {
   uiNode = uiNode || this.selectedNode
   if (uiNode.isContentDirty()) this.autoSizeNode(uiNode)
   if (uiNode.isDirty()) this.saveNode(uiNode)
-  if (!uiNode.isDirty() && uiNode.content === '') this.trash(uiNode)
+  if (!uiNode.isDirty() && uiNode.content === '') this.basket(uiNode)
 }
 
 
@@ -101,9 +101,9 @@ Controller.prototype.visitNode = function (uiNode) {
 
 
 // Trash the selected node.
-Controller.prototype.trash = function (uiNode) {
+Controller.prototype.basket = function (uiNode) {
   uiNode = uiNode || this.selectedNode
-  uiNode.trash()
+  uiNode.basket()
     .success(function() {
       if (uiNode === this.selectedNode) {
         this.selectedNode = null;   // We just deleted the selected node, so now there is none.
@@ -112,8 +112,8 @@ Controller.prototype.trash = function (uiNode) {
     })
 }
 
-Controller.prototype.emptyTrash = function () {
-  App.informationTree.trash.empty()
+Controller.prototype.emptyBasket = function () {
+  App.informationTree.basket.empty()
 }
 
 
@@ -201,7 +201,7 @@ Controller.prototype.createPredecessor = function (uiNode) {
 Controller.prototype.cutNode = function (uiNode) {
   uiNode = (uiNode || this.selectedNode);
   this.copyNode(uiNode);
-  this.trash(uiNode);
+  this.basket(uiNode);
 }
 
 
@@ -253,7 +253,7 @@ Controller.prototype.toggleExpandCollapseAll = function (uiNode) {
 }
 
 
-// TODO: the trash functionality needs to record information about the former parentage
+// TODO: the basket functionality needs to record information about the former parentage
 // and sibling relationships somewhere so that a trashed node can be restored later.
 Controller.prototype.restoreLastDeletedNode = function() {
   alert("Untrash has not yet been implemented");

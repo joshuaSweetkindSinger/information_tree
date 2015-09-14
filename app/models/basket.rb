@@ -1,17 +1,20 @@
+# The Basket is a single system node that holds "cut" nodes. A cut node
+# can later be pasted back into the main tree, or the basket's contents can be "trashed",
+# which means all the nodes in the basket are deleted.
 
-class Trash < Node
-  DAYS_TO_KEEP_TRASHED_NODE = 30 # Trashed nodes will be deleted after this many days
+class Basket < Node
+  DAYS_TO_KEEP_NODE = 30 # A node in the basket will be deleted after this many days
 
-  # Return the trash node.
-  def self.trash
-    result = where("type_id = #{TRASH_TYPE_ID}").first
-    result || _make_trash_node
+  # Return the basket node.
+  def self.basket
+    result = where("type_id = #{BASKET_TYPE_ID}").first
+    result || _make_basket_node
   end
 
-  # Make the trash node.
-  def self._make_trash_node
-    result = Trash.new(content:'Trash', rank:0, width:40, height:20)
-    result.type_id = TRASH_TYPE_ID
+  # Make the basket node.
+  def self._make_basket_node
+    result = Basket.new(content:'Basket', rank:0, width:40, height:20)
+    result.type_id = BASKET_TYPE_ID
     result.save!
     result
   end
@@ -30,14 +33,14 @@ class Trash < Node
     node
   end
 
-  # Delete everything in the trash.
+  # Delete everything in the basket.
   def empty
     delete_old_nodes 0
   end
 
 
-  # Delete all nodes in the trash that were put there longer than days_to_keep days ago.
-  def delete_old_nodes (days_to_keep = DAYS_TO_KEEP_TRASHED_NODE)
+  # Delete all nodes in the basket that were put there longer than days_to_keep days ago.
+  def delete_old_nodes (days_to_keep = DAYS_TO_KEEP_NODE)
     children.where('updated_at < ?', Time.now - days_to_keep.day).each do |node|
       node.destroy_self_and_children!
     end
@@ -45,11 +48,11 @@ class Trash < Node
 
 
   def add_successor
-    raise "Cannot add a successor to the trash node--only children"
+    raise "Cannot add a successor to the basket node--only children"
   end
 
   def add_predecessor
-    raise "Cannot add a predecessor to the trash node--only children"
+    raise "Cannot add a predecessor to the basket node--only children"
   end
 
 

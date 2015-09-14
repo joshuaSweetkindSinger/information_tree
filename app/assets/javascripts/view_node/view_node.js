@@ -416,10 +416,10 @@ ViewNode.prototype.paste = function(viewNode) {
 // =========================== Trash
 
 /*
- Tell the server to trash the node represented by <this>, then trash it on the client side as well.
+ Tell the server to basket the node represented by <this>, then basket it on the client side as well.
   */
-ViewNode.prototype.trash = function() {
- return App.informationTree.trash.insertChild(this);
+ViewNode.prototype.basket = function() {
+ return App.informationTree.basket.insertChild(this);
 }
 
 

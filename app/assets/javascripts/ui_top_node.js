@@ -35,7 +35,7 @@ UiTopNode.prototype.enableButtonPanelOptions = function(buttonPanel) {
   buttonPanel.addPredecessorButton.disable()
   buttonPanel.addSuccessorButton.disable()
   buttonPanel.cutButton.disable()
- $(buttonPanel.emptyTrashButton).hide()
+ $(buttonPanel.emptyBasketButton).hide()
 }
 
 UiTopNode.prototype.onKeypress = function(event) {

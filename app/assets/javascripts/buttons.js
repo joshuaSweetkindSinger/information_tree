@@ -45,8 +45,8 @@ ButtonPanel.prototype.afterCreate = function() {
   this.toHtmlButton = new ToHtml
   $this.append(this.toHtmlButton)
 
-  this.emptyTrashButton = new EmptyTrash
-  $this.append(this.emptyTrashButton)
+  this.emptyBasketButton = new EmptyBasket
+  $this.append(this.emptyBasketButton)
 
   // Hide button panel after it is clicked on.
   $this.click(this.onClick)
@@ -304,13 +304,13 @@ AddPredecessor.prototype.onClick = function (event) {
 }
 
 // =========================================================================
-//                   Empty Trash Button
+//                   Empty Basket Button
 // =========================================================================
-var EmptyTrash = defCustomTag('empty-trash', ButtonPanelButton)
-EmptyTrash.prototype.onCreate = function() {
-  ButtonPanelButton.prototype.afterCreate.call(this, 'Empty Trash!')
+var EmptyBasket = defCustomTag('empty-basket', ButtonPanelButton)
+EmptyBasket.prototype.onCreate = function() {
+  ButtonPanelButton.prototype.afterCreate.call(this, 'Empty Basket!')
 }
 
-EmptyTrash.prototype.onClick = function (event) {
-  App.controller.emptyTrash()
+EmptyBasket.prototype.onClick = function (event) {
+  App.controller.emptyBasket()
 }

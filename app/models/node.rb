@@ -5,8 +5,8 @@
 class Node < ActiveRecord::Base
   # TODO -- put these in the database instead
   TOP_TYPE_ID       = -1 # system-designated type id for top node.
-  TRASH_TYPE_ID     = -2 # system-designated type id for trash node.
-  SYSTEM_NODE_TYPES = [TRASH_TYPE_ID, TOP_TYPE_ID]
+  BASKET_TYPE_ID    = -2 # system-designated type id for basket node.
+  SYSTEM_NODE_TYPES = [BASKET_TYPE_ID, TOP_TYPE_ID]
 
   BULLET_TYPE_ID    =  1 # type_id of this value indicates a bullet item. The use of multiple types is not implemented yet.
 
@@ -92,7 +92,7 @@ class Node < ActiveRecord::Base
   end
 
 
-  # Move to the trash all nodes that have no parent, except for system nodes like top node and trash node.
+  # Move to the basket all nodes that have no parent, except for system nodes like top node and basket node.
   def self.trash_orphans
     self.where(parent_id: nil).each do |node|
       if !node.is_system_node?
@@ -308,9 +308,9 @@ class Node < ActiveRecord::Base
 
 
   # Remove self and children from the node hierarchy, patching up predecessor/successor links.
-  # This moves the node and its children to the "trash" node. It doesn't really delete them.
+  # This moves the node and its children to the "basket" node. It doesn't really delete them.
   def cut
-    Trash.trash.insert_child(self)
+    Basket.basket.insert_child(self)
   end
 
 
@@ -339,7 +339,7 @@ class Node < ActiveRecord::Base
   end
 
 
-  # Used by the trash node to calculate the rank of its children.
+  # Used by the basket node to calculate the rank of its children.
   # Each successive child pushed onto the top of the child list is given a rank
   # that is one less than its successor.
   def calc_pushed_child_rank

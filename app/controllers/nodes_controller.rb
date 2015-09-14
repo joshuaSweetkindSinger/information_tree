@@ -103,19 +103,19 @@ class NodesController < ApplicationController
     end
   end
 
-  # GET /nodes/trash
-  def trash
-    @obj = Trash.trash
+  # GET /nodes/basket
+  def basket
+    @obj = Basket.basket
     respond_to do |format|
       format.html {render 'show'}
       format.json {render json: @obj}
     end
   end
 
-  # DELETE /nodes/trash
-  # This deletes the contents of the trash node (its children).
-  def empty_trash
-    Trash.trash.empty
+  # DELETE /nodes/basket
+  # This deletes the contents of the basket node (its children).
+  def empty_basket
+    Basket.basket.empty
     respond_to do |format|
       format.json {render json:{success: true}}
     end
@@ -181,7 +181,7 @@ class NodesController < ApplicationController
 
 
   # Remove self from the node hierarchy, patching up predecessor/successor links.
-  # This moves the node and its children under the "Trash" node. They're not really deleted.
+  # This moves the node and its children under the "Basket" node. They're not really deleted.
   # DELETE /nodes/:id/cut
   def cut
     @obj = Node.find(params[:id])

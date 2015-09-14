@@ -20,7 +20,7 @@ Server.prototype.getTrash = function() {
 
 
 Server.prototype.trashNodePath = function() {
-  return '/nodes/trash.json'
+  return '/nodes/basket.json'
 }
 
 
@@ -84,20 +84,20 @@ Server.prototype.insertPredecessorPath = function(referenceNodeId) {
   return '/nodes/' + referenceNodeId + '/insert_predecessor.json'
 }
 
-Server.prototype.trash = function (nodeId) {
+Server.prototype.basket = function (nodeId) {
   return new Request("DELETE", this.trashPath(nodeId))
 }
 
 Server.prototype.trashPath = function(nodeId) {
-  return '/nodes/' + nodeId + '/trash.json'
+  return '/nodes/' + nodeId + '/basket.json'
 }
 
-Server.prototype.emptyTrash = function () {
-  return new Request("DELETE", this.emptyTrashPath())
+Server.prototype.emptyBasket = function () {
+  return new Request("DELETE", this.emptyBasketPath())
 }
 
-Server.prototype.emptyTrashPath = function() {
-  return '/nodes/trash.json'
+Server.prototype.emptyBasketPath = function() {
+  return '/nodes/basket.json'
 }
 /*
  Get the child nodes of the node with id, in json format
