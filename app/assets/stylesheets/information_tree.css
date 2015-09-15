@@ -73,6 +73,7 @@ to a node. Clicking on it will take you to a node.
 node-marker {
     display:block;
     border:1px solid black;
+    border-radius:5px;
     background:white;
     margin-left:5px;
     margin-right:5px;
@@ -81,7 +82,6 @@ node-marker {
     padding-left:10px;
     padding-right:15px;
     padding-bottom:10px;
-    border-radius:5px;
     max-width:200px;
     height:15px;
     overflow:hidden;

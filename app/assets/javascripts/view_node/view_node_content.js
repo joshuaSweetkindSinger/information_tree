@@ -13,4 +13,5 @@ ViewNodeContent.prototype.afterCreate = function(viewNode, options) {
   this.title       = options.tooltip;
 
   $(this).addClass('node-content'); // Since we are extending a textarea element, we can't put css on the node-content tag--there isn't one in the dom!
+
 }

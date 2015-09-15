@@ -79,10 +79,7 @@ UiNode.prototype.onExpandCollapseClick = function() {
 */
 UiNode.prototype.onMouseMove = function(event) {
   if (App.controller.noDrag) {
-    // TODO: Commented out because this short-circuits resizing content areas in firefox.
-    // TODO: Fix this.
-    // event.preventDefault()
-    // event.stopPropagation()
+    event.stopPropagation()
   }
 }
 
@@ -91,15 +88,8 @@ Unless the mousedown occurs in a DragArea element, set a flag that blocks a drag
 by the jquery draggable property while the mouse moves around.
  */
 UiNode.prototype.onMouseDown = function(event) {
-  if (!$(event.target).is('drag-area')) {
-    App.controller.noDrag = true; // TODO: this is ugly! We're setting a flag on another object. But we need a "global" state var here.
-    // TODO: Commented out because this short-circuits resizing content areas in firefox.
-    // TODO: Fix this.
-    // event.preventDefault()
-    // event.stopPropagation()
-  } else {
-    App.controller.noDrag = false; // TODO: equally ugly, but at least the noDrag logic is local ot this method.
-  }
+  // TODO: this is ugly! We're setting a flag on another object. But we need a "global" state var here.
+  App.controller.noDrag = !$(event.target).is('drag-area');
 }
 
 /*
