@@ -79,8 +79,10 @@ UiNode.prototype.onExpandCollapseClick = function() {
 */
 UiNode.prototype.onMouseMove = function(event) {
   if (App.controller.noDrag) {
-    event.preventDefault()
-    event.stopPropagation()
+    // TODO: Commented out because this short-circuits resizing content areas in firefox.
+    // TODO: Fix this.
+    // event.preventDefault()
+    // event.stopPropagation()
   }
 }
 
@@ -91,8 +93,10 @@ by the jquery draggable property while the mouse moves around.
 UiNode.prototype.onMouseDown = function(event) {
   if (!$(event.target).is('drag-area')) {
     App.controller.noDrag = true; // TODO: this is ugly! We're setting a flag on another object. But we need a "global" state var here.
-    event.preventDefault()
-    event.stopPropagation()
+    // TODO: Commented out because this short-circuits resizing content areas in firefox.
+    // TODO: Fix this.
+    // event.preventDefault()
+    // event.stopPropagation()
   } else {
     App.controller.noDrag = false; // TODO: equally ugly, but at least the noDrag logic is local ot this method.
   }
