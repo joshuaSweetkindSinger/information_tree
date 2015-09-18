@@ -57,7 +57,7 @@ for the app. In any case, we get a circular dependency error when we try to name
 // ========================================================================
 var InformationTree = defCustomTag('information-tree', HTMLElement);
 
-InformationTree.prototype.init = function() {
+InformationTree.prototype.afterCreate = function() {
   $(this).click(this.onClick);
 
   /*

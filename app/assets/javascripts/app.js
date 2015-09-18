@@ -12,7 +12,9 @@ var App = window.InformationTreeApp; // nickname for our namespace
 
 App.initPage = function() {
   this.server            = new Server
-  this.informationTree   = $('information-tree')[0].init()
+  this.informationTree   = new InformationTree
   this.controller        = new Controller
   this.csrfToken         = $('[name="csrf-token"]').attr('content');
+
+  $('body').append(this.informationTree)
 }

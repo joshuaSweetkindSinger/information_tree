@@ -25,7 +25,7 @@ Structure:
 // =========================================================================
 //                   View Node
 // =========================================================================
-var ViewNode = defCustomTag('node-view', HTMLElement);
+var ViewNode = defCustomTag('view-node', HTMLElement);
 
 /*
  Note that this is a class method, not an instance method.

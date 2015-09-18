@@ -24,8 +24,8 @@ JssNotes::Application.routes.draw do
     end
   end
 
-  root to: 'information_tree_page#information_tree_page'
-  match '/information_tree', via: :get, to: 'information_tree_page#information_tree_page'
+  get '/', to: redirect('/information-tree')
+  match '/information-tree', via: :get, to: 'information_tree_page#information_tree_page'
   match '/nodes/:id/recursive/(:max_depth)', via: :get, to: 'nodes#render_recursively'
 
 

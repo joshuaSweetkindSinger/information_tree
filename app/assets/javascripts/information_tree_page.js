@@ -96,6 +96,7 @@ TODO: refactor callbacks that are part of expand/reveal/scrollTo as deferreds us
 TODO: in ui_node.js, uncomment the drag/drop logic that short-circuits drag drop when it shouldn't occur,
 but in a way that allows text area resizing to occur.
 TODO: Add option to draw a sub-tree in a new tab.
+TODO: The to_html operation should render the tree using html-5 tags
  */
 
 /* NOTE: We're using the $(window).load callback here rather than the more common
