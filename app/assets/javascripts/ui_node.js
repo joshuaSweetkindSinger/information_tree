@@ -68,6 +68,22 @@ UiNode.prototype.bindEventHandlers = function () {
   $(this).on('mousedown', this.onMouseDown.bind(this))
 }
 
+/*
+ Search the dom for a uiNode whose id matches the parent id of this.node
+ and return it if found. This is the "logical" parent of the ui node, which is
+ another ui node. By contrast, the actual dom parent of the ui node is going to be
+ a children-container element.
+
+ NOTE:
+ We have to be careful here not to return a parent for non-root-nodes
+ that are nonetheless functioning as root nodes. For example, the user can select
+ a non root node and then make it be the root node in a new tab, of its own sub-tree.
+ */
+UiNode.prototype.parent = function() {
+  if (!this.isSubTreeRoot) {
+    return ViewNode.prototype.parent.call(this)
+  }
+}
 
 UiNode.prototype.onExpandCollapseClick = function() {
   App.controller.toggleNodeExpandCollapse(this);

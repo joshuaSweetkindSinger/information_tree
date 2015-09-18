@@ -46,7 +46,7 @@ Controller = function () {
       $(App.informationTree).append(self.nodePathList);
       $(self.nodePathList).hide();
 
-      self.selectNode(App.informationTree.top);
+      self.selectNode($(App.informationTree).children()[0]);
   });
 };
 
@@ -134,6 +134,12 @@ Controller.prototype.followLink = function (uiNode) {
 Controller.prototype.renderRecursivelyAsHtml = function (uiNode) {
   uiNode = (uiNode || this.selectedNode)
   open(App.server.renderRecursivelyAsHtmlPath(uiNode.id))
+}
+
+// Create a sub-tree in a new tab with uiNode as the top node
+Controller.prototype.toSubTree = function (uiNode) {
+  uiNode = (uiNode || this.selectedNode)
+  open(App.server.treePath(uiNode.id))
 }
 
 /*

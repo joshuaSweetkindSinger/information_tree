@@ -5,6 +5,13 @@ var Server = function () {
 
 }
 
+Server.prototype.treePath = function (topNodeId) {
+  return topNodeId ? '/information-tree/' + topNodeId : '/information-tree'
+}
+/*
+Return an array of the top nodes of the information tree. This is all nodes that have no parent.
+It includes the system nodes, such as the root of the tree and the basket.
+ */
 Server.prototype.getTopNodes = function () {
   return new JsonRequest("GET", this.topNodesPath())
 }
@@ -14,21 +21,49 @@ Server.prototype.topNodesPath = function () {
   return '/nodes/top.json'
 }
 
+/*
+Return the system node known as the "basket"
+ */
 Server.prototype.getBasket = function () {
-  return new JsonRequest("GET", this.basketNodePath())
+  return new JsonRequest("GET", this.basketPath())
 }
 
 
-Server.prototype.basketNodePath = function () {
+Server.prototype.basketPath = function () {
   return '/nodes/basket.json'
 }
 
+/*
+Return the node with the specified nodeId.
+ */
 Server.prototype.getNode = function (nodeId) {
   return new JsonRequest("GET", this.getNodePath(nodeId))
 }
 
 Server.prototype.getNodePath = function (nodeId) {
   return '/nodes/' + nodeId + '.json'
+}
+
+/*
+Return an array of the specified nodes. Include the basket node in the array
+if specified.
+ */
+Server.prototype.getNodes = function (nodeIds, getBasket) {
+  return new JsonRequest("GET", this.getNodesPath(nodeIds, getBasket))
+}
+
+Server.prototype.getNodesPath = function (nodeIds, getBasket) {
+  // Build nodeIds string
+  var nodeIdsStr = ""
+  var sep = ""
+  nodeIds.forEach(function(nodeId){
+    nodeIdsStr += sep + 'ids[]=' + nodeId
+    sep = '&'
+  })
+
+  // Build basket string
+  var basketStr = getBasket ? 'true' : ""
+  return '/nodes.json?' + nodeIdsStr + '&basket=' + basketStr
 }
 
 /*

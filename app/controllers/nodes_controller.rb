@@ -3,8 +3,15 @@ class NodesController < ApplicationController
   # ============================= Standard Crud
   # GET /nodes
   # GET /nodes.json
+  # GET /nodes.json?ids=[id1,id2,...,idn]
   def index
-    @objects = Node.limit(100) # TODO: Add paging
+    if !params[:ids]
+      @objects = Node.limit(100) # TODO: Add paging
+    else
+      @objects = Node.find(params[:ids])
+      @objects << Basket.basket if !params[:basket].empty?
+    end
+
 
     respond_to do |format|
       format.html # index.html.erb

@@ -45,6 +45,9 @@ ButtonPanel.prototype.afterCreate = function() {
   this.toHtmlButton = new ToHtml
   $this.append(this.toHtmlButton)
 
+  this.subTreeButton = new ToSubTree
+  $this.append(this.subTreeButton)
+
   this.emptyBasketButton = new EmptyBasket
   $this.append(this.emptyBasketButton)
 
@@ -189,11 +192,27 @@ FollowLink.prototype.calcEnabledState = function(uiNode) {
   return (url.slice(0,4) == 'http')
 }
 
+// =========================================================================
+//                   ToSubTree Button
+// =========================================================================
+// Pressing this button creates a sub-tree in a new tab, with this node
+// as the tree's top.
+
+var ToSubTree = defCustomTag('to-sub-tree', ButtonPanelButton)
+
+ToSubTree.prototype.afterCreate = function() {
+  ButtonPanelButton.prototype.afterCreate.call(this, 'To Sub-Tree', 'ctrl-t')
+}
+
+ToSubTree.prototype.onClick = function (event) {
+  App.controller.toSubTree()
+}
+
 
 // =========================================================================
 //                   ToHTML Button
 // =========================================================================
-// Pressing this button automatically Renders the node and its children
+// Pressing this button automatically renders the node and its children
 // as html in a new tab.
 var ToHtml = defCustomTag('to-html', ButtonPanelButton)
 

@@ -27,7 +27,8 @@ NodePathList.prototype.setPath = function (uiNode) {
   var i = 100 // Don't show a path more than this deep
   while (uiNode && i >= 0) {
     $this.append(new NodeMarker(uiNode))
-    uiNode = uiNode.parent(); i = i - 1
+    uiNode = uiNode.parent()
+    i = i - 1
   }
 }
 

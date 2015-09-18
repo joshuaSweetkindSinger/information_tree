@@ -100,6 +100,16 @@ TODO: The to_html operation should render the tree using html-5 tags
 Status: Need to be able to get multiple node refs back from the server in one call. What would
 the syntax look like? /nodes/118 generalizes to /nodes/:top,143,1253,223...456.json, or possibly
 /nodes.json?ids=:top,143,2514...
+TODO: Top node should be renamed to "root". Instead of getTopNode we should have getRoot, etc.
+TODO: Since we expanded the notion of a tree to include multiple root nodes, the notion of a
+      single identified system node with a type of ROOT or TOP is probably not needed. A root node
+      is just a normal node that does not have parents. Get rid of this system type.
+
+TODO: I'm still not happy with the relationship between ViewNode and Node. For example, the parent of a
+view node is not explicitly represented. You have to go to the node, get it's id, then find it in the
+dom using jquery. But, if viewnodes had explicit parents and siblings, then insert operations would
+be harder, because you'd have to duplicate everything on the client side. Still not convinced I have
+the best architecture for this.
  */
 
 /* NOTE: We're using the $(window).load callback here rather than the more common

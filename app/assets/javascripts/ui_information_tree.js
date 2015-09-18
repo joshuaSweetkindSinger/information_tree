@@ -70,40 +70,32 @@ InformationTree.prototype.afterCreate = function(topNodeId) {
    */
   var self = this
 
-  /*
-   A top node id was specified. Use it. Make sure to augment the
-   list of top node refs with the basket node, which is a system node that is always needed.
-  */
-  if (topNodeId) {
-    this.initRequest = App.server.getNode(topNodeId)
-      .success(function(topNodeRef) {
-        App.server.getBasket()
-          .success(function(basketNodeRef) {
-
-          })
-        return [node]
-      })
-      .success(function (topNode) {
-
-      })
-  } else {
-    this.initRequest = App.server.getTopNodes()
-  }
+   // A top node id was specified. Use it.
+  this.initRequest = topNodeId ? App.server.getNodes([topNodeId], true) : App.server.getTopNodes()
 
   this.initRequest.success(function(topNodeRefs) {
-      topNodeRefs.forEach(function (node) {
-        if (node.type_id == self.TOP_NODE_TYPE_ID) {
-          self.top = new UiTopNode(new Node(node))
-        } else if (node.type_id == self.BASKET_NODE_TYPE_ID) {
-          self.basket = new UiBasketNode(new BasketNode(node))
-        } else {
-          var uiNode = new UiNode(new Node(node))
-          $(self).append(uiNode)
-        }
-      })
-      $(self).prepend(self.top)
-      $(self).append(self.basket)
+    var uiNode = null
+
+    topNodeRefs.forEach(function (node) {
+      uiNode = null
+
+      // We found the basket node--save it but don't append to body just yet.
+      if (node.type_id == self.BASKET_NODE_TYPE_ID) {
+        self.basket = new UiBasketNode(new BasketNode(node))
+
+      // We found a root node--make it be a UiTopNode
+      } else if ((node.id == topNodeId) || !node.parent_id) {
+        uiNode = new UiTopNode(new Node(node))
+        uiNode.isSubTreeRoot = true // This flag indicates that the node functions as a root of the page's information tree.
+
+      // We found a normal node
+      } else {
+        uiNode = new UiNode(new Node(node))
+      }
+      $(self).append(uiNode)
     })
+    $(self).append(self.basket)
+  })
   return this;
 };
 

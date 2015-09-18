@@ -8,7 +8,6 @@ JssNotes::Application.routes.draw do
       get :test_me
       get :import, to: :show_import_form
 
-      post :create_sub_tree            # /nodes/create_sub_tree
       post :import
 
       delete :basket, to: :empty_basket  # /nodes/basket -> NodesController.empty_basket()
@@ -25,7 +24,7 @@ JssNotes::Application.routes.draw do
   end
 
   get '/', to: redirect('/information-tree')
-  match '/information-tree', via: :get, to: 'information_tree_page#information_tree_page'
+  match '/information-tree(/:id)', via: :get, to: 'information_tree_page#information_tree_page'
   match '/nodes/:id/recursive/(:max_depth)', via: :get, to: 'nodes#render_recursively'
 
 
