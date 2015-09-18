@@ -97,6 +97,9 @@ TODO: in ui_node.js, uncomment the drag/drop logic that short-circuits drag drop
 but in a way that allows text area resizing to occur.
 TODO: Add option to draw a sub-tree in a new tab.
 TODO: The to_html operation should render the tree using html-5 tags
+Status: Need to be able to get multiple node refs back from the server in one call. What would
+the syntax look like? /nodes/118 generalizes to /nodes/:top,143,1253,223...456.json, or possibly
+/nodes.json?ids=:top,143,2514...
  */
 
 /* NOTE: We're using the $(window).load callback here rather than the more common

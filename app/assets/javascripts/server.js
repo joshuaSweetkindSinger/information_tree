@@ -5,22 +5,41 @@ var Server = function () {
 
 }
 
-Server.prototype.getTopNodes = function() {
+Server.prototype.getTopNodes = function () {
   return new JsonRequest("GET", this.topNodesPath())
 }
 
 
-Server.prototype.topNodesPath = function() {
+Server.prototype.topNodesPath = function () {
   return '/nodes/top.json'
 }
 
-Server.prototype.getTrash = function() {
-  return new JsonRequest("GET", this.trashNodePath())
+Server.prototype.getBasket = function () {
+  return new JsonRequest("GET", this.basketNodePath())
 }
 
 
-Server.prototype.trashNodePath = function() {
+Server.prototype.basketNodePath = function () {
   return '/nodes/basket.json'
+}
+
+Server.prototype.getNode = function (nodeId) {
+  return new JsonRequest("GET", this.getNodePath(nodeId))
+}
+
+Server.prototype.getNodePath = function (nodeId) {
+  return '/nodes/' + nodeId + '.json'
+}
+
+/*
+Get the child nodes of the node with id, in json format
+*/
+Server.prototype.getNodeChildren = function (nodeId) {
+  return new JsonRequest("GET", this.nodeChildrenPath(nodeId))
+}
+
+Server.prototype.nodeChildrenPath = function (nodeId) {
+  return '/nodes/' + nodeId + '/children.json'
 }
 
 
@@ -33,7 +52,7 @@ returned node representation from the server.
 
 Valid attributes to set for a node are :content, :type_id, :width, :height.
  */
-Server.prototype.createNode = function(nodeSpec) {
+Server.prototype.createNode = function (nodeSpec) {
   return new JsonRequest("POST", this.createNodePath(), nodeSpec ? {node: nodeSpec} : {});
 };
 
@@ -60,27 +79,27 @@ Server.prototype.createSubTreePath = function() {
                All other attributes of the node will be ignored.
  */
 
-Server.prototype.insertChild = function(referenceNodeId, nodeToInsertId) {
+Server.prototype.insertChild = function (referenceNodeId, nodeToInsertId) {
   return new JsonRequest("PUT", this.insertChildPath(referenceNodeId), {node: {id: nodeToInsertId}});
 };
 
-Server.prototype.insertChildPath = function(referenceNodeId) {
+Server.prototype.insertChildPath = function (referenceNodeId) {
   return '/nodes/' + referenceNodeId + '/insert_child.json'
 }
 
-Server.prototype.insertSuccessor = function(referenceNodeId, nodeToInsertId) {
+Server.prototype.insertSuccessor = function (referenceNodeId, nodeToInsertId) {
   return new JsonRequest("PUT", this.insertSuccessorPath(referenceNodeId), {node: {id: nodeToInsertId}});
 };
 
-Server.prototype.insertSuccessorPath = function(referenceNodeId) {
+Server.prototype.insertSuccessorPath = function (referenceNodeId) {
   return '/nodes/' + referenceNodeId + '/insert_successor.json'
 }
 
-Server.prototype.insertPredecessor = function(referenceNodeId, nodeToInsertId) {
+Server.prototype.insertPredecessor = function (referenceNodeId, nodeToInsertId) {
   return new JsonRequest("PUT", this.insertPredecessorPath(referenceNodeId), {node: {id: nodeToInsertId}});
 }
 
-Server.prototype.insertPredecessorPath = function(referenceNodeId) {
+Server.prototype.insertPredecessorPath = function (referenceNodeId) {
   return '/nodes/' + referenceNodeId + '/insert_predecessor.json'
 }
 
@@ -88,7 +107,7 @@ Server.prototype.basket = function (nodeId) {
   return new Request("DELETE", this.trashPath(nodeId))
 }
 
-Server.prototype.trashPath = function(nodeId) {
+Server.prototype.trashPath = function (nodeId) {
   return '/nodes/' + nodeId + '/basket.json'
 }
 
@@ -96,18 +115,8 @@ Server.prototype.emptyBasket = function () {
   return new Request("DELETE", this.emptyBasketPath())
 }
 
-Server.prototype.emptyBasketPath = function() {
+Server.prototype.emptyBasketPath = function () {
   return '/nodes/basket.json'
-}
-/*
- Get the child nodes of the node with id, in json format
-*/
-Server.prototype.getNodeChildren = function(nodeId) {
-  return new JsonRequest("GET", this.nodeChildrenPath(nodeId))
-}
-
-Server.prototype.nodeChildrenPath = function(nodeId) {
-  return '/nodes/' + nodeId + '/children.json'
 }
 
 
@@ -116,7 +125,7 @@ Server.prototype.setNodeAttributes = function (nodeId, options) {
 }
 
 
-Server.prototype.setAttributesPath = function(nodeId) {
+Server.prototype.setAttributesPath = function (nodeId) {
   return '/nodes/' + nodeId + '/set_attributes.json'
 }
 

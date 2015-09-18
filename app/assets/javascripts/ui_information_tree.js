@@ -57,16 +57,40 @@ for the app. In any case, we get a circular dependency error when we try to name
 // ========================================================================
 var InformationTree = defCustomTag('information-tree', HTMLElement);
 
-InformationTree.prototype.afterCreate = function() {
+/* Initialize the information tree with the node whose id is topNodeId as the top node.
+   If no topNodeId is specified, get all top-level nodes of the tree and use the list
+   to initialize the information tree.
+*/
+InformationTree.prototype.afterCreate = function(topNodeId) {
   $(this).click(this.onClick);
 
   /*
   Initialize the information tree by asking the server to give us its "Top"
   and "Trash" nodes.
    */
-  var self = this;
-  this.initRequest = App.server.getTopNodes()
-    .success(function(topNodeRefs) {
+  var self = this
+
+  /*
+   A top node id was specified. Use it. Make sure to augment the
+   list of top node refs with the basket node, which is a system node that is always needed.
+  */
+  if (topNodeId) {
+    this.initRequest = App.server.getNode(topNodeId)
+      .success(function(topNodeRef) {
+        App.server.getBasket()
+          .success(function(basketNodeRef) {
+
+          })
+        return [node]
+      })
+      .success(function (topNode) {
+
+      })
+  } else {
+    this.initRequest = App.server.getTopNodes()
+  }
+
+  this.initRequest.success(function(topNodeRefs) {
       topNodeRefs.forEach(function (node) {
         if (node.type_id == self.TOP_NODE_TYPE_ID) {
           self.top = new UiTopNode(new Node(node))
