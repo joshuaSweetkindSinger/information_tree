@@ -17,7 +17,7 @@ App.initPage = function() {
   this.controller        = new Controller
   this.csrfToken         = $('[name="csrf-token"]').attr('content');
 
-  $('body').append(this.informationTree)
+  $('#app-header').after(this.informationTree)
 }
 
 
