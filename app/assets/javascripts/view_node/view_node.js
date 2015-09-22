@@ -164,16 +164,18 @@ Object.defineProperties(ViewNode.prototype, {
 
 
 /*
-Return the list of expanded ViewNodes, in descending vertical order.
-In other words, the Top node is returned first, and then the node beneath it,
-and so on. Only expanded nodes are in the list, i.e., those that are rendered somewhere
-in the display area.
+ Return a list consisting of ourselves and of the expanded ViewNodes beneath us in the hierarchy, in descending vertical order.
+ In other words, we are returned first, and then the node beneath us, then the node beneath it,
+ and so on. Only expanded nodes are in the list, i.e., those that are rendered somewhere
+ in the display area.
  */
 ViewNode.prototype.expandedViewNodes = function(result) {
+  result = result || []
+
   result.push(this);
   if (this.isExpanded()) {
-    this.kids().forEach(function(node) {
-      node.expandedViewNodes(result);
+    this.kids().forEach(function(uiNode) {
+      uiNode.expandedViewNodes(result);
     });
   }
   return result;

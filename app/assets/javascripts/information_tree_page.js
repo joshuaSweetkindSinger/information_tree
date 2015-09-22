@@ -110,6 +110,9 @@ view node is not explicitly represented. You have to go to the node, get it's id
 dom using jquery. But, if viewnodes had explicit parents and siblings, then insert operations would
 be harder, because you'd have to duplicate everything on the client side. Still not convinced I have
 the best architecture for this.
+TODO: Redo the sub-tree functionality so that the root node of the subtree comes up in the same tab,
+not a new tab, but record the full hiearchy in the node path dropdown, and allow user to climb back
+up the hierarchy.
  */
 
 /* NOTE: We're using the $(window).load callback here rather than the more common

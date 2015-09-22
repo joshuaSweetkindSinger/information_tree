@@ -100,10 +100,10 @@ class NodesController < ApplicationController
 
   # ======================================== Controller Actions beyond basic crud
 
-  # GET /nodes/top
-  # Return an array of all top nodes: those that have no parent.
-  def top
-    @objects = Node.top_nodes
+  # GET /nodes/roots
+  # Return an array of all root nodes: those that have no parent.
+  def roots
+    @objects = Node.roots
     respond_to do |format|
       format.html
       format.json {render json: @objects}

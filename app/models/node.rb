@@ -4,9 +4,8 @@
 
 class Node < ActiveRecord::Base
   # TODO -- put these in the database instead
-  TOP_TYPE_ID       = -1 # system-designated type id for top node.
   BASKET_TYPE_ID    = -2 # system-designated type id for basket node.
-  SYSTEM_NODE_TYPES = [BASKET_TYPE_ID, TOP_TYPE_ID]
+  SYSTEM_NODE_TYPES = [BASKET_TYPE_ID]
 
   BULLET_TYPE_ID    =  1 # type_id of this value indicates a bullet item. The use of multiple types is not implemented yet.
 
@@ -42,7 +41,7 @@ class Node < ActiveRecord::Base
   # =============================================================================
   # =============================================================================
   # Return an array of nodes that have no parent
-  def self.top_nodes
+  def self.roots
     self.where('parent_id is null')
   end
 

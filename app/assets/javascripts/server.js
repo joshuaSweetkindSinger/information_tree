@@ -12,13 +12,13 @@ Server.prototype.treePath = function (topNodeId) {
 Return an array of the top nodes of the information tree. This is all nodes that have no parent.
 It includes the system nodes, such as the root of the tree and the basket.
  */
-Server.prototype.getTopNodes = function () {
-  return new JsonRequest("GET", this.topNodesPath())
+Server.prototype.getRoots = function () {
+  return new JsonRequest("GET", this.rootsPath())
 }
 
 
-Server.prototype.topNodesPath = function () {
-  return '/nodes/top.json'
+Server.prototype.rootsPath = function () {
+  return '/nodes/roots.json'
 }
 
 /*

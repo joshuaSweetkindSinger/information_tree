@@ -2,8 +2,8 @@ JssNotes::Application.routes.draw do
 
   resources :nodes do
     collection do
-      get :top                         # /nodes/top
-      get :basket                       # /nodes/basket
+      get :roots                       # /nodes/roots
+      get :basket                      # /nodes/basket
       get :show_broken                 # /nodes/show_broken_nodes
       get :test_me
       get :import, to: :show_import_form

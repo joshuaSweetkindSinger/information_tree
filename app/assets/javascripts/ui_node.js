@@ -80,7 +80,7 @@ UiNode.prototype.bindEventHandlers = function () {
  a non root node and then make it be the root node in a new tab, of its own sub-tree.
  */
 UiNode.prototype.parent = function() {
-  if (!this.isSubTreeRoot) {
+  if (!this.isRoot) {
     return ViewNode.prototype.parent.call(this)
   }
 }

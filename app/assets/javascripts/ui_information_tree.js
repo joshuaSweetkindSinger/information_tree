@@ -61,7 +61,13 @@ var InformationTree = defCustomTag('information-tree', HTMLElement);
    If no topNodeId is specified, get all top-level nodes of the tree and use the list
    to initialize the information tree.
 */
-InformationTree.prototype.afterCreate = function(topNodeId) {
+InformationTree.prototype.afterCreate = function(rootNodeId) {
+  this.rootNodes = [] // An array of uiNodes that are top-level with respect to this client-side version of the information-tree,
+                      // listed in order of increased y-value.
+                      // Note that the client side may only be showing a portion of the full info tree available on the server side,
+                      // so some nodes may be acting as root nodes on the client side, even though they have parents on the server side.
+                      // This list is used by the method expandedViewNodes() for insert operations.
+
   $(this).click(this.onClick);
 
   /*
@@ -70,13 +76,13 @@ InformationTree.prototype.afterCreate = function(topNodeId) {
    */
   var self = this
 
-   // A top node id was specified. Use it.
-  this.initRequest = topNodeId ? App.server.getNodes([topNodeId], true) : App.server.getTopNodes()
+   // A root node id was specified. Use it.
+  this.initRequest = rootNodeId ? App.server.getNodes([rootNodeId], true) : App.server.getRoots()
 
-  this.initRequest.success(function(topNodeRefs) {
+  this.initRequest.success(function(rootRefs) {
     var uiNode = null
 
-    topNodeRefs.forEach(function (node) {
+    rootRefs.forEach(function (node) {
       uiNode = null
 
       // We found the basket node--save it but don't append to body just yet.
@@ -84,9 +90,10 @@ InformationTree.prototype.afterCreate = function(topNodeId) {
         self.basket = new UiBasketNode(new BasketNode(node))
 
       // We found a root node--make it be a UiTopNode
-      } else if ((node.id == topNodeId) || !node.parent_id) {
+      } else if ((node.id == rootNodeId) || !node.parent_id) {
         uiNode = new UiTopNode(new Node(node))
-        uiNode.isSubTreeRoot = true // This flag indicates that the node functions as a root of the page's information tree.
+        uiNode.isRoot = true // This flag indicates that the node functions as a root of the page's information tree.
+        self.rootNodes.push(uiNode)
 
       // We found a normal node
       } else {
@@ -95,6 +102,7 @@ InformationTree.prototype.afterCreate = function(topNodeId) {
       $(self).append(uiNode)
     })
     $(self).append(self.basket)
+    self.rootNodes.push(self.basket) // Add this last so that it will be the last root node searched for insert operations.
   })
   return this;
 };
@@ -114,7 +122,11 @@ InformationTree.prototype.onClick = function (event) {
  be preceded by its older siblings, all their visible descendants, and by its parent.
  */
 InformationTree.prototype.expandedViewNodes = function() {
-  return this.top.expandedViewNodes([]);
+  var result = []
+  this.rootNodes.forEach(function(uiNode) {
+    result = uiNode.expandedViewNodes(result);
+  })
+  return result
 }
 
 /*
@@ -141,16 +153,14 @@ InformationTree.prototype.findLowestNodeAbove = function(y) {
 
 /*
  If it currently exists in the dom, return the UiNode with the specified id.
- If it does not exist, behavior depends on options. Default is to throw an error
- unless options.noError is true.
+ If it does not exist, behavior depends on noError. Default is to throw an error
+ unless noError is true.
  */
-InformationTree.prototype.find = function(id, options) {
-  options = options || {noError: false}
-
+InformationTree.prototype.find = function(id, noError) {
   var $uiNode = $('#' + id);
   if ($uiNode.length > 0) {
     return $uiNode[0];
-  } else if (!options.noError) {
+  } else if (!noError) {
     throw "Could not find node on client-side with id of " + id
   }
 }
@@ -164,7 +174,7 @@ InformationTree.prototype.find = function(id, options) {
  unattached to the information tree.
  */
 InformationTree.prototype._findOrCreateUiNode = function(node) {
-  var foundUiNode = this.find(node.id, {noError:true});
+  var foundUiNode = this.find(node.id, true);
   return foundUiNode ? foundUiNode.update(node) : new UiNode(node);
 }
 
