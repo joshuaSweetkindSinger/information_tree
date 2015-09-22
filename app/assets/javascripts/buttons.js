@@ -45,6 +45,9 @@ ButtonPanel.prototype.afterCreate = function() {
   this.toHtmlButton = new ToHtml
   $this.append(this.toHtmlButton)
 
+  this.toJsonButton = new ToJson
+  $this.append(this.toJsonButton)
+
   this.subTreeButton = new ToSubTree
   $this.append(this.subTreeButton)
 
@@ -224,6 +227,21 @@ ToHtml.prototype.onClick = function (event) {
   App.controller.renderRecursivelyAsHtml()
 }
 
+
+// =========================================================================
+//                   ToJson Button
+// =========================================================================
+// Pressing this button automatically renders the node and its children
+// as json in a new tab.
+var ToJson = defCustomTag('to-json', ButtonPanelButton)
+
+ToJson.prototype.afterCreate = function() {
+  ButtonPanelButton.prototype.afterCreate.call(this, 'To Json', 'ctrl-j')
+}
+
+ToJson.prototype.onClick = function (event) {
+  App.controller.renderRecursivelyAsJson()
+}
 
 // =========================================================================
 //                   Save Button

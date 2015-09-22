@@ -136,6 +136,13 @@ Controller.prototype.renderRecursivelyAsHtml = function (uiNode) {
   open(App.server.renderRecursivelyAsHtmlPath(uiNode.id))
 }
 
+
+// Open selected node and its children as a static json page in a new tab.
+Controller.prototype.renderRecursivelyAsJson = function (uiNode) {
+  uiNode = (uiNode || this.selectedNode)
+  open(App.server.renderRecursivelyAsJsonPath(uiNode.id))
+}
+
 // Create a sub-tree in a new tab with uiNode as the top node
 Controller.prototype.toSubTree = function (uiNode) {
   uiNode = (uiNode || this.selectedNode)
