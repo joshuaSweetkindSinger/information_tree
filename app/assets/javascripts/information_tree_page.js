@@ -111,7 +111,7 @@ dom using jquery. But, if viewnodes had explicit parents and siblings, then inse
 be harder, because you'd have to duplicate everything on the client side. Still not convinced I have
 the best architecture for this.
 TODO: Redo the sub-tree functionality so that the root node of the subtree comes up in the same tab,
-not a new tab, but record the full hiearchy in the node path dropdown, and allow user to climb back
+not a new tab, but record the full hierarchy in the node path dropdown, and allow user to climb back
 up the hierarchy.
  */
 
@@ -123,5 +123,5 @@ up the hierarchy.
    which occurs last in the load cycle, seems to solve the problem.
  */
 $(window).load(function(){
-  App.initPage();
+  window.app = new App()
 })

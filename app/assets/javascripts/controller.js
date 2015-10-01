@@ -20,7 +20,7 @@
  to act on. Under normal circumstances, it would be more natural to just associate the functionality as a method on the
  object of interest.
  */
-Controller = function () {
+var Controller = function () {
   var self = this;
 
   this.selectedNode    = null // The Ui maintains a "selected node", to which actions are performed.

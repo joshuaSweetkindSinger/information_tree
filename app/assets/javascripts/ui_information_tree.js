@@ -60,6 +60,10 @@ var InformationTree = defCustomTag('information-tree', HTMLElement);
 /* Initialize the information tree with the node whose id is topNodeId as the top node.
    If no topNodeId is specified, get all top-level nodes of the tree and use the list
    to initialize the information tree.
+
+   Note that the information tree object consists of dom elements, but it does *not* attach itself to the dom.
+   That is done by the App object, whose job is to hold pointers to all top-level app modules
+   and to initialize the initial page. See App.init().
 */
 InformationTree.prototype.afterCreate = function(rootNodeId) {
   this.rootNodes = [] // An array of uiNodes that are top-level with respect to this client-side version of the information-tree,
@@ -76,9 +80,11 @@ InformationTree.prototype.afterCreate = function(rootNodeId) {
    */
   var self = this
 
-   // A root node id was specified. Use it.
+  // If a root node id was specified, ask the server for it; otherwise, ask the server for all the top-level root nodes.
+  // The returned object is an asynchronous request object.
   this.initRequest = rootNodeId ? App.server.getNodes([rootNodeId], true) : App.server.getRoots()
 
+  // After the asynchronous request above finishes, build the information tree on the client.
   this.initRequest.success(function(rootRefs) {
     var uiNode = null
 

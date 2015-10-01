@@ -6,11 +6,7 @@
 // ========================================================================
 //                   Application Object
 // =========================================================================
-window.InformationTreeApp = {}; //
-
-var App = window.InformationTreeApp; // nickname for our namespace
-
-App.initPage = function() {
+var App = function () {
   var treeTop            = this.getTreeTop()
   this.server            = new Server
   this.informationTree   = new InformationTree(treeTop)
@@ -21,7 +17,9 @@ App.initPage = function() {
 }
 
 
-App.getTreeTop = function () {
+
+
+App.prototype.getTreeTop = function () {
   var top = parseInt(document.location.pathname.split('/').pop()) // Get last token from loaded url and convert to integer.
   return top === NaN ? nil : top
 }
