@@ -57,11 +57,11 @@ for the app. In any case, we get a circular dependency error when we try to name
 // ========================================================================
 var InformationTree = defCustomTag('information-tree', HTMLElement);
 
-/* Initialize the information tree with the node whose id is topNodeId as the top node.
-   If no topNodeId is specified, get all top-level nodes of the tree and use the list
-   to initialize the information tree.
+/* Initialize an empty information tree.
+   To add root nodes to the tree, see addRoots()
 
-   Note that the information tree object consists of dom elements, but it does *not* attach itself to the dom.
+   Note that the information tree object is a dom element with child dom elements, but
+   that this initialization method does *not* attach it to the dom.
    That is done by the ITA object, whose job is to hold pointers to all top-level app modules
    and to initialize the initial page. See ITA.init().
 */
@@ -74,9 +74,24 @@ InformationTree.prototype.afterCreate = function(rootNodeId) {
 
   $(this).click(this.onClick);
 
+  this.addRoots(rootNodeId)
+  return this;
+};
+
+// TODO: This is not DRY. Should ask the server to tell us this.
+InformationTree.prototype.TOP_NODE_TYPE_ID    = -1
+InformationTree.prototype.BASKET_NODE_TYPE_ID = -2
+
+
+/*
+ Initialize the information tree with the node whose id is rootNodeId as the top node.
+ If no rootNodeId is specified, get all top-level nodes of the tree and use the list
+ to initialize the information tree.
+ */
+InformationTree.prototype.addRoots = function (rootNodeId) {
   /*
-  Initialize the information tree by asking the server to give us its "Top"
-  and "Trash" nodes.
+   Initialize the information tree by asking the server to give us its "Top"
+   and "Trash" nodes.
    */
   var self = this
 
@@ -95,13 +110,13 @@ InformationTree.prototype.afterCreate = function(rootNodeId) {
       if (node.type_id == self.BASKET_NODE_TYPE_ID) {
         self.basket = new UiBasketNode(new BasketNode(node))
 
-      // We found a root node--make it be a UiTopNode
+        // We found a root node--make it be a UiTopNode
       } else if ((node.id == rootNodeId) || !node.parent_id) {
         uiNode = new UiTopNode(new Node(node))
         uiNode.isRoot = true // This flag indicates that the node functions as a root of the page's information tree.
         self.rootNodes.push(uiNode)
 
-      // We found a normal node
+        // We found a normal node
       } else {
         uiNode = new UiNode(new Node(node))
       }
@@ -110,12 +125,7 @@ InformationTree.prototype.afterCreate = function(rootNodeId) {
     $(self).append(self.basket)
     self.rootNodes.push(self.basket) // Add this last so that it will be the last root node searched for insert operations.
   })
-  return this;
-};
-
-// TODO: This is not DRY. Should ask the server to tell us this.
-InformationTree.prototype.TOP_NODE_TYPE_ID    = -1
-InformationTree.prototype.BASKET_NODE_TYPE_ID = -2
+}
 
 InformationTree.prototype.onClick = function (event) {
   ITA.controller.resetMenus();
