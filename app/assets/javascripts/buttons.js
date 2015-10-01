@@ -95,7 +95,7 @@ ButtonPanel.prototype.popTo = function(uiNode) {
 }
 
 ButtonPanel.prototype.onClick = function() {
-  App.controller.resetMenus()
+  ITA.controller.resetMenus()
 }
 
 
@@ -107,7 +107,7 @@ ButtonPanel.prototype.onClick = function() {
 // Ask each button on the button panel whether it wants to be enabled for uiNode,
 // and, if it response true, then enable it; othewise, disable it.
 ButtonPanel.prototype.enableAppropriateButtons = function (uiNode) {
-  uiNode = uiNode || App.controller.selectedNode
+  uiNode = uiNode || ITA.controller.selectedNode
   $(this).children().each(function () {
     this.enable(this.calcEnabledState(uiNode))
   })
@@ -170,7 +170,7 @@ Nop.prototype.afterCreate = function() {
 }
 
 Nop.prototype.onClick = function(event) {
-  App.controller.nop()
+  ITA.controller.nop()
 }
 
 
@@ -186,7 +186,7 @@ FollowLink.prototype.afterCreate = function() {
 }
 
 FollowLink.prototype.onClick = function (event) {
-  App.controller.followLink()
+  ITA.controller.followLink()
 }
 
 // Disable ourselves on the popup menu if uiNode is not a followable link.
@@ -208,7 +208,7 @@ ToSubTree.prototype.afterCreate = function() {
 }
 
 ToSubTree.prototype.onClick = function (event) {
-  App.controller.toSubTree()
+  ITA.controller.toSubTree()
 }
 
 
@@ -224,7 +224,7 @@ ToHtml.prototype.afterCreate = function() {
 }
 
 ToHtml.prototype.onClick = function (event) {
-  App.controller.renderRecursivelyAsHtml()
+  ITA.controller.renderRecursivelyAsHtml()
 }
 
 
@@ -240,7 +240,7 @@ ToJson.prototype.afterCreate = function() {
 }
 
 ToJson.prototype.onClick = function (event) {
-  App.controller.renderRecursivelyAsJson()
+  ITA.controller.renderRecursivelyAsJson()
 }
 
 // =========================================================================
@@ -255,7 +255,7 @@ Save.prototype.afterCreate = function() {
 }
 
 Save.prototype.onClick = function(event) {
-  App.controller.saveNode()
+  ITA.controller.saveNode()
 }
 
 
@@ -270,7 +270,7 @@ CutNode.prototype.afterCreate = function() {
 }
 
 CutNode.prototype.onClick = function (event) {
-  App.controller.cutNode();
+  ITA.controller.cutNode();
 }
 
 // =========================================================================
@@ -285,7 +285,7 @@ PasteNode.prototype.afterCreate = function() {
 }
 
 PasteNode.prototype.onClick = function (event) {
-  App.controller.pasteNode();
+  ITA.controller.pasteNode();
 }
 
 
@@ -299,7 +299,7 @@ ExpandCollapseRecursive.prototype.afterCreate = function() {
 }
 
 ExpandCollapseRecursive.prototype.onClick = function (event) {
-  App.controller.toggleExpandCollapseAll()
+  ITA.controller.toggleExpandCollapseAll()
 }
 
 
@@ -313,7 +313,7 @@ AddChild.prototype.afterCreate = function() {
 }
 
 AddChild.prototype.onClick = function (event) {
-  App.controller.createChild()
+  ITA.controller.createChild()
 }
 
 // =========================================================================
@@ -325,7 +325,7 @@ AddSuccessor.prototype.afterCreate = function() {
 }
 
 AddSuccessor.prototype.onClick = function (event) {
-  App.controller.createSuccessor()
+  ITA.controller.createSuccessor()
 }
 
 // =========================================================================
@@ -337,7 +337,7 @@ AddPredecessor.prototype.afterCreate = function() {
 }
 
 AddPredecessor.prototype.onClick = function (event) {
-  App.controller.createPredecessor()
+  ITA.controller.createPredecessor()
 }
 
 // =========================================================================
@@ -349,5 +349,5 @@ EmptyBasket.prototype.onCreate = function() {
 }
 
 EmptyBasket.prototype.onClick = function (event) {
-  App.controller.emptyBasket()
+  ITA.controller.emptyBasket()
 }

@@ -17,7 +17,7 @@ BasketNode.prototype = Object.create(Node.prototype)
 
 BasketNode.prototype.empty = function () {
   var self = this
-  return App.server.emptyBasket()
+  return ITA.server.emptyBasket()
     .success(function() {
       self._children       = [];
       self.childrenFetched = false

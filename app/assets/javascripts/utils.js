@@ -41,7 +41,7 @@ var Request = function(verb, url, params, headers) {
   this.request.open(this.verb, this.url) // Specify verb and url for request.
 
   if (this.body) this.headers["Content-Type"] = "application/json";
-  if (!this.isCsrfSafe()) this.headers["X-CSRF-Token"] = App.csrfToken;
+  if (!this.isCsrfSafe()) this.headers["X-CSRF-Token"] = ITA.csrfToken;
 
   // Set up a callback to notify us when response is ready.
   this.request.onreadystatechange = function() {

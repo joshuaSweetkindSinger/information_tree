@@ -263,7 +263,7 @@ ViewNode.prototype.attachChild = function(nodeToAttach) {
  */
 ViewNode.prototype.predecessor = function() {
   if (this.node.predecessor_id) {
-    return App.informationTree.find(this.node.predecessor_id);
+    return ITA.informationTree.find(this.node.predecessor_id);
   }
 }
 
@@ -274,7 +274,7 @@ ViewNode.prototype.predecessor = function() {
  */
 ViewNode.prototype.successor = function() {
   if (this.node.successor_id) {
-    return App.informationTree.find(this.node.successor_id);
+    return ITA.informationTree.find(this.node.successor_id);
   }
 }
 
@@ -287,7 +287,7 @@ ViewNode.prototype.successor = function() {
  */
 ViewNode.prototype.parent = function() {
   if (this.node.parent_id) {
-    return App.informationTree.find(this.node.parent_id);
+    return ITA.informationTree.find(this.node.parent_id);
   }
 }
 
@@ -421,7 +421,7 @@ ViewNode.prototype.paste = function(viewNode) {
  Tell the server to basket the node represented by <this>, then basket it on the client side as well.
   */
 ViewNode.prototype.basket = function() {
- return App.informationTree.basket.insertChild(this);
+ return ITA.informationTree.basket.insertChild(this);
 }
 
 
@@ -438,7 +438,7 @@ ViewNode.prototype.expand = function(doRecursive, callback) {
   var self = this;
   this.node.fetchChildren()
     .success(function(children) {
-      App.informationTree.addUiNodes(children)
+      ITA.informationTree.addUiNodes(children)
       self._expand(function() {
         if (doRecursive) {
           self.kids().forEach(function(nodeView) {nodeView.expand(true)});

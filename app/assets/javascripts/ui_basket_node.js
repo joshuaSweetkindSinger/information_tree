@@ -36,7 +36,7 @@ UiBasketNode.prototype.enableButtonPanelOptions = function(buttonPanel) {
 }
 
 UiBasketNode.prototype.onKeypress = function(event) {
-  App.controller.keyPressedOnTrashNode(this, event);
+  ITA.controller.keyPressedOnTrashNode(this, event);
 }
 
 UiBasketNode.prototype.empty = function () {

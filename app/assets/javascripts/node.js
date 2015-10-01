@@ -40,7 +40,7 @@ This method returns a request object for asynchronous continuation to further pr
 Node object.
  */
 Node.createNode = function (nodeSpec) {
-  return App.server.createNode(nodeSpec || Node.defaultSpec)
+  return ITA.server.createNode(nodeSpec || Node.defaultSpec)
     .success(function(nodeRep) {return new Node(nodeRep)})
 }
 
@@ -94,11 +94,11 @@ Node.prototype.view = function (obj) {
 
  mode determines how node is moved relative to <this>, as either a child, successor, or predecessor
  of the node represented by <this>. mode should be a string,
- that names one of App.server's add methods: 'insertChild', 'insertSuccessor', 'insertPredecessor'
+ that names one of ITA.server's add methods: 'insertChild', 'insertSuccessor', 'insertPredecessor'
  */
 Node.prototype.insert = function (nodeToInsert, mode) {
   var self = this;
-  return App.server[mode](this.id, nodeToInsert.id)
+  return ITA.server[mode](this.id, nodeToInsert.id)
     .success(function(nodeRep) {
       return nodeToInsert.update(nodeRep)
     })
@@ -126,7 +126,7 @@ Node.prototype.reportError = function() {
 
 
 Node.prototype.basket = function() {
-  return App.server.basket(this.id)
+  return ITA.server.basket(this.id)
 }
 
 /*
@@ -139,7 +139,7 @@ Node.prototype.fetchChildren = function () {
   var self = this;
 
   return this.childrenFetched ? new PseudoRequest([])
-    : App.server.getNodeChildren(this.id)
+    : ITA.server.getNodeChildren(this.id)
     .success(function(childReps) {
       self.childrenFetched = true;
       return self._children = childReps.map(function (n) {return new Node(n)})
@@ -153,7 +153,7 @@ Node.prototype.fetchChildren = function () {
 // Attributes which can be set are: content, width, height.
 Node.prototype.setAttributes = function(nodeUpdate) {
   var self = this;
-  return App.server.setNodeAttributes(this.id, nodeUpdate)
+  return ITA.server.setNodeAttributes(this.id, nodeUpdate)
     .success(function (nodeRep) {
       return self.update(nodeRep);
     })

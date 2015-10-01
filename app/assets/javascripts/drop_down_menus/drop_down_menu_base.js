@@ -65,6 +65,6 @@ DropDownMenu.prototype.popUp = function() {
 }
 
 DropDownMenu.prototype.onClick = function (event) {
-  App.controller.resetMenus()
+  ITA.controller.resetMenus()
   this.popUp()
 }

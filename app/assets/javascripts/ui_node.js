@@ -86,7 +86,7 @@ UiNode.prototype.parent = function() {
 }
 
 UiNode.prototype.onExpandCollapseClick = function() {
-  App.controller.toggleNodeExpandCollapse(this);
+  ITA.controller.toggleNodeExpandCollapse(this);
 }
 
 /*
@@ -94,7 +94,7 @@ UiNode.prototype.onExpandCollapseClick = function() {
  on mouse move events when noDrag is true. See onMouseDown below.
 */
 UiNode.prototype.onMouseMove = function(event) {
-  if (App.controller.noDrag) {
+  if (ITA.controller.noDrag) {
     event.stopPropagation()
   }
 }
@@ -105,14 +105,14 @@ by the jquery draggable property while the mouse moves around.
  */
 UiNode.prototype.onMouseDown = function(event) {
   // TODO: this is ugly! We're setting a flag on another object. But we need a "global" state var here.
-  App.controller.noDrag = !$(event.target).is('drag-area');
+  ITA.controller.noDrag = !$(event.target).is('drag-area');
 }
 
 /*
  Advise the controller that this UiNode object just started being dragged.
  */
 UiNode.prototype.onDragStart = function() {
-  App.controller.onDragStart(this)
+  ITA.controller.onDragStart(this)
 }
 
 
@@ -121,7 +121,7 @@ Advise the controller that this UiNode object just finished being dragged. If it
 top of another object, the controller will handle the drop event.
  */
 UiNode.prototype.onDragStop = function(event, helperUiNode) {
-  App.controller.onDragStop(event, helperUiNode, this)
+  ITA.controller.onDragStop(event, helperUiNode, this)
 }
 
 
@@ -134,7 +134,7 @@ UiNode.prototype.onDragStop = function(event, helperUiNode) {
  */
 UiNode.prototype.onDrop = function(event, ui) {
   if (this.id) {
-    App.controller.onDrop(this);
+    ITA.controller.onDrop(this);
   }
 }
 
@@ -143,12 +143,12 @@ UiNode.prototype.onDrop = function(event, ui) {
  revert logic for the dragged node.
  */
 UiNode.prototype.handleRevert = function() {
-  return App.controller.handleRevert(this)
+  return ITA.controller.handleRevert(this)
 }
 
 
 UiNode.prototype.onContentClick = function (event) {
-  App.controller.clickedLeftOnNode(this)
+  ITA.controller.clickedLeftOnNode(this)
 }
 
 
@@ -158,7 +158,7 @@ UiNode.prototype.onContentClick = function (event) {
  that will work at click-time.
  */
 UiNode.prototype.onContextMenu = function(event) {
-  App.controller.clickedRightOnNode(this, event)
+  ITA.controller.clickedRightOnNode(this, event)
 }
 
 
@@ -174,7 +174,7 @@ UiNode.prototype.enableButtonPanelOptions = function (buttonPanel) {
 
 
 UiNode.prototype.onKeypress = function(event) {
-  App.controller.keyPressedOnNode(this, event)
+  ITA.controller.keyPressedOnNode(this, event)
 }
 
 
@@ -183,7 +183,7 @@ UiNode.prototype.onKeypress = function(event) {
 // This event-handler is bound to the object's blur event.
 // It causes the content of the node to change on the server.
 UiNode.prototype.onBlur = function(e) {
-  App.controller.blurNode(this);
+  ITA.controller.blurNode(this);
 }
 
 // Put browser focus on this node, for data entry. Pass along the focus to our contentArea sub-element.

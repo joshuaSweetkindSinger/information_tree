@@ -39,5 +39,5 @@ UiTopNode.prototype.enableButtonPanelOptions = function(buttonPanel) {
 }
 
 UiTopNode.prototype.onKeypress = function(event) {
-  App.controller.keyPressedOnTopNode(this, event);
+  ITA.controller.keyPressedOnTopNode(this, event);
 }

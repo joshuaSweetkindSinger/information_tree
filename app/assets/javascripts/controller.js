@@ -35,18 +35,18 @@ var Controller = function () {
   After the information Tree is done asynchronously initializing itself,
   select the top node of the tree, and append some menus to do the dom.
    */
-  App.informationTree.initRequest
+  ITA.informationTree.initRequest
     .success(function() {
-      $(App.informationTree).append(self.buttonPanel);
+      $(ITA.informationTree).append(self.buttonPanel);
       $(self.buttonPanel).hide();
 
-      $(App.informationTree).append(self.visitedNodeList);
+      $(ITA.informationTree).append(self.visitedNodeList);
       $(self.visitedNodeList).hide();
 
-      $(App.informationTree).append(self.nodePathList);
+      $(ITA.informationTree).append(self.nodePathList);
       $(self.nodePathList).hide();
 
-      self.selectNode($(App.informationTree).children()[0]);
+      self.selectNode($(ITA.informationTree).children()[0]);
   });
 };
 
@@ -95,7 +95,7 @@ Controller.prototype.selectNode = function (uiNode) {
  Visit the specified node. This means scrolling the node to the top of the viewport as well as selecting the node.
  */
 Controller.prototype.visitNode = function (uiNode) {
-  App.informationTree.scrollTo(uiNode)
+  ITA.informationTree.scrollTo(uiNode)
   this.selectNode(uiNode)
 }
 
@@ -113,7 +113,7 @@ Controller.prototype.basket = function (uiNode) {
 }
 
 Controller.prototype.emptyBasket = function () {
-  App.informationTree.basket.empty()
+  ITA.informationTree.basket.empty()
 }
 
 
@@ -133,20 +133,20 @@ Controller.prototype.followLink = function (uiNode) {
 // Open selected node and its children as a static html page in a new tab.
 Controller.prototype.renderRecursivelyAsHtml = function (uiNode) {
   uiNode = (uiNode || this.selectedNode)
-  open(App.server.renderRecursivelyAsHtmlPath(uiNode.id))
+  open(ITA.server.renderRecursivelyAsHtmlPath(uiNode.id))
 }
 
 
 // Open selected node and its children as a static json page in a new tab.
 Controller.prototype.renderRecursivelyAsJson = function (uiNode) {
   uiNode = (uiNode || this.selectedNode)
-  open(App.server.renderRecursivelyAsJsonPath(uiNode.id))
+  open(ITA.server.renderRecursivelyAsJsonPath(uiNode.id))
 }
 
 // Create a sub-tree in a new tab with uiNode as the top node
 Controller.prototype.toSubTree = function (uiNode) {
   uiNode = (uiNode || this.selectedNode)
-  open(App.server.treePath(uiNode.id))
+  open(ITA.server.treePath(uiNode.id))
 }
 
 /*
@@ -357,7 +357,7 @@ Controller.prototype.onDrop = function(uiNode) {
  We use $(tree).scrollTop() to get the current values of the scroll offsets so we can do the conversion.
  */
 Controller.prototype.handleRevert = function(uiNode) {
-  var tree = App.informationTree
+  var tree = ITA.informationTree
   return !this.dropTarget && !(this.predecessorTarget = tree.findLowestNodeAbove($(uiNode).offset().top))
 }
 
