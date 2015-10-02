@@ -155,7 +155,10 @@ Controller.prototype.renderRecursivelyAsJson = function (uiNode) {
 // Create a sub-tree in a new tab with uiNode as the top node
 Controller.prototype.toSubTree = function (uiNode) {
   uiNode = (uiNode || this.selectedNode)
+  ITA.informationTree.replaceRoots([uiNode])
+  /*
   open(ITA.server.treePath(uiNode.id))
+  */
 }
 
 /*

@@ -116,6 +116,12 @@ up the hierarchy.
 
 TODO: It's wasteful for expandedViewNodes() to build an array of all expanded nodes. Currently it's only
 used to determine the insertion point. You can walk the tree without building an array.
+
+TODO: examine the field isRoot on uiNode. It's not DRY, because we already have a RootNode class. Try
+to refactor so that we just have one or the other. Also the basket is in this.rootNodes, but its
+isRoot slot is false. Clean this up!
+STATUS: Examine isRoot and parent() methods of uiNode. Figure out how to keep parent info on the node path
+menu and how to crawl back up to the root.
  */
 
 /* NOTE: We're using the $(window).load callback here rather than the more common

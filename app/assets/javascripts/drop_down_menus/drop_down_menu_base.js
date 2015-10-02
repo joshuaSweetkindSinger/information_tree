@@ -14,6 +14,7 @@ var DropDownPopUp = defCustomTag('drop-down-pop-up', HTMLElement)
 
 DropDownPopUp.prototype.afterCreate = function() {
   $(this).addClass('drop-down-pop-up')
+  $(this).zIndex(10) // Make sure we're on top.
   return this
 };
 

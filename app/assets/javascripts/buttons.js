@@ -11,6 +11,7 @@ The toplevel button container is the Button Panel.
 var ButtonPanel = defCustomTag('button-panel', HTMLElement)
 ButtonPanel.prototype.afterCreate = function() {
   var $this = $(this)
+  $this.zIndex(10) // Make sure panel comes above other nodes.
 
 //  this.nop = new Nop
 //  $this.append(this.nop)

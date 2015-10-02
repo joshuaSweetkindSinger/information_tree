@@ -90,6 +90,8 @@ InformationTree.prototype.BASKET_NODE_TYPE_ID = -2
  a root on the client side allows the user to peruse sub-trees.
  */
 InformationTree.prototype.setRoots = function (rootRefs) {
+  this.clearRoots() // Note: can't just clear the tree as a dom element, because it contains hidden menus that we want to keep.
+
   rootRefs.forEach(function (node) {
     // We found the basket node--save it but don't append to body just yet.
     if (node.type_id == this.BASKET_NODE_TYPE_ID) {
@@ -102,6 +104,32 @@ InformationTree.prototype.setRoots = function (rootRefs) {
       this.rootNodes.push(uiNode)
       $(this).append(uiNode)
     }
+  }, this)
+
+  $(this).append(this.basket)
+  this.rootNodes.push(this.basket) // Add this last so that it will be the last root node searched for insert operations.
+}
+
+// Remove all root nodes from the tree. This leaves ui elements like menus intact, but
+// empties the tree of all logical content.
+InformationTree.prototype.clearRoots = function () {
+  this.rootNodes.forEach(function (uiNode) {
+    $(uiNode).detach() // Note: We use detach() rather than remove because we might be re-appending the node later. Apparently append() does not re-attach the event handlers that get stripped when remove() is called.
+  })
+}
+
+/*
+Establish new root-level nodes for the information tree. The list passed in is a set of
+uiNodes that already exist in the dom. Clear all existing roots, except for the trash,
+and then add the new roots as children of the tree.
+ */
+InformationTree.prototype.replaceRoots = function (uiNodes) {
+  this.clearRoots() // Note: can't just clear the tree as a dom element, because it contains hidden menus that we want to keep.
+
+  uiNodes.forEach(function (uiNode) {
+    uiNode.isRoot = true // This flag indicates that the node functions as a root of the page's information tree.
+    this.rootNodes.push(uiNode)
+    $(this).append(uiNode)
   }, this)
 
   $(this).append(this.basket)
