@@ -89,39 +89,23 @@ InformationTree.prototype.BASKET_NODE_TYPE_ID = -2
  they can have parents in the information tree proper. This ability to establish a non-true-root as
  a root on the client side allows the user to peruse sub-trees.
  */
-InformationTree.prototype.setRoots = function (rootNodeIds) {
-  var self = this
+InformationTree.prototype.setRoots = function (rootRefs) {
+  rootRefs.forEach(function (node) {
+    // We found the basket node--save it but don't append to body just yet.
+    if (node.type_id == this.BASKET_NODE_TYPE_ID) {
+      this.basket = new UiBasketNode(new BasketNode(node))
 
-  // If a root node id was specified, ask the server for it; otherwise, ask the server for all the top-level root nodes.
-  // The returned object is an asynchronous request object.
-  var request = rootNodeIds ? ITA.server.getNodes(rootNodeIds, true) : ITA.server.getRoots()
+    // We found a root node--make it be a UiRootNode
+    } else {
+      var uiNode    = new UiRootNode(new Node(node))
+      uiNode.isRoot = true // This flag indicates that the node functions as a root of the page's information tree.
+      this.rootNodes.push(uiNode)
+      $(this).append(uiNode)
+    }
+  }, this)
 
-  // After the asynchronous request above finishes, build the information tree on the client.
-  request.success(function(rootRefs) {
-    var uiNode = null
-
-    rootRefs.forEach(function (node) {
-      uiNode = null
-
-      // We found the basket node--save it but don't append to body just yet.
-      if (node.type_id == self.BASKET_NODE_TYPE_ID) {
-        self.basket = new UiBasketNode(new BasketNode(node))
-
-      // We found a root node--make it be a UiRootNode
-      } else {
-        uiNode        = new UiRootNode(new Node(node))
-        uiNode.isRoot = true // This flag indicates that the node functions as a root of the page's information tree.
-        self.rootNodes.push(uiNode)
-      }
-
-      $(self).append(uiNode)
-    })
-    
-    $(self).append(self.basket)
-    self.rootNodes.push(self.basket) // Add this last so that it will be the last root node searched for insert operations.
-  })
-
-  return request
+  $(this).append(this.basket)
+  this.rootNodes.push(this.basket) // Add this last so that it will be the last root node searched for insert operations.
 }
 
 InformationTree.prototype.onClick = function (event) {
