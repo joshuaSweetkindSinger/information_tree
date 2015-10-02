@@ -3,41 +3,43 @@
 //= require drop_down_menus/node_path_list
 
 // ========================================================================
-//                   User Interface
+//                   Controller
 // ========================================================================
 /*
  Although everything on the client side is in some sense user-interface, here we are specifically
- designating a Ui object whose methods are those that respond directly to browser events and
+ designating a controller object whose methods are those that respond directly to browser events and
  whose member variables are those that keep track of Ui state, such as selected objects, etc.
 
- The Ui gets its job done by calling lower-level client-side methods, which manipulate
+ The controller gets its job done by calling lower-level client-side methods, which manipulate
  client-side objects. These lower-level methods
- do not belong to the ui and are distinguished by being callable in different ui contexts.
+ do not belong to the ui proper. They are callable in different ui contexts.
 
- Rather than making the Ui functionality be distributed across various classes, according to which dom
- object is receiving the click, we instead coalesce the full set of ui functionality in one place, which
- makes these methods more "functional" in the approach, because each ui function will need to be told an object-of-interest
- to act on. Under normal circumstances, it would be more natural to just associate the functionality as a method on the
- object of interest.
+ Rather than distributing the Ui functionality widely across various classes, according to which dom
+ object is receiving the click, we instead coalesce a core set of ui functionality in the controller.
+ It isn't clear that this method is superior, or scales well, but it has the advantage of allowing a human
+ to assess what the ui is about by examining this one file. It also allows interactions and dependencies
+ among ui elements to be handled by the controller.
  */
 var Controller = function () {
   this.selectedNode    = null // The Ui maintains a "selected node", to which actions are performed.
   this.buttonPanel     = new ButtonPanel
   this.appHeader       = $('#app-header')[0]
-
   this.visitedNodeList = $('#visited-node-list-drop-down')[0].init().menu
   this.nodePathList    = $('#node-path-list-drop-down')[0].init().menu
 
+  $(this.appHeader).after(ITA.informationTree)
+  this.initTree()
+};
 
-  $('#app-header').after(ITA.informationTree)
 
 
-  /*
-  After the information Tree is done asynchronously initializing itself,
-  select the top node of the tree, and append some menus to do the dom.
-   */
+/*
+ Initialize the UI elements of the tree.
+ Add root nodes to the tree, select the top node of the tree, and append some menus to the dom.
+ */
+Controller.prototype.initTree = function () {
   var self = this;
-  ITA.informationTree.initRequest
+  ITA.informationTree.setRoots()
     .success(function() {
       $(ITA.informationTree).append(self.buttonPanel);
       $(self.buttonPanel).hide();
@@ -49,8 +51,8 @@ var Controller = function () {
       $(self.nodePathList).hide();
 
       self.selectNode($(ITA.informationTree).children()[0]);
-  });
-};
+    });
+}
 
 // Respond to a left-click on a node. Select the node and toggle the expanded-collapsed state of that node.
 Controller.prototype.clickedLeftOnNode = function (uiNode) {

@@ -113,6 +113,9 @@ the best architecture for this.
 TODO: Redo the sub-tree functionality so that the root node of the subtree comes up in the same tab,
 not a new tab, but record the full hierarchy in the node path dropdown, and allow user to climb back
 up the hierarchy.
+
+TODO: It's wasteful for expandedViewNodes() to build an array of all expanded nodes. Currently it's only
+used to determine the insertion point. You can walk the tree without building an array.
  */
 
 /* NOTE: We're using the $(window).load callback here rather than the more common

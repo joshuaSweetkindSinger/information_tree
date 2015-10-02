@@ -58,7 +58,7 @@ for the app. In any case, we get a circular dependency error when we try to name
 var InformationTree = defCustomTag('information-tree', HTMLElement);
 
 /* Initialize an empty information tree.
-   To add root nodes to the tree, see addRoots()
+   To add root nodes to the tree, see setRoots()
 
    Note that the information tree object is a dom element with child dom elements, but
    that this initialization method does *not* attach it to the dom.
@@ -73,9 +73,6 @@ InformationTree.prototype.afterCreate = function() {
                       // This list is used by the method expandedViewNodes() for insert operations.
 
   $(this).click(this.onClick);
-
-  this.addRoots()
-  return this;
 };
 
 // TODO: This is not DRY. Should ask the server to tell us this.
@@ -84,23 +81,23 @@ InformationTree.prototype.BASKET_NODE_TYPE_ID = -2
 
 
 /*
- Initialize the information tree with the node whose id is rootNodeId as the top node.
- If no rootNodeId is specified, get all top-level nodes of the tree and use the list
+ Initialize the information tree with the nodes whose ids are rootNodeIds.
+ If no rootNodeIds are specified, get all true root nodes of the tree and use the list
  to initialize the information tree.
+
+ Note that the client side can establish a tree rooted on nodes that are not true roots, i.e.,
+ they can have parents in the information tree proper. This ability to establish a non-true-root as
+ a root on the client side allows the user to peruse sub-trees.
  */
-InformationTree.prototype.addRoots = function (rootNodeId) {
-  /*
-   Initialize the information tree by asking the server to give us its "Top"
-   and "Trash" nodes.
-   */
+InformationTree.prototype.setRoots = function (rootNodeIds) {
   var self = this
 
   // If a root node id was specified, ask the server for it; otherwise, ask the server for all the top-level root nodes.
   // The returned object is an asynchronous request object.
-  this.initRequest = rootNodeId ? ITA.server.getNodes([rootNodeId], true) : ITA.server.getRoots()
+  var request = rootNodeIds ? ITA.server.getNodes(rootNodeIds, true) : ITA.server.getRoots()
 
   // After the asynchronous request above finishes, build the information tree on the client.
-  this.initRequest.success(function(rootRefs) {
+  request.success(function(rootRefs) {
     var uiNode = null
 
     rootRefs.forEach(function (node) {
@@ -110,21 +107,21 @@ InformationTree.prototype.addRoots = function (rootNodeId) {
       if (node.type_id == self.BASKET_NODE_TYPE_ID) {
         self.basket = new UiBasketNode(new BasketNode(node))
 
-        // We found a root node--make it be a UiTopNode
-      } else if ((node.id == rootNodeId) || !node.parent_id) {
-        uiNode = new UiTopNode(new Node(node))
+      // We found a root node--make it be a UiRootNode
+      } else {
+        uiNode        = new UiRootNode(new Node(node))
         uiNode.isRoot = true // This flag indicates that the node functions as a root of the page's information tree.
         self.rootNodes.push(uiNode)
-
-        // We found a normal node
-      } else {
-        uiNode = new UiNode(new Node(node))
       }
+
       $(self).append(uiNode)
     })
+    
     $(self).append(self.basket)
     self.rootNodes.push(self.basket) // Add this last so that it will be the last root node searched for insert operations.
   })
+
+  return request
 }
 
 InformationTree.prototype.onClick = function (event) {
