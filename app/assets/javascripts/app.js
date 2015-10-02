@@ -16,13 +16,10 @@ var InformationTreeApp = function() {
   }
   
   window.ITA            = this // sub-object initializations below require this pointer to be set.
-  var treeTop           = this.getTreeTop()
-  this.server           = new Server
-  this.informationTree  = new InformationTree(treeTop)
-  this.controller       = new Controller
   this.csrfToken        = $('[name="csrf-token"]').attr('content');
-
-  $('#app-header').after(this.informationTree)
+  this.server           = new Server
+  this.informationTree  = new InformationTree
+  this.controller       = new Controller
 }
 
 

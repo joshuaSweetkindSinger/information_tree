@@ -21,8 +21,6 @@
  object of interest.
  */
 var Controller = function () {
-  var self = this;
-
   this.selectedNode    = null // The Ui maintains a "selected node", to which actions are performed.
   this.buttonPanel     = new ButtonPanel
   this.appHeader       = $('#app-header')[0]
@@ -31,10 +29,14 @@ var Controller = function () {
   this.nodePathList    = $('#node-path-list-drop-down')[0].init().menu
 
 
+  $('#app-header').after(ITA.informationTree)
+
+
   /*
   After the information Tree is done asynchronously initializing itself,
   select the top node of the tree, and append some menus to do the dom.
    */
+  var self = this;
   ITA.informationTree.initRequest
     .success(function() {
       $(ITA.informationTree).append(self.buttonPanel);

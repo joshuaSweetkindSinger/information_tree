@@ -65,7 +65,7 @@ var InformationTree = defCustomTag('information-tree', HTMLElement);
    That is done by the ITA object, whose job is to hold pointers to all top-level app modules
    and to initialize the initial page. See ITA.init().
 */
-InformationTree.prototype.afterCreate = function(rootNodeId) {
+InformationTree.prototype.afterCreate = function() {
   this.rootNodes = [] // An array of uiNodes that are top-level with respect to this client-side version of the information-tree,
                       // listed in order of increased y-value.
                       // Note that the client side may only be showing a portion of the full info tree available on the server side,
@@ -74,7 +74,7 @@ InformationTree.prototype.afterCreate = function(rootNodeId) {
 
   $(this).click(this.onClick);
 
-  this.addRoots(rootNodeId)
+  this.addRoots()
   return this;
 };
 
