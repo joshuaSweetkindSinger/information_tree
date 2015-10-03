@@ -53,10 +53,10 @@ Controller.prototype.initTree = function (rootNodeIds) {
   // Set root nodes of tree
   var request = rootNodeIds ? ITA.server.getNodes(rootNodeIds, true) : ITA.server.getRoots()
   var self    = this
-  request.success(tree.setRoots.bind(tree))
-    .success(function() {
-      self.selectNode(tree.rootNodes[0])
-    })
+  request.success(function (rootRefs) {
+    tree.setLocalRoots(rootRefs)
+    self.selectNode(tree.getLocalRoots()[0])
+  })
 }
 
 // Respond to a left-click on a node. Select the node and toggle the expanded-collapsed state of that node.

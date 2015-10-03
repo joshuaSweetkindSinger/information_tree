@@ -58,7 +58,7 @@ for the app. In any case, we get a circular dependency error when we try to name
 var InformationTree = defCustomTag('information-tree', HTMLElement);
 
 /* Initialize an empty information tree.
-   To add root nodes to the tree, see setRoots()
+   To add root nodes to the tree, see setLocalRoots()
 
    Note that the information tree object is a dom element with child dom elements, but
    that this initialization method does *not* attach it to the dom.
@@ -66,13 +66,8 @@ var InformationTree = defCustomTag('information-tree', HTMLElement);
    and to initialize the initial page. See ITA.init().
 */
 InformationTree.prototype.afterCreate = function() {
-  this.rootNodes = [] // An array of uiNodes that are top-level with respect to this client-side version of the information-tree,
-                      // listed in order of increased y-value.
-                      // Note that the client side may only be showing a portion of the full info tree available on the server side,
-                      // so some nodes may be acting as root nodes on the client side, even though they have parents on the server side.
-                      // This list is used by the method expandedViewNodes() for insert operations.
-
-  $(this).click(this.onClick);
+  this.localRootInfo = {array:[], hash:{}}
+  $(this).click(this.onClick)
 };
 
 // TODO: This is not DRY. Should ask the server to tell us this.
@@ -81,16 +76,19 @@ InformationTree.prototype.BASKET_NODE_TYPE_ID = -2
 
 
 /*
- Initialize the information tree with the nodes whose ids are rootNodeIds.
- If no rootNodeIds are specified, get all true root nodes of the tree and use the list
+ Initialize the information tree with the nodes whose ids are rootRefs.
+ These will function locally as root nodes of the tree as observed by the user on the client,
+ whether or not the nodes are actually root nodes of the complete information tree on the server.
+
+ If no rootRefs are specified, get all true root nodes of the tree and use the list
  to initialize the information tree.
 
  Note that the client side can establish a tree rooted on nodes that are not true roots, i.e.,
  they can have parents in the information tree proper. This ability to establish a non-true-root as
  a root on the client side allows the user to peruse sub-trees.
  */
-InformationTree.prototype.setRoots = function (rootRefs) {
-  this.clearRoots() // Note: can't just clear the tree as a dom element, because it contains hidden menus that we want to keep.
+InformationTree.prototype.setLocalRoots = function (rootRefs) {
+  this.clearLocalRoots() // Note: can't just clear the tree as a dom element, because it contains hidden menus that we want to keep.
 
   rootRefs.forEach(function (node) {
     // We found the basket node--save it but don't append to body just yet.
@@ -100,22 +98,46 @@ InformationTree.prototype.setRoots = function (rootRefs) {
     // We found a root node--make it be a UiRootNode
     } else {
       var uiNode    = new UiRootNode(new Node(node))
-      uiNode.isRoot = true // This flag indicates that the node functions as a root of the page's information tree.
-      this.rootNodes.push(uiNode)
+      this.addLocalRoot(uiNode)
       $(this).append(uiNode)
     }
   }, this)
 
   $(this).append(this.basket)
-  this.rootNodes.push(this.basket) // Add this last so that it will be the last root node searched for insert operations.
+  this.addLocalRoot(this.basket) // Add this last so that it will be the last root node searched for insert operations.
 }
 
 // Remove all root nodes from the tree. This leaves ui elements like menus intact, but
 // empties the tree of all logical content.
-InformationTree.prototype.clearRoots = function () {
-  this.rootNodes.forEach(function (uiNode) {
+InformationTree.prototype.clearLocalRoots = function () {
+  this.getLocalRoots().forEach(function (uiNode) {
     $(uiNode).detach() // Note: We use detach() rather than remove because we might be re-appending the node later. Apparently append() does not re-attach the event handlers that get stripped when remove() is called.
   })
+  this.localRootInfo = {array:[], hash:{}}
+}
+
+/*
+Declare that uiNode is to be treated as a local (client-side) root of the information tree.
+A local root is displayed has having no parent on the client-side tree, even though it may have a parent on the
+server-side tree.
+*/
+InformationTree.prototype.addLocalRoot = function (uiNode) {
+  this.localRootInfo.array.push(uiNode)
+  this.localRootInfo.hash[uiNode.id] = uiNode
+}
+
+/*
+Return true if and only if uiNode is functioning as a local root.
+ */
+InformationTree.prototype.isLocalRoot = function (uiNode) {
+  return this.localRootInfo.hash[uiNode.id]
+}
+
+/*
+Return an array of the local root nodes, listed in order of increasing y-position.
+ */
+InformationTree.prototype.getLocalRoots = function () {
+  return this.localRootInfo.array
 }
 
 /*
@@ -124,16 +146,15 @@ uiNodes that already exist in the dom. Clear all existing roots, except for the 
 and then add the new roots as children of the tree.
  */
 InformationTree.prototype.replaceRoots = function (uiNodes) {
-  this.clearRoots() // Note: can't just clear the tree as a dom element, because it contains hidden menus that we want to keep.
+  this.clearLocalRoots() // Note: can't just clear the tree as a dom element, because it contains hidden menus that we want to keep.
 
   uiNodes.forEach(function (uiNode) {
-    uiNode.isRoot = true // This flag indicates that the node functions as a root of the page's information tree.
-    this.rootNodes.push(uiNode)
+    this.addLocalRoot(uiNode)
     $(this).append(uiNode)
   }, this)
 
   $(this).append(this.basket)
-  this.rootNodes.push(this.basket) // Add this last so that it will be the last root node searched for insert operations.
+  this.addLocalRoot(this.basket) // Add this last so that it will be the last root node searched for insert operations.
 }
 
 InformationTree.prototype.onClick = function (event) {
@@ -148,7 +169,7 @@ InformationTree.prototype.onClick = function (event) {
  */
 InformationTree.prototype.expandedViewNodes = function() {
   var result = []
-  this.rootNodes.forEach(function(uiNode) {
+  this.getLocalRoots().forEach(function(uiNode) {
     result = uiNode.expandedViewNodes(result);
   })
   return result

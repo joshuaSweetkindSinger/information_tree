@@ -80,9 +80,13 @@ UiNode.prototype.bindEventHandlers = function () {
  a non root node and then make it be the root node in a new tab, of its own sub-tree.
  */
 UiNode.prototype.parent = function() {
-  if (!this.isRoot) {
+  if (!this.isLocalRoot()) {
     return ViewNode.prototype.parent.call(this)
   }
+}
+
+UiNode.prototype.isLocalRoot = function () {
+  return ITA.informationTree.isLocalRoot(this)
 }
 
 UiNode.prototype.onExpandCollapseClick = function() {
