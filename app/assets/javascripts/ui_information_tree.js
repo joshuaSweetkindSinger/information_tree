@@ -47,7 +47,7 @@ and then sends a node rep back to the client, from whence it trickles back up th
 
 There is only one way that a node changes its relationship to the tree on the client side: via attachToTree().
 Regardless of the originating operation, after the node has been updated by the server and a node rep has
-been sent back to the client, the node is replaced in the client-side tree by the method ViewNode._attachToTree().
+been sent back to the client, the node is replaced in the client-side tree by the method ViewNode.attachToTree().
 
 WHY THIS FILE CANNOT BE NAMED information_tree.js: probably because this is also the name of the toplevel folder
 for the app. In any case, we get a circular dependency error when we try to name this file to information_tree.js.
@@ -58,7 +58,7 @@ for the app. In any case, we get a circular dependency error when we try to name
 var InformationTree = defCustomTag('information-tree', HTMLElement);
 
 /* Initialize an empty information tree.
-   To add root nodes to the tree, see setLocalRoots()
+   To add root nodes to the tree, see setLocalRootsFromRefs()
 
    Note that the information tree object is a dom element with child dom elements, but
    that this initialization method does *not* attach it to the dom.
@@ -76,18 +76,15 @@ InformationTree.prototype.BASKET_NODE_TYPE_ID = -2
 
 
 /*
- Initialize the information tree with the nodes whose ids are rootRefs.
+ Initialize the information tree from the node references passed in as rootRefs.
  These will function locally as root nodes of the tree as observed by the user on the client,
  whether or not the nodes are actually root nodes of the complete information tree on the server.
-
- If no rootRefs are specified, get all true root nodes of the tree and use the list
- to initialize the information tree.
 
  Note that the client side can establish a tree rooted on nodes that are not true roots, i.e.,
  they can have parents in the information tree proper. This ability to establish a non-true-root as
  a root on the client side allows the user to peruse sub-trees.
  */
-InformationTree.prototype.setLocalRoots = function (rootRefs) {
+InformationTree.prototype.setLocalRootsFromRefs = function (rootRefs) {
   this.clearLocalRoots() // Note: can't just clear the tree as a dom element, because it contains hidden menus that we want to keep.
 
   rootRefs.forEach(function (node) {
@@ -107,6 +104,22 @@ InformationTree.prototype.setLocalRoots = function (rootRefs) {
   this.addLocalRoot(this.basket) // Add this last so that it will be the last root node searched for insert operations.
 }
 
+
+/*
+ Establish new root-level nodes for the information tree. The list passed in is a set of
+ uiNodes that already exist in the dom.
+ */
+InformationTree.prototype.setLocalRoots = function (uiNodes) {
+  this.clearLocalRoots()
+
+  uiNodes.push(this.basket)
+
+  uiNodes.forEach(function (uiNode) {
+    this.addLocalRoot(uiNode)
+  }, this)
+}
+
+
 // Remove all root nodes from the tree. This leaves ui elements like menus intact, but
 // empties the tree of all logical content.
 InformationTree.prototype.clearLocalRoots = function () {
@@ -117,13 +130,46 @@ InformationTree.prototype.clearLocalRoots = function () {
 }
 
 /*
-Declare that uiNode is to be treated as a local (client-side) root of the information tree.
-A local root is displayed has having no parent on the client-side tree, even though it may have a parent on the
+Make uiNode be treated as a local (client-side) root of the information tree.
+A local root is displayed as having no parent on the client-side tree, even though it may have a parent on the
 server-side tree.
 */
-InformationTree.prototype.addLocalRoot = function (uiNode) {
-  this.localRootInfo.array.push(uiNode)
-  this.localRootInfo.hash[uiNode.id] = uiNode
+InformationTree.prototype.addLocalRoot = function (uiNode, prepend) {
+  if (this.isLocalRoot(uiNode)) return; // Do nothing if we're already a root
+
+  this.localRootInfo.hash[uiNode.id] = {uiNode: uiNode, index:this.localRootInfo.array.length}
+  if (prepend) {
+    this.localRootInfo.array.unshift(uiNode)
+    $(this).prepend(uiNode)
+  } else {
+    this.localRootInfo.array.push(uiNode)
+    $(this).append(uiNode)
+  }
+}
+
+/*
+ Remove uiNode as a client-side root of the information tree.
+This removes it from the list of local roots and detaches it from the dom.
+ */
+InformationTree.prototype.removeLocalRoot = function (uiNode) {
+  if (!this.isLocalRoot(uiNode)) return; // Do nothing if we're not already a root
+
+  var info = this.localRootInfo.hash[uiNode.id]
+  this.localRootInfo.hash[uiNode.id] = null
+  this.localRootInfo.array.splice(info.index, 1)
+  $(uiNode).detach()
+}
+
+/*
+uiNode should be a local root. Replace it with its parent as a local root.
+ */
+InformationTree.prototype.replaceLocalRootWithParent = function (uiNode) {
+  if (!this.localRootInfo.hash[uiNode.id]) throw "Could not find local root with id " + uiNode.id
+  if (!uiNode.parent()) throw "Could not find parent of local root uiNode with id " + uiNode.id
+
+  this.removeLocalRoot(uiNode)
+  this.addLocalRoot(uiNode.parent(), true)
+  uiNode.attachToTree()
 }
 
 /*
@@ -135,27 +181,11 @@ InformationTree.prototype.isLocalRoot = function (uiNode) {
 
 /*
 Return an array of the local root nodes, listed in order of increasing y-position.
- */
+*/
 InformationTree.prototype.getLocalRoots = function () {
   return this.localRootInfo.array
 }
 
-/*
-Establish new root-level nodes for the information tree. The list passed in is a set of
-uiNodes that already exist in the dom. Clear all existing roots, except for the trash,
-and then add the new roots as children of the tree.
- */
-InformationTree.prototype.replaceRoots = function (uiNodes) {
-  this.clearLocalRoots() // Note: can't just clear the tree as a dom element, because it contains hidden menus that we want to keep.
-
-  uiNodes.forEach(function (uiNode) {
-    this.addLocalRoot(uiNode)
-    $(this).append(uiNode)
-  }, this)
-
-  $(this).append(this.basket)
-  this.addLocalRoot(this.basket) // Add this last so that it will be the last root node searched for insert operations.
-}
 
 InformationTree.prototype.onClick = function (event) {
   ITA.controller.resetMenus();
@@ -181,17 +211,17 @@ The upper left of the document is always 0,0. But the information tree div is sc
 If an object is scrolled above the top of the document, it will have a negative y coord.
  */
 InformationTree.prototype.findLowestNodeAbove = function(y) {
-  var nodes = this.expandedViewNodes().reverse();
-  for(var i = 0; i < nodes.length; i++) {
-    var node = nodes[i];
+  var uiNodes = this.expandedViewNodes().reverse();
+  for(var i = 0; i < uiNodes.length; i++) {
+    var uiNode = uiNodes[i];
 
     // Ignore any "phantom" node that does not have an id.
-    if (!node.id) {
+    if (!uiNode.id) {
       continue;
     }
 
-    if ($(node).offset().top < y) {
-      return node;
+    if ($(uiNode).offset().top < y) {
+      return uiNode;
     }
   };
 }
@@ -236,7 +266,7 @@ InformationTree.prototype._findOrCreateUiNode = function(node) {
  */
 // TODO: InformationTree should not be accepting node Reps and doing find or create. Maybe Tree should do this.
 InformationTree.prototype.addUiNode = function(node) {
-  return this._findOrCreateUiNode(node)._attachToTree();
+  return this._findOrCreateUiNode(node).attachToTree();
 }
 
 

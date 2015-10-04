@@ -2,6 +2,7 @@
 //= require ui_information_tree
 //= require drop_down_menus/visited_node_list
 //= require controller
+//= require node_cache
 
 // ========================================================================
 //                   Application Object
@@ -18,6 +19,7 @@ var InformationTreeApp = function() {
   window.ITA            = this // sub-object initializations below require this pointer to be set.
   this.csrfToken        = $('[name="csrf-token"]').attr('content');
   this.server           = new Server
+  this.nodeCache        = new NodeCache
   this.informationTree  = new InformationTree
   this.controller       = new Controller
 }

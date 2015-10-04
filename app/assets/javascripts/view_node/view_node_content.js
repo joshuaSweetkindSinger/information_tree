@@ -8,7 +8,7 @@ var ViewNodeContent = defCustomTag('node-content', HTMLTextAreaElement, 'textare
 
 ViewNodeContent.prototype.afterCreate = function(viewNode, options) {
   this.viewNode    = viewNode;
-  this.id          = 'ViewNodeContent-' + viewNode.node.id;
+  this.id          = 'ViewNodeContent-' + viewNode.id;
   this.placeholder = "New Node";
   this.title       = options.tooltip;
 

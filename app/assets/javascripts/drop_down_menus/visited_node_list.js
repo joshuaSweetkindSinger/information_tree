@@ -25,7 +25,7 @@ VisitedNodeList.prototype.addVisitedNode = function (uiNode) {
 
   if ($children.length > 0 && $children[0].uiNode === uiNode) return; // If uiNode is already on the top of the visited list, don't add it again.
 
-  if ($children.length >= 10) $children.last().remove()
+  if ($children.length >= 100) $children.last().remove() // Don't let visited list grow beyond 100.
   $this.prepend(new NodeMarker(uiNode, this))
 }
 

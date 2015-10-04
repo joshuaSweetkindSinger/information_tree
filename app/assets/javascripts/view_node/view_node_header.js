@@ -8,7 +8,7 @@ var ViewNodeHeader = defCustomTag('node-header', HTMLElement)
 ViewNodeHeader.prototype.afterCreate = function(viewNode, options) {
   var $this = $(this)
   this.viewNode = viewNode
-  this.id = 'ViewNodeHeader-' + viewNode.node.id;
+  this.id = 'ViewNodeHeader-' + viewNode.id;
 
   this.dragArea = new DragArea(viewNode)
   $this.append(this.dragArea)
@@ -30,7 +30,7 @@ var DragArea = defCustomTag('drag-area', HTMLElement)
 
 DragArea.prototype.afterCreate = function(viewNode) {
   this.viewNode = viewNode
-  this.id = 'DragArea-' + viewNode.node.id;
+  this.id = 'DragArea-' + viewNode.id;
 
   $(this).addClass('drag-area')
 }
@@ -44,7 +44,7 @@ var ExpandCollapse = defCustomTag('expand-collapse', HTMLElement)
 
 ExpandCollapse.prototype.afterCreate = function(viewNode) {
   this.viewNode = viewNode
-  this.id = 'ExpandCollapse-' + viewNode.node.id;
+  this.id = 'ExpandCollapse-' + viewNode.id;
 
 
   this.showCollapsedStatus();

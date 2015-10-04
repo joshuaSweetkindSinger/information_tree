@@ -68,10 +68,11 @@ ViewNode.createNode = function (nodeSpec) {
  it is the onAttach() method that actually effects it.
  */
 ViewNode.prototype.afterCreate = function(node, state) {
-  this.node = node; // This must precede everything, since many initializations depend on the values in this.node.
-  this.id   = node.id // Although not DRY, we need the id on the dom element for jquery.
+  this.node = node    // This must precede everything, since many initializations depend on the values in this.node.
+  this.id   = node.id // Although not DRY, we need the id on the dom element for jquery. Note also that this.id is a string while node.id is an integer.
+                      // The conversion happens internally, since "id" is a special field of a dom element.
 
-  var $this  = $(this)
+  var $this = $(this)
   $this.append(this._header = new ViewNodeHeader(this, {tooltip:"id = " + node.id + "; Created on " + node.createdAt}))
   $this.append(this._childrenContainer = new ViewNodeChildren);
 
@@ -79,6 +80,7 @@ ViewNode.prototype.afterCreate = function(node, state) {
   this.state = state || 'collapsed'    // See notes above.
   this.afterAttach = new FunctionQueue // A queue of callbacks to process after we are attached to the dom.
                                        // This is for .then(), .success(), .failure() callbacks.
+  ITA.nodeCache.add(this)
 }
 
 // Clean up the width and height after we are attached.
@@ -202,9 +204,14 @@ ViewNode.prototype.snipContent = function (max_length) {
 //        Tree Hierarchy Accessors And Manipulation Methods
 // =========================================================================
 /*
- Attach ourselves to the information tree view. This is done just after a new
- ViewNode is created from a node rep sent by the server to the client, and also just after
- an existing client-side node has been repositioned to have a new parent or siblings.
+ Attach ourselves to the information tree. This is done just after a new
+ ViewNode is created from a node rep sent by the server to the client, or just after
+ an existing client-side node has been repositioned to have a new parent or siblings,
+ or just after a sub-tree root has been re-joined to its parent.
+
+ NOTE: Although this is labeled as an api-level method, in most cases, it would be wrong to call
+ this directly. Call it only if the ViewNode in question is already correct in its info, has a corresponding
+ server-side node, and all that remains is for it to be attached to the dom in the correct position.
 
  We figure out where to attach ourselves by examining our predecessor, successor,
  and parent links. If we have one of the first two links, we know exactly where to attach
@@ -218,7 +225,7 @@ ViewNode.prototype.snipContent = function (max_length) {
  indicates that the node is collapsed, but the node nonetheless seems to have children, then the user needs
  to be smart enough to realize that this is just a partial list of the node's children.
  */
-ViewNode.prototype._attachToTree = function() {
+ViewNode.prototype.attachToTree = function() {
   var predecessor = this.predecessor();
 
   // Node has no predecessor--it's the first child of its parent
@@ -248,7 +255,7 @@ ViewNode.prototype._attachPredecessor = function(nodeToAttach) {
 /*
 Attach nodeToAttach to the tree as our first child.
 
- NOTE: This method will be called by _attachToTree() if the parent has no children yet, or if
+ NOTE: This method will be called by attachToTree() if the parent has no children yet, or if
  the user has created a new node on the fly to be the new first child of its parent.
  */
 ViewNode.prototype.attachChild = function(nodeToAttach) {
@@ -287,7 +294,7 @@ ViewNode.prototype.successor = function() {
  */
 ViewNode.prototype.parent = function() {
   if (this.node.parent_id) {
-    return ITA.informationTree.find(this.node.parent_id);
+    return ITA.nodeCache.get(this.node.parent_id);
   }
 }
 
@@ -316,7 +323,7 @@ ViewNode.prototype._insert = function(nodeToInsert, mode) {
 
   return this.node[mode](nodeToInsert.node)
     .success(function(node) {
-      nodeToInsert._attachToTree();
+      nodeToInsert.attachToTree();
       return nodeToInsert
     })
 };
@@ -328,7 +335,7 @@ The operation is invalid if nodeSpec is a reference to <this>, in which
 case we would be adding ourselves to ourselves.
  */
 ViewNode.prototype._isInvalidAddRequest = function (viewNode, mode) {
-  if (viewNode.node.id == this.node.id) {
+  if (viewNode.id == this.id) {
     return new PseudoRequest({error:'self-loop request'}, false); // Return a failed request if we are requesting to add ourselves to ourselves.
   }
 }

@@ -120,8 +120,8 @@ used to determine the insertion point. You can walk the tree without building an
 TODO: examine the field isLocalRoot on uiNode. It's not DRY, because we already have a RootNode class. Try
 to refactor so that we just have one or the other. Also the basket is in this.localRootNodes, but its
 isLocalRoot slot is false. Clean this up!
-STATUS: Examine isLocalRoot and parent() methods of uiNode. Figure out how to keep parent info on the node path
-menu and how to crawl back up to the root.
+STATUS: Semi-working. But if you show practical as a subtree, then back up to top, then you show test as a sub tree,
+then you go back up to top, it can't find private any more.
  */
 
 /* NOTE: We're using the $(window).load callback here rather than the more common
