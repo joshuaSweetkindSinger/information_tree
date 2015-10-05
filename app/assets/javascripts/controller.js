@@ -157,9 +157,6 @@ Controller.prototype.renderRecursivelyAsJson = function (uiNode) {
 Controller.prototype.toSubTree = function (uiNode) {
   uiNode = (uiNode || this.selectedNode)
   ITA.informationTree.setLocalRoots([uiNode])
-  /*
-  open(ITA.server.treePath(uiNode.id))
-  */
 }
 
 /*

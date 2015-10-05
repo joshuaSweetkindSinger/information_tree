@@ -35,7 +35,8 @@ Since the node might, in principle, go anywhere in the tree, we let this functio
 rather than by any individual UiNode in the tree.
 
 MORE ABOUT NODE ATTACHMENT
-There are is only one way that a node comes into being on the client-side: via expansion. When the node's
+There are only two ways that a node comes into being on the client-side: via expansion of a parent node, or
+via creation of a new node. Regarding expansion, when the node's
 client-side parent requests its children from the server, a representation of the node is sent to the client,
 along with representations of all the parent's children. The client side then creates the node for the first time.
 
@@ -48,6 +49,11 @@ and then sends a node rep back to the client, from whence it trickles back up th
 There is only one way that a node changes its relationship to the tree on the client side: via attachToTree().
 Regardless of the originating operation, after the node has been updated by the server and a node rep has
 been sent back to the client, the node is replaced in the client-side tree by the method ViewNode.attachToTree().
+
+THE BASKET
+The information tree has a special system node that is always present called the "basket". The basket can be used
+as a temporary holding place for moving nodes around. Nodes that stay in the basket longer a certain period of time,
+say 30 days, are deleted from the tree.
 
 WHY THIS FILE CANNOT BE NAMED information_tree.js: probably because this is also the name of the toplevel folder
 for the app. In any case, we get a circular dependency error when we try to name this file to information_tree.js.
@@ -140,13 +146,24 @@ InformationTree.prototype.setLocalRootsFromRefs = function (rootRefs) {
  Establish new root-level nodes for the information tree. The list passed in is a set of
  uiNodes that already exist in the dom.
  */
-InformationTree.prototype.setLocalRoots = function (uiNodes) {
+InformationTree.prototype.setLocalRoots = function (localRoots) {
+  // Make sure no root is a descendant of basket. (If it were, then we'd be showing
+  // both the basket and one of its descendants as roots, which would be bad.)
+  localRoots.forEach(function (root) {
+    var path = root.path()
+    if ( (path[0] === this.basket) && (path.length > 1)) {
+      throw "Cannot set a descendant of the basket as a local root"
+    }
+  }, this)
+
+  // Make sure basket is present in set of new roots.
+  if (!(localRoots.some(function(n) {return n === this.basket}))) {
+    localRoots.push(this.basket)
+  }
+
   this.clearLocalRoots()
-
-  uiNodes.push(this.basket)
-
-  uiNodes.forEach(function (uiNode) {
-    this.addLocalRoot(uiNode)
+  localRoots.forEach(function (root) {
+    this.addLocalRoot(root)
   }, this)
 }
 
@@ -235,6 +252,11 @@ InformationTree.prototype.lastCommonAncestor = function(uiNode1, uiNode2) {
 
  Note that it is possible for a tree to have multiple root nodes, but only when showing the top-level root nodes of the entire tree. When showing
  a sub-tree, there will only be a single root node (other than the basket node), which will be the root of the sub-tree.
+
+ Corner case: uiNode may have no last-common-ancestor with the current root, because there are at least two top-level
+ roots: Top, and Basket. If, for example, we are showing just the basket as a sub-tree and we ask to see a descendant of Top, then
+ the basket and the descendant of Top will have no lca. In that case, we simply add the requested node to the tree
+ as an additional root.
  */
 InformationTree.prototype.maybeAugmentTree = function (uiNode) {
   if (this.find(uiNode.id, true)) return; // Our node is already in the tree, so do nothing.
@@ -242,7 +264,16 @@ InformationTree.prototype.maybeAugmentTree = function (uiNode) {
   var currentRoot = this.getLocalRoots()[0]
   var lca         = this.lastCommonAncestor(uiNode, currentRoot)
 
-  this.replaceLocalRootWithAncestor(currentRoot, lca)
+  // There is a common ancestor
+  if (lca) {
+    this.replaceLocalRootWithAncestor(currentRoot, lca)
+
+  // There is no common ancestor: just add uiNode as a local root.
+  // TODO: This might be buggy. We can't guarantee that the root added should be prepended at the top of the root node list.
+  // But, given the current UI, where sub-trees always consist of a single root + basket, it seems robust.
+  } else {
+    this.addLocalRoot(uiNode, true)
+  }
 }
 
 
