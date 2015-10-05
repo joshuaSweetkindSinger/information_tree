@@ -292,14 +292,36 @@ ViewNode.prototype.successor = function() {
  another view node. By contrast, the actual dom parent of the view node is going to be
  a children-container element.
  */
-ViewNode.prototype.parent = function() {
+ViewNode.prototype.parent = function () {
   if (this.node.parent_id) {
     return ITA.nodeCache.get(this.node.parent_id);
   }
 }
 
-ViewNode.prototype.kids = function() {
+/*
+Return the logical children of this view node, as opposed to the dom children.
+The logical children are other view nodes.
+ */
+ViewNode.prototype.kids = function () {
   return $(this._childrenContainer).children().get();
+}
+
+/*
+Return an array of view nodes that represents the ancestral parentage of this node.
+This is a list of nodes in which the first node is a root node, and each successive node is
+a child of the previous node, with the last node in the path being this node itself.
+
+Or, seen in reverse: the last node in the array is this node, the one before that is its parent,
+the one before that is its parent, and so on, leading back to a root node.
+ */
+ViewNode.prototype.path = function () {
+  var viewNode  = this;
+  var result    = []
+  while (viewNode) {
+    result.unshift(viewNode)
+    viewNode = viewNode.parent()
+  }
+  return result
 }
 
 // =========================== Insert Node

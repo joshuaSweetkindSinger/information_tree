@@ -21,15 +21,14 @@ Set the entries in this Node Path List object to be Node Path Marker elements
 consisting of the path from Top to uiNode.
  */
 NodePathList.prototype.setPath = function (uiNode) {
+  this.path = uiNode.path()
+
   var $this = $(this)
   $this.empty()
 
-  var i = 100 // Don't show a path more than this deep
-  while (uiNode && i >= 0) {
-    $this.append(new NodeMarker(uiNode))
-    uiNode = uiNode.parent()
-    i = i - 1
-  }
+  this.path.forEach(function(n) {
+    $this.append(new NodeMarker(n))
+  })
 }
 
 
