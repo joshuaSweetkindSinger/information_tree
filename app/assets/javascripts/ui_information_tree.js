@@ -66,13 +66,42 @@ var InformationTree = defCustomTag('information-tree', HTMLElement);
    and to initialize the initial page. See ITA.init().
 */
 InformationTree.prototype.afterCreate = function() {
-  this.localRoots = []
+  this.localRoots = [] // See documentation on the Local Root Methods section below.
   $(this).click(this.onClick)
 };
 
 // TODO: This is not DRY. Should ask the server to tell us this.
 InformationTree.prototype.TOP_NODE_TYPE_ID    = -1
 InformationTree.prototype.BASKET_NODE_TYPE_ID = -2
+
+
+// ========================================================================
+//                   Local Root Methods
+// ========================================================================
+/*
+The Information Tree employs the concept of a "local root". This is a uiNode that is shown
+on the client-side as a root node (no parents), whether or not it actually has parents on the server side.
+This feature allows the user to browser sub-trees of the full tree by asking the ui to display any node at all
+as though it were a local root.
+
+Below are methods dealing with the adding and removal of local roots. There can be an arbitrary number of local roots
+in principle, but in practice the ui allows for exactly 2 at a time: a designated local root, and the system "basket" node,
+which must always be displayed.
+*/
+
+/*
+ Return true if and only if uiNode is functioning as a local root.
+ */
+InformationTree.prototype.isLocalRoot = function (uiNode) {
+  return this.localRoots.some(function(n) {return n === uiNode})
+}
+
+/*
+ Return an array of the local root nodes, listed in order of increasing y-position.
+ */
+InformationTree.prototype.getLocalRoots = function () {
+  return this.localRoots
+}
 
 
 /*
@@ -83,6 +112,8 @@ InformationTree.prototype.BASKET_NODE_TYPE_ID = -2
  Note that the client side can establish a tree rooted on nodes that are not true roots, i.e.,
  they can have parents in the information tree proper. This ability to establish a non-true-root as
  a root on the client side allows the user to peruse sub-trees.
+
+ NOTE: The caller should ensure that rootRefs includes the basket node, which is a special system node.
  */
 InformationTree.prototype.setLocalRootsFromRefs = function (rootRefs) {
   this.clearLocalRoots() // Note: can't just clear the tree as a dom element, because it contains hidden menus that we want to keep.
@@ -162,29 +193,56 @@ InformationTree.prototype.removeLocalRoot = function (uiNode) {
 }
 
 /*
-uiNode should be a local root. Replace it with its parent as a local root.
+localRoot should be a local root. Replace it with ancestor as the new local root.
  */
-InformationTree.prototype.replaceLocalRootWithParent = function (uiNode) {
-  if (!this.isLocalRoot(uiNode)) throw "Could not find local root with id " + uiNode.id
-  if (!uiNode.parent()) throw "Could not find parent of local root uiNode with id " + uiNode.id
+InformationTree.prototype.replaceLocalRootWithAncestor = function (localRoot, ancestor) {
+  if (!this.isLocalRoot(localRoot)) throw "Could not find local root with id " + localRoot.id
 
-  this.removeLocalRoot(uiNode)
-  this.addLocalRoot(uiNode.parent(), true)
-  uiNode.attachToTree()
+  this.removeLocalRoot(localRoot)
+  this.addLocalRoot(ancestor, true)
+  localRoot.attachToTree()
+}
+
+
+/*
+Return the uiNode that is the last common ancestor of nodes uiNode1 and uiNode2, or null
+if there is no common ancestor.
+ */
+InformationTree.prototype.lastCommonAncestor = function(uiNode1, uiNode2) {
+  var path1  = uiNode1.path()
+  var path2  = uiNode2.path()
+  var lca    = null
+  var minLength    = Math.min(path1.length, path2.length)
+
+  for(var i = 0; i < minLength; i++) {
+    if (path1[i] === path2[i]) {
+      lca = path1[i]
+    } else {
+      break
+    }
+  }
+
+  return lca
 }
 
 /*
-Return true if and only if uiNode is functioning as a local root.
- */
-InformationTree.prototype.isLocalRoot = function (uiNode) {
-  return this.localRoots.some(function(n) {return n === uiNode})
-}
+ This method is called by Controller.visitNode(). uiNode is a node that has been downloaded from the server
+ and instantiated on the client side, but which may not be in the information tree at the moment, because
+ the information tree may be showing a sub-tree that does not include uiNode.
 
-/*
-Return an array of the local root nodes, listed in order of increasing y-position.
-*/
-InformationTree.prototype.getLocalRoots = function () {
-  return this.localRoots
+ If uiNode is not in the present sub-tree, then we need to augment the present sub-tree by replacing its
+ current local root with the last-common-ancestor of uiNode and the current local root.
+
+ Note that it is possible for a tree to have multiple root nodes, but only when showing the top-level root nodes of the entire tree. When showing
+ a sub-tree, there will only be a single root node (other than the basket node), which will be the root of the sub-tree.
+ */
+InformationTree.prototype.maybeAugmentTree = function (uiNode) {
+  if (this.find(uiNode.id, true)) return; // Our node is already in the tree, so do nothing.
+
+  var currentRoot = this.getLocalRoots()[0]
+  var lca         = this.lastCommonAncestor(uiNode, currentRoot)
+
+  this.replaceLocalRootWithAncestor(currentRoot, lca)
 }
 
 

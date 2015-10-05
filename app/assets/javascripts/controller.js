@@ -104,28 +104,11 @@ Controller.prototype.selectNode = function (uiNode) {
  Visit the specified node. This means scrolling the node to the top of the viewport as well as selecting the node.
  */
 Controller.prototype.visitNode = function (uiNode) {
-  this.maybeAddNodeToTree(uiNode)
+  ITA.informationTree.maybeAugmentTree(uiNode)
   ITA.informationTree.scrollTo(uiNode)
   this.selectNode(uiNode)
 }
 
-/*
-This method is called by visitNode() above. uiNode is a node that has been downloaded from the server
-and instantiated on the client side, but which may not be in the information tree at the moment, because
-the information tree may be showing a sub-tree that does not include uiNode.
-
-If so, we need to add uiNode to the tree as a rootNode. Then we need to walk up the parent path of
-what was the previous root node until we find the new root node. Note that it is possible for a tree to
-have multiple root nodes, but only when showing the top-level root nodes of the entire tree. When showing
-a sub-tree, there will only be a single root node (other than the basket node), which will be the root of the sub-tree.
- */
-Controller.prototype.maybeAddNodeToTree = function (uiNode) {
-  if (ITA.informationTree.find(uiNode.id, true)) return; // Our node is already in the tree, so do nothing.
-
-  // TODO: This is very fragile. We assume the root to be replaced is the first one in the list of roots.
-  // TODO: We also assume that uiNode is a direct parent, as opposed to a general ancestor.
-  ITA.informationTree.replaceLocalRootWithParent(ITA.informationTree.getLocalRoots()[0]) // uiNode must be a parent. Replace current root with it.
-}
 
 // Trash the selected node.
 Controller.prototype.basket = function (uiNode) {
