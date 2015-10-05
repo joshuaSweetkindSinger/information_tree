@@ -66,7 +66,7 @@ var InformationTree = defCustomTag('information-tree', HTMLElement);
    and to initialize the initial page. See ITA.init().
 */
 InformationTree.prototype.afterCreate = function() {
-  this.localRootInfo = {array:[], hash:{}}
+  this.localRoots = []
   $(this).click(this.onClick)
 };
 
@@ -126,7 +126,7 @@ InformationTree.prototype.clearLocalRoots = function () {
   this.getLocalRoots().forEach(function (uiNode) {
     $(uiNode).detach() // Note: We use detach() rather than remove because we might be re-appending the node later. Apparently append() does not re-attach the event handlers that get stripped when remove() is called.
   })
-  this.localRootInfo = {array:[], hash:{}}
+  this.localRoots = []
 }
 
 /*
@@ -137,12 +137,11 @@ server-side tree.
 InformationTree.prototype.addLocalRoot = function (uiNode, prepend) {
   if (this.isLocalRoot(uiNode)) return; // Do nothing if we're already a root
 
-  this.localRootInfo.hash[uiNode.id] = {uiNode: uiNode, index:this.localRootInfo.array.length}
   if (prepend) {
-    this.localRootInfo.array.unshift(uiNode)
+    this.localRoots.unshift(uiNode)
     $(this).prepend(uiNode)
   } else {
-    this.localRootInfo.array.push(uiNode)
+    this.localRoots.push(uiNode)
     $(this).append(uiNode)
   }
 }
@@ -152,19 +151,21 @@ InformationTree.prototype.addLocalRoot = function (uiNode, prepend) {
 This removes it from the list of local roots and detaches it from the dom.
  */
 InformationTree.prototype.removeLocalRoot = function (uiNode) {
-  if (!this.isLocalRoot(uiNode)) return; // Do nothing if we're not already a root
-
-  var info = this.localRootInfo.hash[uiNode.id]
-  this.localRootInfo.hash[uiNode.id] = null
-  this.localRootInfo.array.splice(info.index, 1)
-  $(uiNode).detach()
+  var roots = this.localRoots
+  for(var i = 0; i < roots.length; i++) {
+    if (roots[i] === uiNode) {
+      roots.splice(i, 1)
+      $(uiNode).detach()
+      return
+    }
+  }
 }
 
 /*
 uiNode should be a local root. Replace it with its parent as a local root.
  */
 InformationTree.prototype.replaceLocalRootWithParent = function (uiNode) {
-  if (!this.localRootInfo.hash[uiNode.id]) throw "Could not find local root with id " + uiNode.id
+  if (!this.isLocalRoot(uiNode)) throw "Could not find local root with id " + uiNode.id
   if (!uiNode.parent()) throw "Could not find parent of local root uiNode with id " + uiNode.id
 
   this.removeLocalRoot(uiNode)
@@ -176,14 +177,14 @@ InformationTree.prototype.replaceLocalRootWithParent = function (uiNode) {
 Return true if and only if uiNode is functioning as a local root.
  */
 InformationTree.prototype.isLocalRoot = function (uiNode) {
-  return this.localRootInfo.hash[uiNode.id]
+  return this.localRoots.some(function(n) {return n === uiNode})
 }
 
 /*
 Return an array of the local root nodes, listed in order of increasing y-position.
 */
 InformationTree.prototype.getLocalRoots = function () {
-  return this.localRootInfo.array
+  return this.localRoots
 }
 
 
