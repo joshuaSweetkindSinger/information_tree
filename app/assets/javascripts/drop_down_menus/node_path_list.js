@@ -18,7 +18,7 @@ var NodePathList = defCustomTag('node-path-list', DropDownPopUp)
 
 /*
 Set the entries in this Node Path List object to be Node Path Marker elements
-consisting of the path from Top to uiNode.
+consisting of the path from the root to uiNode.
  */
 NodePathList.prototype.setPath = function (uiNode) {
   this.path = uiNode.path()

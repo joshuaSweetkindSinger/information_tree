@@ -120,8 +120,11 @@ used to determine the insertion point. You can walk the tree without building an
 TODO: examine the field isLocalRoot on uiNode. It's not DRY, because we already have a RootNode class. Try
 to refactor so that we just have one or the other. Also the basket is in this.localRootNodes, but its
 isLocalRoot slot is false. Clean this up!
-STATUS: Semi-working. But if you show practical as a subtree, then back up to top, then you show test as a sub tree,
-then you go back up to top, it can't find private any more.
+STATUS: Figure out how to show any node that is requested, so long as it has been downloaded from the server.
+At any time, there is a sub-tree showing, and the node may or may not be in that subtree. If it is, then it's easy:
+we just scroll to it. If it's not, then we need to figure out how to augment the subtree by the minimal amount to show the node.
+This means finding the least common ancestor of the node and one of the local roots of the subtree. Then we need to
+connect this LCA to both the subtree root and to the requested node.
  */
 
 /* NOTE: We're using the $(window).load callback here rather than the more common
