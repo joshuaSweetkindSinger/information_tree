@@ -2,9 +2,9 @@
 
 /*
   This file defines the class BasketNode, which is a client-side
-  representation of a basket node. The basket node holds all deleted and/or cut nodes.
+  representation of a Basket node. The Basket node holds all deleted and/or cut nodes.
 
-  The basket node has a unique operation: it can be "emptied", which means that all the nodes
+  The Basket node has a unique operation: it can be "emptied", which means that all the nodes
   underneath it are permanently deleted.
 
   This is non-ui class: it doesn't handle mouse or keyboard events. For that, see UiBasketNode.

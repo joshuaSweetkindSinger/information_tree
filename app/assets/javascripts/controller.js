@@ -75,13 +75,13 @@ Controller.prototype.clickedRightOnNode = function (uiNode, event) {
 
 /*
 Handle a blur action on a node. This means saving any changes to the node to the server.
-Also, if the node is empty and not dirty, basket the node on blur.
+Also, if the node is empty and not dirty, putInBasket the node on blur.
   */
 Controller.prototype.blurNode = function (uiNode) {
   uiNode = uiNode || this.selectedNode
   if (uiNode.isContentDirty()) this.autoSizeNode(uiNode)
   if (uiNode.isDirty()) this.saveNode(uiNode)
-  if (!uiNode.isDirty() && uiNode.content === '') this.basket(uiNode)
+  if (!uiNode.isDirty() && uiNode.content === '') this.putInBasket(uiNode)
 }
 
 
@@ -110,10 +110,10 @@ Controller.prototype.visitNode = function (uiNode) {
 }
 
 
-// Trash the selected node.
-Controller.prototype.basket = function (uiNode) {
+// Put the selected node in the basket.
+Controller.prototype.putInBasket = function (uiNode) {
   uiNode = uiNode || this.selectedNode
-  uiNode.basket()
+  uiNode.putInBasket()
     .success(function() {
       if (uiNode === this.selectedNode) {
         this.selectedNode = null    // We just deleted the selected node, so now there is none.
@@ -223,23 +223,17 @@ Controller.prototype.createPredecessor = function (uiNode) {
 // Cut node == copy + delete
 Controller.prototype.cutNode = function (uiNode) {
   uiNode = (uiNode || this.selectedNode)
-  this.copyNode(uiNode)
-  this.basket(uiNode)
-}
-
-
-// Copy node into the copiedNode holding area.
-Controller.prototype.copyNode = function (uiNode) {
-  this.copiedNode = (uiNode || this.selectedNode)
+  this.putInBasket(uiNode)
 }
 
 
 // Paste the copiedNode onto node.
 Controller.prototype.pasteNode = function (uiNode) {
-  if (this.copiedNode) {
-    (uiNode || this.selectedNode).paste(this.copiedNode)
+  var nodeToPaste = ITA.informationTree.basket.kids()[0]
+  if (nodeToPaste) {
+    (uiNode || this.selectedNode).paste(nodeToPaste)
   } else {
-    alert("There is no node in the paste buffer to paste.")
+    alert("There is no node in the basket to paste.")
   }
 }
 
@@ -395,7 +389,7 @@ Controller.prototype.keyPressedOnNode = function (uiNode, event) {
     event.preventDefault()
     this.followLink(uiNode)
 
-  // control-v -- paste the copied node onto uiNode.
+  // control-v -- paste the top of the basket onto uiNode.
   } else if (event.charCode == 'v'.charCodeAt(0) && !event.altKey && !event.shiftKey && event.ctrlKey) {
     event.preventDefault()
     this.pasteNode(uiNode)

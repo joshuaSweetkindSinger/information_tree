@@ -1,5 +1,5 @@
 # The Basket is a single system node that holds "cut" nodes. A cut node
-# can later be pasted back into the main tree, or the basket's contents can be "trashed",
+# can later be pasted back into the main tree, or the basket's contents can be deleted,
 # which means all the nodes in the basket are deleted.
 
 class Basket < Node

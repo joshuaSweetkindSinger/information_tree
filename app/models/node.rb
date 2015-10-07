@@ -91,11 +91,13 @@ class Node < ActiveRecord::Base
   end
 
 
-  # Move to the basket all nodes that have no parent, except for system nodes like top node and basket node.
-  def self.trash_orphans
+  # Move to the basket all nodes that have no parent, except for system nodes like the basket node.
+  # Note: Disabled this because at this point in the architecture root nodes are not system nodes.
+  # Calling this would trash legitimate root nodes.
+  def self.trash_orphans_disabled
     self.where(parent_id: nil).each do |node|
       if !node.is_system_node?
-        node.cut
+        node.putInBasket
       end
     end
   end
@@ -308,7 +310,7 @@ class Node < ActiveRecord::Base
 
   # Remove self and children from the node hierarchy, patching up predecessor/successor links.
   # This moves the node and its children to the "basket" node. It doesn't really delete them.
-  def cut
+  def putInBasket
     Basket.basket.insert_child(self)
   end
 

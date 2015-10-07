@@ -19,7 +19,7 @@ JssNotes::Application.routes.draw do
       put    :insert_successor   # route is /nodes/:id/insert_successor
       put    :insert_predecessor # route is /nodes/:id/insert_predecessor
       put    :set_attributes  # route is /nodes/:id/set_attributes
-      delete :cut              # route is /nodes/:id/cut
+      put    :putInBasket              # route is /nodes/:id/cut
     end
   end
 

@@ -192,7 +192,7 @@ class NodesController < ApplicationController
   # DELETE /nodes/:id/cut
   def cut
     @obj = Node.find(params[:id])
-    @obj.cut() if @obj # TODO: Should render an error here if the node was not found
+    @obj.putInBasket() if @obj # TODO: Should render an error here if the node was not found
 
     respond_to do |format|
       format.html { redirect_to nodes_url }

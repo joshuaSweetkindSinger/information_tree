@@ -13,7 +13,7 @@ High-level description of architecture:
  Node: non-viewable, non-dom-element, core node functionality and relationships.
 
  Top layer is the UI. It orchestrates all user-initiated action. It handles all events. It introduces
- ui concepts like cut/paste, the clipboard, the basket, etc. Any data-entry or modification of the
+ ui concepts like cut/paste, the basket, etc. Any data-entry or modification of the
  tree must be mediated by the ui. The ui consists of a controller and UiNode objects,
  the latter of which are dom elements representing the nodes in the tree. These UiNode objects
  are wrappers on underlying Node objects that are *not* dom elements.
@@ -82,7 +82,7 @@ TODO: Clicking on admin should do paging.
 TODO: There should be a help nav item that explains the app and pops up help in a new tab.
 TODO: Restore make backup to Admin section.
 TODO: From admin, "go back to info tree" should select existing tab.
-TODO: change basket to "basket". Don't need a separate pointer to a "cut" object. Just use top of basket.
+TODO: change basket to "putInBasket". Don't need a separate pointer to a "cut" object. Just use top of putInBasket.
 TODO: merge set_attributes with update() in nodes controller.
 TODO: None of these Path() methods in server.js is DRY, because the server knows them.
 TODO: Add new yield to admin header for page-specific options.
@@ -125,6 +125,13 @@ At any time, there is a sub-tree showing, and the node may or may not be in that
 we just scroll to it. If it's not, then we need to figure out how to augment the subtree by the minimal amount to show the node.
 This means finding the least common ancestor of the node and one of the local roots of the subtree. Then we need to
 connect this LCA to both the subtree root and to the requested node.
+
+TODO: Consider adding multiple parentage to nodes
+TODO: Remove duplicates from the visited history
+TODO: Consider moving the server off to just be an api, on another port. Then write multiple apps that
+use the api. One could be a basic web app that just serves web pages. Another could be a front-end client
+that is more whizzy.
+TODO: Paste should just take top of the trash and not worry about a selected for paste slot.
  */
 
 /* NOTE: We're using the $(window).load callback here rather than the more common

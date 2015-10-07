@@ -120,6 +120,7 @@ InformationTree.prototype.getLocalRoots = function () {
  a root on the client side allows the user to peruse sub-trees.
 
  NOTE: The caller should ensure that rootRefs includes the basket node, which is a special system node.
+ TODO: Probably should have this method always add the basket, instead of requiring caller to pass it.
  */
 InformationTree.prototype.setLocalRootsFromRefs = function (rootRefs) {
   this.clearLocalRoots() // Note: can't just clear the tree as a dom element, because it contains hidden menus that we want to keep.

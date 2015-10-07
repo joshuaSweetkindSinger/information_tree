@@ -125,8 +125,8 @@ Node.prototype.reportError = function() {
 }
 
 
-Node.prototype.basket = function() {
-  return ITA.server.basket(this.id)
+Node.prototype.putInBasket = function() {
+  return ITA.server.putInBasket(this.id)
 }
 
 /*

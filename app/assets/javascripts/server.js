@@ -10,7 +10,7 @@ Server.prototype.treePath = function (topNodeId) {
 }
 /*
 Return an array of the top nodes of the information tree. This is all nodes that have no parent.
-It includes the system nodes, such as the root of the tree and the basket.
+It includes the system nodes, such as the basket.
  */
 Server.prototype.getRoots = function () {
   return new JsonRequest("GET", this.rootsPath())
@@ -25,12 +25,7 @@ Server.prototype.rootsPath = function () {
 Return the system node known as the "basket"
  */
 Server.prototype.getBasket = function () {
-  return new JsonRequest("GET", this.basketPath())
-}
-
-
-Server.prototype.basketPath = function () {
-  return '/nodes/basket.json'
+  return new JsonRequest("GET", '/nodes/basket.json')
 }
 
 /*
@@ -138,20 +133,12 @@ Server.prototype.insertPredecessorPath = function (referenceNodeId) {
   return '/nodes/' + referenceNodeId + '/insert_predecessor.json'
 }
 
-Server.prototype.basket = function (nodeId) {
-  return new Request("DELETE", this.trashPath(nodeId))
-}
-
-Server.prototype.trashPath = function (nodeId) {
-  return '/nodes/' + nodeId + '/basket.json'
+Server.prototype.putInBasket = function (nodeId) {
+  return new Request("PUT", '/nodes/' + nodeId + '/cut.json')
 }
 
 Server.prototype.emptyBasket = function () {
-  return new Request("DELETE", this.emptyBasketPath())
-}
-
-Server.prototype.emptyBasketPath = function () {
-  return '/nodes/basket.json'
+  return new Request("DELETE", '/nodes/basket.json')
 }
 
 
