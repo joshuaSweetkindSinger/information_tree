@@ -81,7 +81,7 @@ Controller.prototype.blurNode = function (uiNode) {
   uiNode = uiNode || this.selectedNode
   if (uiNode.isContentDirty()) this.autoSizeNode(uiNode)
   if (uiNode.isDirty()) this.saveNode(uiNode)
-  if (!uiNode.isDirty() && uiNode.content === '') this.putInBasket(uiNode)
+  if (!uiNode.isDirty() && uiNode.content === '') uiNode.destroyEmpty()
 }
 
 

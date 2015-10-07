@@ -132,6 +132,9 @@ TODO: Consider moving the server off to just be an api, on another port. Then wr
 use the api. One could be a basic web app that just serves web pages. Another could be a front-end client
 that is more whizzy.
 TODO: Paste should just take top of the trash and not worry about a selected for paste slot.
+Status: In the middle of a branch destroy_empty, which handles empty nodes not by cutting them but by deleting them.
+This requires that you create a full path in the api for deletion of a node from a parent on the client side, then
+on to the back end, same logic.
  */
 
 /* NOTE: We're using the $(window).load callback here rather than the more common

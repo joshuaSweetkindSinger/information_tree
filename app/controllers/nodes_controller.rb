@@ -189,11 +189,21 @@ class NodesController < ApplicationController
 
   # Remove self from the node hierarchy, patching up predecessor/successor links.
   # This moves the node and its children under the "Basket" node. They're not really deleted.
-  # DELETE /nodes/:id/cut
+  # PUT /nodes/:id/cut
   def cut
     @obj = Node.find(params[:id])
-    @obj.putInBasket() if @obj # TODO: Should render an error here if the node was not found
+    @obj.putInBasket()
 
+    respond_to do |format|
+      format.html { redirect_to nodes_url }
+      format.json { head :no_content }
+    end
+  end
+
+  # Destroy an empty node. An empty node neither has content nor children.
+  def destroy_empty
+    @obj = Node.find(params[:id])
+    @obj.destroy_empty
     respond_to do |format|
       format.html { redirect_to nodes_url }
       format.json { head :no_content }

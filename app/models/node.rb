@@ -156,6 +156,15 @@ class Node < ActiveRecord::Base
     destroy
   end
 
+  # Destroy yourself, after first verifying that you are empty of content and children.
+  def destroy_empty
+    if content.empty? and children.empty?()
+      destroy
+    else
+      raise "Refusing to delete node: it either has content or children."
+    end
+  end
+
   DEFAULT_MAX_CONTENT_SNIPPET_LENGTH = 50  # The maximum length to show of a node's content
   # when it is being shown as a snippet. See snip_content() below.
 

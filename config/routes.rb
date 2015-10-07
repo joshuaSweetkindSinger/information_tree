@@ -20,6 +20,7 @@ JssNotes::Application.routes.draw do
       put    :insert_predecessor # route is /nodes/:id/insert_predecessor
       put    :set_attributes  # route is /nodes/:id/set_attributes
       put    :putInBasket              # route is /nodes/:id/cut
+      delete :destroy_empty      # route is /nodes/:id/destroy_empty
     end
   end
 
