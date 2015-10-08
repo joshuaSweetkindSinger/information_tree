@@ -11,6 +11,8 @@ It includes the system nodes, such as the basket.
  */
 Server.prototype.getRoots = function () {
   return new JsonRequest("GET", this.rootsPath())
+    .errorMsg("Could not get roots from server.")
+
 }
 
 
@@ -22,7 +24,8 @@ Server.prototype.rootsPath = function () {
 Return the system node known as the "basket"
  */
 Server.prototype.getBasket = function () {
-  return new JsonRequest("GET", '/nodes/basket')
+  return new JsonRequest("GET", this.basketPath())
+    .errorMsg("Could not get basket from server.")
 }
 
 /*
@@ -30,6 +33,7 @@ Return the node with the specified nodeId.
  */
 Server.prototype.getNode = function (nodeId) {
   return new JsonRequest("GET", this.nodePath(nodeId))
+    .errorMsg("Could not get node from server with id " + nodeId)
 }
 
 Server.prototype.nodePath = function (nodeId) {
@@ -75,6 +79,7 @@ Get the child nodes of the node with id, in json format
 */
 Server.prototype.getNodeChildren = function (nodeId) {
   return new JsonRequest("GET", this.nodeChildrenPath(nodeId))
+    .errorMsg("Could not get children of node " + nodeId + " from server.")
 }
 
 Server.prototype.nodeChildrenPath = function (nodeId) {
@@ -92,7 +97,8 @@ returned node representation from the server.
 Valid attributes to set for a node are :content, :type_id, :width, :height.
  */
 Server.prototype.createNode = function (nodeSpec) {
-  return new JsonRequest("POST", this.nodesPath(), nodeSpec ? {node: nodeSpec} : {});
+  return new JsonRequest("POST", this.nodesPath(), nodeSpec ? {node: nodeSpec} : {})
+    .errorMsg("Could not create node on server with spec: " + nodeSpec)
 };
 
 
@@ -108,7 +114,8 @@ Server.prototype.createNode = function (nodeSpec) {
  */
 
 Server.prototype.insertChild = function (referenceNodeId, nodeToInsertId) {
-  return new JsonRequest("PUT", this.insertChildPath(referenceNodeId), {node: {id: nodeToInsertId}});
+  return new JsonRequest("PUT", this.insertChildPath(referenceNodeId), {node: {id: nodeToInsertId}})
+    .errorMsg("Could not insert child " + nodeToInsertId + " into parent node " + referenceNodeId)
 };
 
 Server.prototype.insertChildPath = function (referenceNodeId) {
@@ -116,7 +123,8 @@ Server.prototype.insertChildPath = function (referenceNodeId) {
 }
 
 Server.prototype.insertSuccessor = function (referenceNodeId, nodeToInsertId) {
-  return new JsonRequest("PUT", this.insertSuccessorPath(referenceNodeId), {node: {id: nodeToInsertId}});
+  return new JsonRequest("PUT", this.insertSuccessorPath(referenceNodeId), {node: {id: nodeToInsertId}})
+    .errorMsg("Could not insert successor " + nodeToInsertId + " after predecessor node " + referenceNodeId)
 };
 
 Server.prototype.insertSuccessorPath = function (referenceNodeId) {
@@ -124,7 +132,8 @@ Server.prototype.insertSuccessorPath = function (referenceNodeId) {
 }
 
 Server.prototype.insertPredecessor = function (referenceNodeId, nodeToInsertId) {
-  return new JsonRequest("PUT", this.insertPredecessorPath(referenceNodeId), {node: {id: nodeToInsertId}});
+  return new JsonRequest("PUT", this.insertPredecessorPath(referenceNodeId), {node: {id: nodeToInsertId}})
+    .errorMsg("Could not insert predecessor " + nodeToInsertId + " before successor node " + referenceNodeId)
 }
 
 Server.prototype.insertPredecessorPath = function (referenceNodeId) {
@@ -133,10 +142,12 @@ Server.prototype.insertPredecessorPath = function (referenceNodeId) {
 
 Server.prototype.putInBasket = function (nodeId) {
   return new Request("PUT", this.nodePath(nodeId) + '/cut')
+    .errorMsg("Could not put " + nodeId + " in the basket.")
 }
 
 Server.prototype.emptyBasket = function () {
   return new Request("DELETE", this.basketPath())
+    .errorMsg("Could not empty the basket.")
 }
 
 Server.prototype.basketPath = function () {
@@ -146,6 +157,7 @@ Server.prototype.basketPath = function () {
 
 Server.prototype.setNodeAttributes = function (nodeId, options) {
   return new JsonRequest("PUT", this.setAttributesPath(nodeId), {node: options})
+    .errorMsg("Could not set attributes for " + nodeId)
 }
 
 Server.prototype.setAttributesPath = function (nodeId) {
@@ -158,7 +170,5 @@ Server.prototype.renderRecursivelyPath = function (nodeId) {
 
 Server.prototype.destroyEmpty = function (nodeId) {
   return new Request("DELETE", this.nodePath(nodeId) + '/destroy_empty.json')
-    .failure(function () {
-      throw "Error encountered while attempting to destroy empty node on server. Id = " + nodeId
-    })
+    .errorMsg("Error encountered while attempting to destroy empty node on server. Id = " + nodeId)
 }

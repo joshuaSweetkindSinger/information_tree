@@ -104,6 +104,14 @@ Request.prototype.failure = function (callback) {
   return this
 }
 
+// Throw the specified error message if the request fails.
+// Example: var x = new Request("GET", myUrl).errorMsg("Could not get myUrl from server.")
+Request.prototype.errorMsg = function (msg) {
+  return this.failure(function () {
+    throw msg
+  })
+}
+
 
 Request.prototype.isCsrfSafe = function() {
   return /^(GET|HEAD|OPTIONS|TRACE)$/.test(this.verb);
