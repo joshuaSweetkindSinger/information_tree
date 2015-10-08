@@ -211,7 +211,9 @@ ViewNode.prototype.snipContent = function (max_length) {
 
  NOTE: Although this is labeled as an api-level method, in most cases, it would be wrong to call
  this directly. Call it only if the ViewNode in question is already correct in its info, has a corresponding
- server-side node, and all that remains is for it to be attached to the dom in the correct position.
+ server-side node, and all that remains is for it to be attached to the dom in the correct position. In particular
+ do not call this method directly if your aim is to move the node from an existing position to another position
+ in the hierarchy. For that, see insertChild(), insertSuccessor(), insertPredecessor().
 
  We figure out where to attach ourselves by examining our predecessor, successor,
  and parent links. If we have one of the first two links, we know exactly where to attach
@@ -324,7 +326,9 @@ ViewNode.prototype.path = function () {
   return result
 }
 
-// =========================== Insert Node
+// ==========================
+//       Insert Node
+// ==========================
 
 /*
  Ask the server to alter the existing tree by inserting a child or sibling node, specified by nodeToInsert,
@@ -389,7 +393,9 @@ ViewNode.prototype.insertPredecessor = function(viewNode) {
   return this._insert(viewNode, 'insertPredecessor');
 }
 
-
+// ==========================
+//       Node Creation
+// ==========================
 /*
  Create a new node on the server to be the successor/predecessor/child of the node represented by <this>,
  as indicated by mode, one of: 'insertChild', 'insertSuccessor', 'insertPredecessor',
@@ -408,7 +414,6 @@ ViewNode.prototype._createAndInsertNode = function (nodeSpec, mode) {
     })
 }
 
-
 ViewNode.prototype.createChild = function(nodeSpec) {
   return this._createAndInsertNode(nodeSpec, 'insertChild')
 }
@@ -421,30 +426,31 @@ ViewNode.prototype.createPredecessor = function(nodeSpec) {
   return this._createAndInsertNode(nodeSpec, 'insertPredecessor')
 }
 
-
+// ==========================
+//       Node Deletion
+// ==========================
 /*
- Create a new node on the server to be the predecessor of the node represented by <this>,
- with attributes as specified in nodeSpec.  Use default attributes if nodeSpec is not supplied.
- Then effect the same transformation on the client side.
-
- PROGRAMMER NOTES: Don't try expanding the parent node, because this will re-read the node children
- from the server, and some of them might have unsaved changes to their content if this method is being
- triggered in conjunction with a blur() event.
+Destroy ourselves on both client and server sides, but only if we are empty.
+Otherwise, the protocol is to be moved to the basket first, and then to have the basket
+be emptied. We make an exception for empty nodes, because there is no reason to worry about
+aggressively deleting a node that is empty.
  */
-ViewNode.prototype.createPredecessor = function(nodeSpec) {
-  var self = this;
-  return ViewNode.createNode(nodeSpec)
-    .success(function (uiNode) {
-      self.insertPredecessor(uiNode);
+ViewNode.prototype.destroyEmpty = function () {
+  var self = this
+  this.node.destroyEmpty()
+    .success(function() {
+      $(self).remove()
     })
 }
-// ========================== Paste
+
+// ==========================
+
+
 // Paste node onto ourselves. This means adding it as a child.
 ViewNode.prototype.paste = function(viewNode) {
   return this.insertChild(viewNode);
 };
 
-// =========================== Trash
 
 /*
  Tell the server to put the node represented by <this> in the basket, then do the same to it on the client side as well.
@@ -453,8 +459,10 @@ ViewNode.prototype.putInBasket = function() {
  return ITA.informationTree.basket.insertChild(this);
 }
 
+// =========================================================================
+//        Expand / Collapse Functionality
+// =========================================================================
 
-// =================== Expand / Collapse
 /*
  Expand this node. Expansion means:
  - fetch all children from server if they have not yet been fetched.
@@ -536,8 +544,10 @@ ViewNode.prototype.reveal = function (callback) {
   })
 }
 
+// =========================================================================
 
-// =================== Auto-Size
+
+
 // Calculate a pleasing size for the content textarea associated with this text node.
 ViewNode.prototype.autoSize = function() {
   var autoSize = this.calcAutoSize()

@@ -135,7 +135,13 @@ TODO: Paste should just take top of the trash and not worry about a selected for
 Status: In the middle of a branch destroy_empty, which handles empty nodes not by cutting them but by deleting them.
 This requires that you create a full path in the api for deletion of a node from a parent on the client side, then
 on to the back end, same logic.
- */
+TODO: Seriously consider getting rid of Node layer on client side.
+TODO: Separate view_node.js into several files.
+TODO: Got through server.js and do two things: 1) consolidate useless path() constants. 2) throw errors on all
+failed requests.
+TODO: None of the server Path() methods is DRY, because the server knows them.
+We should generate them automatically from the routes.rb file, or some such.
+*/
 
 /* NOTE: We're using the $(window).load callback here rather than the more common
    $(document).ready callback, because we have found that ITA.initPage can't find

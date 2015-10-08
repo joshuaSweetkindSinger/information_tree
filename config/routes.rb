@@ -14,12 +14,12 @@ JssNotes::Application.routes.draw do
     end
 
     member do
-      get    :children        # route is /nodes/:id/children
+      get    :children           # route is /nodes/:id/children
       put    :insert_child       # route is /nodes/:id/insert_child
       put    :insert_successor   # route is /nodes/:id/insert_successor
       put    :insert_predecessor # route is /nodes/:id/insert_predecessor
-      put    :set_attributes  # route is /nodes/:id/set_attributes
-      put    :putInBasket              # route is /nodes/:id/cut
+      put    :set_attributes     # route is /nodes/:id/set_attributes
+      put    :putInBasket        # route is /nodes/:id/cut
       delete :destroy_empty      # route is /nodes/:id/destroy_empty
     end
   end

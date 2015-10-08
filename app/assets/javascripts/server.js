@@ -146,17 +146,22 @@ Server.prototype.setNodeAttributes = function (nodeId, options) {
   return new JsonRequest("PUT", this.setAttributesPath(nodeId), {node: options})
 }
 
-
 Server.prototype.setAttributesPath = function (nodeId) {
   return '/nodes/' + nodeId + '/set_attributes.json'
 }
 
-// TODO: None of these Path() methods is DRY, because the server knows them.
-// We should generate them automatically from the routes.rb file, or some such.
+
 Server.prototype.renderRecursivelyAsHtmlPath = function (nodeId) {
   return '/nodes/' + nodeId + '/recursive.html'
 }
 
 Server.prototype.renderRecursivelyAsJsonPath = function (nodeId) {
   return '/nodes/' + nodeId + '/recursive.json'
+}
+
+Server.prototype.destroyEmpty = function (nodeId) {
+  return new Request("DELETE", '/nodes/' + nodeId + '/destroy_empty.json')
+    .failure(function () {
+      throw "Error encountered while attempting to destroy empty node on server. Id = " + nodeId
+    })
 }

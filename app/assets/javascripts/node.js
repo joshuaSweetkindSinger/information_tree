@@ -158,3 +158,9 @@ Node.prototype.setAttributes = function(nodeUpdate) {
       return self.update(nodeRep);
     })
 }
+
+// Destroy this node on the server side, so long as it is empty of content and children; otherwise,
+// raise an error.
+Node.prototype.destroyEmpty = function () {
+  return ITA.server.destroyEmpty(this.id)
+}
