@@ -82,7 +82,6 @@ TODO: Clicking on admin should do paging.
 TODO: There should be a help nav item that explains the app and pops up help in a new tab.
 TODO: Restore make backup to Admin section.
 TODO: From admin, "go back to info tree" should select existing tab.
-TODO: change basket to "putInBasket". Don't need a separate pointer to a "cut" object. Just use top of putInBasket.
 TODO: merge set_attributes with update() in nodes controller.
 TODO: None of these Path() methods in server.js is DRY, because the server knows them.
 TODO: Add new yield to admin header for page-specific options.
@@ -95,52 +94,35 @@ TODO: refactor callbacks that are part of expand/reveal/scrollTo as deferreds us
       requests that are going to the server.
 TODO: in ui_node.js, uncomment the drag/drop logic that short-circuits drag drop when it shouldn't occur,
 but in a way that allows text area resizing to occur.
-TODO: Add option to draw a sub-tree in a new tab.
 TODO: The to_html operation should render the tree using html-5 tags
 Status: Need to be able to get multiple node refs back from the server in one call. What would
 the syntax look like? /nodes/118 generalizes to /nodes/:top,143,1253,223...456.json, or possibly
 /nodes.json?ids=:top,143,2514...
-TODO: Top node should be renamed to "root". Instead of getTopNode we should have getRoot, etc.
-TODO: Since we expanded the notion of a tree to include multiple root nodes, the notion of a
-      single identified system node with a type of ROOT or TOP is probably not needed. A root node
-      is just a normal node that does not have parents. Get rid of this system type.
 
 TODO: I'm still not happy with the relationship between ViewNode and Node. For example, the parent of a
 view node is not explicitly represented. You have to go to the node, get it's id, then find it in the
 dom using jquery. But, if viewnodes had explicit parents and siblings, then insert operations would
 be harder, because you'd have to duplicate everything on the client side. Still not convinced I have
 the best architecture for this.
-TODO: Redo the sub-tree functionality so that the root node of the subtree comes up in the same tab,
-not a new tab, but record the full hierarchy in the node path dropdown, and allow user to climb back
-up the hierarchy.
 
 TODO: It's wasteful for expandedViewNodes() to build an array of all expanded nodes. Currently it's only
 used to determine the insertion point. You can walk the tree without building an array.
 
-TODO: examine the field isLocalRoot on uiNode. It's not DRY, because we already have a RootNode class. Try
-to refactor so that we just have one or the other. Also the basket is in this.localRootNodes, but its
-isLocalRoot slot is false. Clean this up!
-STATUS: Figure out how to show any node that is requested, so long as it has been downloaded from the server.
-At any time, there is a sub-tree showing, and the node may or may not be in that subtree. If it is, then it's easy:
-we just scroll to it. If it's not, then we need to figure out how to augment the subtree by the minimal amount to show the node.
-This means finding the least common ancestor of the node and one of the local roots of the subtree. Then we need to
-connect this LCA to both the subtree root and to the requested node.
 
 TODO: Consider adding multiple parentage to nodes
-TODO: Remove duplicates from the visited history
 TODO: Consider moving the server off to just be an api, on another port. Then write multiple apps that
 use the api. One could be a basic web app that just serves web pages. Another could be a front-end client
 that is more whizzy.
-TODO: Paste should just take top of the trash and not worry about a selected for paste slot.
-Status: In the middle of a branch destroy_empty, which handles empty nodes not by cutting them but by deleting them.
-This requires that you create a full path in the api for deletion of a node from a parent on the client side, then
-on to the back end, same logic.
+
 TODO: Seriously consider getting rid of Node layer on client side.
 TODO: Separate view_node.js into several files.
-TODO: Got through server.js and do two things: 1) consolidate useless path() constants. 2) throw errors on all
-failed requests.
 TODO: None of the server Path() methods is DRY, because the server knows them.
 We should generate them automatically from the routes.rb file, or some such.
+TODO: Remove duplicates from the visited history
+ TODO: Since we expanded the notion of a tree to include multiple root nodes, the notion of a
+ single identified system node with a type of ROOT or TOP is probably not needed. A root node
+ is just a normal node that does not have parents. Get rid of this system type.
+
 */
 
 /* NOTE: We're using the $(window).load callback here rather than the more common
