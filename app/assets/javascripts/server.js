@@ -5,9 +5,6 @@ var Server = function () {
 
 }
 
-Server.prototype.treePath = function (topNodeId) {
-  return topNodeId ? '/information-tree/' + topNodeId : '/information-tree'
-}
 /*
 Return an array of the top nodes of the information tree. This is all nodes that have no parent.
 It includes the system nodes, such as the basket.
@@ -18,37 +15,48 @@ Server.prototype.getRoots = function () {
 
 
 Server.prototype.rootsPath = function () {
-  return '/nodes/roots.json'
+  return '/nodes/roots'
 }
 
 /*
 Return the system node known as the "basket"
  */
 Server.prototype.getBasket = function () {
-  return new JsonRequest("GET", '/nodes/basket.json')
+  return new JsonRequest("GET", '/nodes/basket')
 }
 
 /*
 Return the node with the specified nodeId.
  */
 Server.prototype.getNode = function (nodeId) {
-  return new JsonRequest("GET", this.getNodePath(nodeId))
+  return new JsonRequest("GET", this.nodePath(nodeId))
 }
 
-Server.prototype.getNodePath = function (nodeId) {
-  return '/nodes/' + nodeId + '.json'
+Server.prototype.nodePath = function (nodeId) {
+  return '/nodes/' + nodeId
 }
 
+Server.prototype.nodesPath = function () {
+  return '/nodes'
+}
+
+
+
+  /*
+  Return an array of the specified nodes. Include the basket node in the array
+  if specified.
+
+  The method below is commented out because currently the UI is not using it.
+   */
 /*
-Return an array of the specified nodes. Include the basket node in the array
-if specified.
- */
 Server.prototype.getNodes = function (nodeIds, getBasket) {
-  return new JsonRequest("GET", this.getNodesPath(nodeIds, getBasket))
+  return new JsonRequest("GET", this.nodesPath(nodeIds, getBasket))
 }
 
-Server.prototype.getNodesPath = function (nodeIds, getBasket) {
-  // Build nodeIds string
+ Server.prototype.nodesPath = function (nodeIds, getBasket) {
+ if (!nodeIds) return '/nodes'
+
+ // Build nodeIds string
   var nodeIdsStr = ""
   var sep = ""
   nodeIds.forEach(function(nodeId){
@@ -60,6 +68,7 @@ Server.prototype.getNodesPath = function (nodeIds, getBasket) {
   var basketStr = getBasket ? 'true' : ""
   return '/nodes.json?' + nodeIdsStr + '&basket=' + basketStr
 }
+*/
 
 /*
 Get the child nodes of the node with id, in json format
@@ -69,7 +78,7 @@ Server.prototype.getNodeChildren = function (nodeId) {
 }
 
 Server.prototype.nodeChildrenPath = function (nodeId) {
-  return '/nodes/' + nodeId + '/children.json'
+  return this.nodePath(nodeId) + '/children'
 }
 
 
@@ -83,20 +92,9 @@ returned node representation from the server.
 Valid attributes to set for a node are :content, :type_id, :width, :height.
  */
 Server.prototype.createNode = function (nodeSpec) {
-  return new JsonRequest("POST", this.createNodePath(), nodeSpec ? {node: nodeSpec} : {});
+  return new JsonRequest("POST", this.nodesPath(), nodeSpec ? {node: nodeSpec} : {});
 };
 
-Server.prototype.createNodePath = function() {
-  return '/nodes.json'
-}
-
-Server.prototype.createSubTree = function (treeSpec) {
-  return new JsonRequest("POST", this.createSubTreePath(), {tree: treeSpec})
-}
-
-Server.prototype.createSubTreePath = function() {
-  return '/nodes/create_sub_tree.json'
-}
 
 /*
  The three methods below insert an existing node on the server at a new location.
@@ -114,7 +112,7 @@ Server.prototype.insertChild = function (referenceNodeId, nodeToInsertId) {
 };
 
 Server.prototype.insertChildPath = function (referenceNodeId) {
-  return '/nodes/' + referenceNodeId + '/insert_child.json'
+  return this.nodePath(referenceNodeId) + '/insert_child'
 }
 
 Server.prototype.insertSuccessor = function (referenceNodeId, nodeToInsertId) {
@@ -122,7 +120,7 @@ Server.prototype.insertSuccessor = function (referenceNodeId, nodeToInsertId) {
 };
 
 Server.prototype.insertSuccessorPath = function (referenceNodeId) {
-  return '/nodes/' + referenceNodeId + '/insert_successor.json'
+  return this.nodePath(referenceNodeId) + '/insert_successor'
 }
 
 Server.prototype.insertPredecessor = function (referenceNodeId, nodeToInsertId) {
@@ -130,15 +128,19 @@ Server.prototype.insertPredecessor = function (referenceNodeId, nodeToInsertId) 
 }
 
 Server.prototype.insertPredecessorPath = function (referenceNodeId) {
-  return '/nodes/' + referenceNodeId + '/insert_predecessor.json'
+  return this.nodePath(referenceNodeId) + '/insert_predecessor'
 }
 
 Server.prototype.putInBasket = function (nodeId) {
-  return new Request("PUT", '/nodes/' + nodeId + '/cut.json')
+  return new Request("PUT", this.nodePath(nodeId) + '/cut')
 }
 
 Server.prototype.emptyBasket = function () {
-  return new Request("DELETE", '/nodes/basket.json')
+  return new Request("DELETE", this.basketPath())
+}
+
+Server.prototype.basketPath = function () {
+  '/nodes/basket'
 }
 
 
@@ -147,20 +149,15 @@ Server.prototype.setNodeAttributes = function (nodeId, options) {
 }
 
 Server.prototype.setAttributesPath = function (nodeId) {
-  return '/nodes/' + nodeId + '/set_attributes.json'
+  return this.nodePath(nodeId) + '/set_attributes'
 }
 
-
-Server.prototype.renderRecursivelyAsHtmlPath = function (nodeId) {
-  return '/nodes/' + nodeId + '/recursive.html'
-}
-
-Server.prototype.renderRecursivelyAsJsonPath = function (nodeId) {
-  return '/nodes/' + nodeId + '/recursive.json'
+Server.prototype.renderRecursivelyPath = function (nodeId) {
+  return this.nodePath(nodeId) + '/recursive'
 }
 
 Server.prototype.destroyEmpty = function (nodeId) {
-  return new Request("DELETE", '/nodes/' + nodeId + '/destroy_empty.json')
+  return new Request("DELETE", this.nodePath(nodeId) + '/destroy_empty.json')
     .failure(function () {
       throw "Error encountered while attempting to destroy empty node on server. Id = " + nodeId
     })

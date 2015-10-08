@@ -51,7 +51,8 @@ Controller.prototype.initTree = function (rootNodeIds) {
   $(this.nodePathList).hide()
 
   // Set root nodes of tree
-  var request = rootNodeIds ? ITA.server.getNodes(rootNodeIds, true) : ITA.server.getRoots()
+  // var request = rootNodeIds ? ITA.server.getNodes(rootNodeIds, true) : ITA.server.getRoots() // Currently, UI does not take advantage of this extra functionality.
+  var request = ITA.server.getRoots()
   var self    = this
   request.success(function (rootRefs) {
     tree.setLocalRootsFromRefs(rootRefs)
@@ -143,14 +144,14 @@ Controller.prototype.followLink = function (uiNode) {
 // Open selected node and its children as a static html page in a new tab.
 Controller.prototype.renderRecursivelyAsHtml = function (uiNode) {
   uiNode = (uiNode || this.selectedNode)
-  open(ITA.server.renderRecursivelyAsHtmlPath(uiNode.id))
+  open(ITA.server.renderRecursivelyPath(uiNode.id) + '.html')
 }
 
 
 // Open selected node and its children as a static json page in a new tab.
 Controller.prototype.renderRecursivelyAsJson = function (uiNode) {
   uiNode = (uiNode || this.selectedNode)
-  open(ITA.server.renderRecursivelyAsJsonPath(uiNode.id))
+  open(ITA.server.renderRecursivelyPath(uiNode.id) + '.json')
 }
 
 // Create a sub-tree in a new tab with uiNode as the top node

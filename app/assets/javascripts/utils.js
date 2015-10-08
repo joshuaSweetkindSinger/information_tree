@@ -117,7 +117,7 @@ Request.prototype.isCsrfSafe = function() {
 // in functionPipe in turn, passing the result of the previous function, if it is not undefined,
 // to the next function in the pipe.
 var JsonRequest = function(verb, url, params) {
-  Request.call(this, verb, url, params);
+  Request.call(this, verb, url + '.json', params) // Append .json to tell the server we expect a json response.
 }
 JsonRequest.prototype = Object.create(Request.prototype);
 
