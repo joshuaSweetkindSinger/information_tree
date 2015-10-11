@@ -179,7 +179,7 @@ class Node < ActiveRecord::Base
         child.successor   = nil
         child.save!
       end
-      
+
       # Update the child nodes
       child_list.each do |child|
         child._set_predecessor pred

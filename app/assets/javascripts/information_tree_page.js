@@ -122,7 +122,7 @@ TODO: Remove duplicates from the visited history
  TODO: Since we expanded the notion of a tree to include multiple root nodes, the notion of a
  single identified system node with a type of ROOT or TOP is probably not needed. A root node
  is just a normal node that does not have parents. Get rid of this system type.
-
+Status: added select node on expand.
 */
 
 /* NOTE: We're using the $(window).load callback here rather than the more common
