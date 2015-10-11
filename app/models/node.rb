@@ -83,9 +83,9 @@ class Node < ActiveRecord::Base
       left join nodes pred   on (n.predecessor_id = pred.id)
       left join nodes succ   on (n.successor_id   = succ.id)
       left join nodes parent on (n.parent_id      = parent.id)
-      where ((n.predecessor_id is not null) and (pred.successor_id <> n.id))   or
-            ((n.successor_id is not null)   and (succ.predecessor_id <> n.id)) or
-            ((n.parent_id is not null)      and (parent.id is null))            or
+      where ((n.predecessor_id is not null) and ((pred.id is null) or (pred.successor_id <> n.id)))   or
+            ((n.successor_id is not null)   and ((succ.id is null) or (succ.predecessor_id <> n.id))) or
+            ((n.parent_id is not null)      and (parent.id is null))                                  or
             n.rank is null
       )
   end
@@ -159,11 +159,42 @@ class Node < ActiveRecord::Base
   # Destroy yourself, after first verifying that you are empty of content and children.
   def destroy_empty
     if content.empty? and children.empty?()
+      _unhook!
       destroy
     else
       raise "Refusing to delete node: it either has content or children."
     end
   end
+
+  # From scratch, reset all the predecessor/successor links on this node's children.
+  def repair_children
+    transaction do
+      pred = nil
+      child_list = children.order(:rank)
+
+      # Blow away pred/succ links
+      # We do this to avoid unique-index errors when we start resetting the pred/succ links.
+      child_list.each do |child|
+        child.predecessor = nil
+        child.successor   = nil
+        child.save!
+      end
+      
+      # Update the child nodes
+      child_list.each do |child|
+        child._set_predecessor pred
+        pred = child
+      end
+
+      # Save the updated child nodes.
+      # Note: we do two loops rather than just insert "save!" above because, in the above loop, it might either be the predecessor
+      # or the child, or both,  whose links are altered by _set_predecessor().
+      child_list.each do |child|
+        child.save!
+      end
+    end
+  end
+
 
   DEFAULT_MAX_CONTENT_SNIPPET_LENGTH = 50  # The maximum length to show of a node's content
   # when it is being shown as a snippet. See snip_content() below.
@@ -305,15 +336,15 @@ class Node < ActiveRecord::Base
 
 
   # An internal method: Patch up predecessor/successor links with the specified predecessor.
-  def _set_predecessor (predecessor)
-    self.predecessor      = predecessor
-    predecessor.successor = self if predecessor
+  def _set_predecessor (pred)
+    self.predecessor = pred
+    pred.successor   = self if pred
   end
 
   # An internal method: Patch up predecessor/successor links with the specified successor.
-  def _set_successor (successor)
-    self.successor        = successor
-    successor.predecessor = self if successor
+  def _set_successor (succ)
+    self.successor        = succ
+    succ.predecessor = self if succ
   end
 
 

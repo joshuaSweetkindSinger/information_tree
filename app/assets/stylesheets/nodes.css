@@ -90,13 +90,17 @@ html body {
      width:100px;
  }
 .node-index-row-element-content {
-    width:400px;
+    width:380px;
     max-height:100px;
 }
 
-.node-index-row-element-destroy {
-    width:76px;
+.node-index-row-element-repair {
+    width:60px;
 }
+
+.node-index-row-element-destroy {
+     width:60px;
+ }
 
 /* =================================================================== */
 /*                      Show Node Page

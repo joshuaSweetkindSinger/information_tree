@@ -8,6 +8,7 @@
     <div class="node-index-header-element node-index-row-element-successor">Successor</div>
     <div class="node-index-common node-index-common node-index-header-element node-index-row-element-rank">Rank</div>
     <div class="node-index-common node-index-header-element node-index-row-element-content">Content</div>
+    <div class="node-index-common node-index-header-element node-index-row-element-repair">Repair</div>
     <div class="node-index-common node-index-header-element node-index-row-element-destroy">Destroy</div>
   </div>
 
@@ -16,11 +17,34 @@
       <div class="node-index-row">
         <div class="node-index-row-element node-index-row-element-id"><%= link_to(obj.id, obj) %></div>
         <div class="node-index-row-element node-index-row-element-type"><%= obj.type_id %></div>
-        <div class="node-index-row-element node-index-row-element-parent"><%= link_to(obj.parent_id, obj.parent) if obj.parent %></div>
-        <div class="node-index-row-element node-index-row-element-predecessor"><%= link_to(obj.predecessor_id, obj.predecessor) if obj.predecessor %></div>
-        <div class="node-index-row-element node-index-row-element-successor"><%= link_to(obj.successor_id, obj.successor) if obj.successor %></div>
+        <div class="node-index-row-element node-index-row-element-parent">
+          <% if obj.parent_id && !obj.parent %>
+            <span style="color:red">[missing parent with id <%= obj.parent_id %>]</span>
+          <% elsif obj.parent %>
+            <%= link_to(obj.parent_id, obj.parent) %>
+          <% end %>
+        </div>
+        <div class="node-index-row-element node-index-row-element-predecessor">
+          <% if obj.predecessor_id && !obj.predecessor %>
+            <span style="color:red">[missing predecessor with id <%= obj.predecessor_id %>]</span>
+          <% elsif obj.predecessor && (obj.predecessor.successor != obj) %>
+            <span style="background:red"><%= link_to(obj.predecessor_id, obj.predecessor) %></span>
+          <% elsif obj.predecessor %>
+            <%= link_to(obj.predecessor_id, obj.predecessor) %>
+          <% end %>
+        </div>
+        <div class="node-index-row-element node-index-row-element-successor">
+          <% if obj.successor_id && !obj.successor %>
+            <span style="color:red">[missing successor with id <%= obj.successor_id %>]</span>
+          <% elsif obj.successor && (obj.successor.predecessor != obj) %>
+            <span style="background:red"><%= link_to(obj.successor_id, obj.successor) %></span>
+          <% elsif obj.successor %>
+            <%= link_to(obj.successor_id, obj.successor) %>
+          <% end %>
+        </div>
         <div class="node-index-row-element node-index-row-element-rank"><%= obj.rank.round(2) if obj.rank %></div>
         <div class="node-index-row-element node-index-row-element-content"><%= obj.content %></div>
+        <div class="node-index-row-element node-index-row-element-repair"><%= link_to('Repair', repair_children_node_path(obj.parent), method: :put) if obj.parent %></div>
         <div class="node-index-row-element node-index-row-element-destroy"><%= link_to 'Destroy', obj, method: :delete, data: { confirm: 'Are you sure?' } %></div>
       </div>
     <% end %>

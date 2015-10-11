@@ -59,9 +59,8 @@ UiNode.prototype.bindEventHandlers = function () {
     drop: this.onDrop.bind(this)
   })
 
-  // Attach handlers to expand-collapse element
-  var $expandCollapse = $(this._header.expandCollapseButton)
-  $expandCollapse.on('click', this.onExpandCollapseClick.bind(this))
+  // Attach handler to expand-collapse element
+  $(this._header.expandCollapseButton).on('click', this.onExpandCollapseClick.bind(this))
 
   // For proper dragging logic.
   $(this).on('mousemove', this.onMouseMove.bind(this))

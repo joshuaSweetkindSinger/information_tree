@@ -210,6 +210,16 @@ class NodesController < ApplicationController
     end
   end
 
+  # Repair the children of this node by re-assigning their predecessor/successor links from scratch.
+  def repair_children
+    @obj = Node.find(params[:id])
+    @obj.repair_children
+    respond_to do |format|
+      format.html {redirect_to nodes_url}
+      format.json {render json: @obj}
+    end
+  end
+
 
   def test_me
     respond_to do |format|

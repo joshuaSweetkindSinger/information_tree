@@ -36,18 +36,29 @@
 
 <p>
   <b>Parent:</b>
-  <%= link_to(@obj.parent.snip_content, @obj.parent) if @obj.parent %>
-  </span>
+  <% if @obj.parent_id && !@obj.parent%>
+    <span style="color:red">[missing parent with id <%= @obj.parent_id %>]</span>
+  <% elsif @obj.parent %>
+  <%= link_to(@obj.parent.snip_content, @obj.parent) %>
+  <% end %>
 </p>
 
 <p>
   <b>Predecessor:</b>
-  <%= link_to(@obj.predecessor.snip_content, @obj.predecessor) if @obj.predecessor %>
+  <% if @obj.predecessor_id && !@obj.predecessor%>
+    <span style="color:red">[missing predecessor with id <%= @obj.predecessor_id %>]</span>
+  <% elsif @obj.predecessor %>
+    <%= link_to(@obj.predecessor.snip_content, @obj.predecessor) %>
+  <% end %>
 </p>
 
 <p>
   <b>Successor:</b>
-  <%= link_to(@obj.successor.snip_content, @obj.successor) if @obj.successor %>
+  <% if @obj.successor_id && !@obj.successor%>
+    <span style="color:red">[missing successor with id <%= @obj.successor_id %>]</span>
+  <% elsif @obj.successor %>
+    <%= link_to(@obj.successor.snip_content, @obj.successor) %>
+  <% end %>
 </p>
 
 
@@ -58,4 +69,5 @@
 
 
 <%= link_to 'Edit', edit_node_path(@obj) %> |
-<%= link_to 'Index', nodes_path %>
+<%= link_to 'Index', nodes_path %> |
+<%= link_to 'Repair Children', repair_children_node_path(@obj), method: :put %>

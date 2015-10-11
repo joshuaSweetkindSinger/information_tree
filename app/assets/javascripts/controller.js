@@ -130,7 +130,9 @@ Controller.prototype.emptyBasket = function () {
 
 // Toggle the expanded-collapsed state of node.
 Controller.prototype.toggleNodeExpandCollapse = function (uiNode) {
-  (uiNode || this.selectedNode).toggleExpandCollapse()
+  uiNode = (uiNode || this.selectedNode)
+  this.selectNode(uiNode)
+  uiNode.toggleExpandCollapse()
 }
 
 
@@ -291,8 +293,8 @@ Controller.prototype.nop = function() {
 // know about it. In this case, we clear the previous drop target
 // because a new drop is possibly about to occur.
 Controller.prototype.onDragStart = function (uiNode) {
-  this.dropTarget        = null     // The node that uiNode was dropped on top of, if any.
-  this.predecessorTarget = null     // The node immediately about uiNode's release position, if any and no drop target.
+  this.dropTarget        = null     // The node that uiNode will be dropped on top of, if any.
+  this.predecessorTarget = null     // The node that will be immediately above uiNode's release position, if any, when no drop target.
   this.selectNode(uiNode)
   $(uiNode).zIndex(10)                // Put draggable on top of everything. // TODO: find a place for this hardcoded constant.
 }
