@@ -18,15 +18,40 @@ container on the client side for displaying the nodes that have been visited by 
 
 var VisitedNodeList = defCustomTag('visited-node-list', DropDownPopUp)
 
+VisitedNodeList.prototype.afterCreate = function () {
+  DropDownPopUp.prototype.afterCreate.call(this)
+  this.hash = {}
+}
+
 
 VisitedNodeList.prototype.addVisitedNode = function (uiNode) {
   var $this     = $(this)
   var $children = $this.children()
 
-  if ($children.length > 0 && $children[0].uiNode === uiNode) return; // If uiNode is already on the top of the visited list, don't add it again.
+  if (this.contains(uiNode)) return // Don't add the node twice.
+  if (this.isFull()) this.removeLast()
+  this._add(uiNode)
+}
 
-  if ($children.length >= 100) $children.last().remove() // Don't let visited list grow beyond 100.
-  $this.prepend(new NodeMarker(uiNode, this))
+VisitedNodeList.prototype.MAX_SIZE = 100
+
+VisitedNodeList.prototype.isFull = function () {
+  return ($(this).children().length >= this.MAX_SIZE)
+}
+
+VisitedNodeList.prototype._add = function(uiNode) {
+  $(this).prepend(new NodeMarker(uiNode, this))
+  this.hash[uiNode.id] = uiNode
+}
+
+VisitedNodeList.prototype.removeLast = function() {
+  var $last = $(this).children().last()
+  $last.remove()
+  this.hash[$last[0].uiNode.id] = undefined
+}
+
+VisitedNodeList.prototype.contains = function (uiNode) {
+  return this.hash[uiNode.id]
 }
 
 
