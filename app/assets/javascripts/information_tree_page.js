@@ -123,6 +123,11 @@ TODO: Remove duplicates from the visited history
  single identified system node with a type of ROOT or TOP is probably not needed. A root node
  is just a normal node that does not have parents. Get rid of this system type.
 Status: added select node on expand.
+TODO: Keep track of visited node and information-tree status between sessions.
+TODO: Allow infinite scrolling to the right.
+TODO: Give ability to search for nodes
+TODO: Think about how to specify a URL for a given node an then get back its path, but also
+      without blowing away any existing client cached nodes.
 */
 
 /* NOTE: We're using the $(window).load callback here rather than the more common
