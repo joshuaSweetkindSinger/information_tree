@@ -128,6 +128,14 @@ TODO: Allow infinite scrolling to the right.
 TODO: Give ability to search for nodes
 TODO: Think about how to specify a URL for a given node an then get back its path, but also
       without blowing away any existing client cached nodes.
+TODO: ctrl-left-arrow should move a node "to the left", which means: make it the successor of its parent.
+TODO: ctrl-right-arrow should move a node "to the right", which means: make it the last child of its predecessor.
+TODO: ctrl-shift-v pastes the top of the basket as the successor of the currently selected node.
+TODO: Try using + and - keys for zoom. Center on the current y position, but choose the proper level of the
+hierarchy to show based on the zoom level. When the zoom level is 0, you should just the top node. At level 1,
+you show all level 1 nodes and all nodes above them. At level k, you show all nodes at level k or lower. There
+are subtler ways to do this. You could have two parameters: instead of just k, you could have j and k. Show the current
+node to level j, but everything else to level k.
 */
 
 /* NOTE: We're using the $(window).load callback here rather than the more common

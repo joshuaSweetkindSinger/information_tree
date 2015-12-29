@@ -196,8 +196,13 @@ UiNode.prototype.isContentDirty = function () {
   return this.content != this.node.content
 }
 
+// Return true if the UiNode has been resized.
+// This is indicated by its width or height being not the same as that specified by its Node
+// sub-object.
+//   The UiNode may have width or height that is off by a fraction of a pixel from that specified
+// by the node's width and height. Not sure why. So we check for any difference greater than a pixel.
 UiNode.prototype.isSizeDirty = function () {
-  return (this.width != this.node.width) || (this.height != this.node.height)
+  return Math.abs(this.width - this.node.width) > 1.0 || Math.abs(this.height - this.node.height) > 1.0
 }
 
 UiNode.prototype.isDirty = function () {
