@@ -151,7 +151,7 @@ Server.prototype.emptyBasket = function () {
 }
 
 Server.prototype.basketPath = function () {
-  '/nodes/basket'
+  return '/nodes/basket'
 }
 
 
