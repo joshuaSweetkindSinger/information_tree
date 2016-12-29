@@ -373,8 +373,8 @@ Controller.prototype.handleRevert = function(uiNode) {
 Establish command key shortcuts for the ui.
  */
 Controller.prototype.keyPressedOnNode = function (uiNode, event) {
-  // carriage return -- create new successor node of uiNode
-  if (event.charCode == 13 && !event.altKey && !event.shiftKey && !event.ctrlKey) {
+  // control-carriage return -- create new successor node of uiNode
+  if (event.charCode == 13 && !event.altKey && !event.shiftKey && event.ctrlKey) {
     event.preventDefault()
     this.createSuccessor(uiNode)
 
