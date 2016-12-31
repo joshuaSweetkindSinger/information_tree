@@ -35,11 +35,18 @@
 
 
 <p>
-  <b>Parent:</b>
+  <b>Parents:</b>
   <% if @obj.parent_id && !@obj.parent%>
     <span style="color:red">[missing parent with id <%= @obj.parent_id %>]</span>
-  <% elsif @obj.parent %>
-  <%= link_to(@obj.parent.snip_content, @obj.parent) %>
+  <% else %>
+    <% node = @obj.parent %>
+    <% sep = ' ' %>
+    <% while node do %>
+      <%= sep %>
+      <%= link_to(node.snip_content, node) %>
+      <% node = node.parent %>
+      <% sep = '<' %>
+    <% end %>
   <% end %>
 </p>
 
