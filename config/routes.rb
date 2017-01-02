@@ -7,6 +7,9 @@ JssNotes::Application.routes.draw do
       get :show_broken                 # /nodes/show_broken_nodes
       get :test_me
       get :import, to: :show_import_form
+      get :top                         # /nodes/top
+      get :find                        # /nodes/find -- Find all nodes whose content matches specified keywords in the query string.
+      get :find_form                   # /nodes/find_form
 
       post :import
 
@@ -15,11 +18,17 @@ JssNotes::Application.routes.draw do
 
     member do
       get    :children           # route is /nodes/:id/children
+      post   :add_child          # route is /nodes/:id/add_child
+      post   :add_successor      # route is /nodes/:id/add_successor
+      post   :add_predecessor    # route is /nodes/:id/add_predecessor
       put    :insert_child       # route is /nodes/:id/insert_child
       put    :insert_successor   # route is /nodes/:id/insert_successor
       put    :insert_predecessor # route is /nodes/:id/insert_predecessor
       put    :set_attributes     # route is /nodes/:id/set_attributes
-      put    :putInBasket        # route is /nodes/:id/cut
+      put    :put_in_basket      # route is /nodes/:id/put_in_basket
+      put    :paste_child        # route is /nodes/:id/paste_child
+      put    :paste_successor    # route is /nodes/:id/paste_successor
+      put    :paste_predecessor  # route is /nodes/:id/paste_predecessor
       put    :repair_children    # route is /nodes/:id/repair_children
       delete :destroy_empty      # route is /nodes/:id/destroy_empty
     end

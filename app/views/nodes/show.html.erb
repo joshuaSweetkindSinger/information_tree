@@ -1,17 +1,50 @@
 <% max_content_snippet_length = 50 %>
 
-<p id="notice"><%= notice %></p>
-<h1 class="show-node-heading"><%= (@obj.snip_content) %></h1>
+<%= link_to 'Index', nodes_path %> |
+<%= link_to 'Edit', edit_node_path(@obj) %> |
+<%= link_to 'Add Child', add_child_node_path(@obj), method: :post %> |
+<%= link_to 'Add Successor', add_successor_node_path(@obj), method: :post %> |
+<%= link_to 'Add Predecessor', add_predecessor_node_path(@obj), method: :post %> |
+<%= link_to 'Put In Basket', put_in_basket_node_path(@obj), method: :put %> |
+<%= link_to 'Paste Child', paste_child_node_path(@obj), method: :put %> |
+<%= link_to 'Paste Successor', paste_successor_node_path(@obj), method: :put %> |
+<%= link_to 'Paste Predecessor', paste_predecessor_node_path(@obj), method: :put %> |
+<%= link_to 'Repair Children', repair_children_node_path(@obj), method: :put %>
 
-  <p>
-    <b>Id:</b>
-    <%= @obj.id %>
-  </p>
-
-  <p class="show-node-content">
-  <b>Content:</b>
-  <%= @obj.content %>
+<p>
+  <% if @obj.parent_id && !@obj.parent%>
+    <span style="color:red">[missing parent with id <%= @obj.parent_id %>]</span>
+  <% else %>
+    <% node = @obj %>
+    <% sep = ' ' %>
+    <% while node do %>
+      <%= sep %>
+      <%= link_to(node.snip_content, node) %>
+      <% node = node.parent %>
+      <% sep = '<' %>
+    <% end %>
+  <% end %>
 </p>
+
+<p id="notice"><%= notice %></p>
+
+
+<p class="show-node-content">
+  <b><%= @obj.content %></b>
+</p>
+
+
+<p>
+  <%= render partial: 'children', locals: {obj: @obj} %>
+</p>
+
+
+
+<p>
+  <b>Id:</b>
+  <%= @obj.id %>
+</p>
+
 
 <p>
   <b>created_at:</b>
@@ -34,47 +67,9 @@
 </p>
 
 
-<p>
-  <b>Parents:</b>
-  <% if @obj.parent_id && !@obj.parent%>
-    <span style="color:red">[missing parent with id <%= @obj.parent_id %>]</span>
-  <% else %>
-    <% node = @obj.parent %>
-    <% sep = ' ' %>
-    <% while node do %>
-      <%= sep %>
-      <%= link_to(node.snip_content, node) %>
-      <% node = node.parent %>
-      <% sep = '<' %>
-    <% end %>
-  <% end %>
-</p>
-
-<p>
-  <b>Predecessor:</b>
-  <% if @obj.predecessor_id && !@obj.predecessor%>
-    <span style="color:red">[missing predecessor with id <%= @obj.predecessor_id %>]</span>
-  <% elsif @obj.predecessor %>
-    <%= link_to(@obj.predecessor.snip_content, @obj.predecessor) %>
-  <% end %>
-</p>
-
-<p>
-  <b>Successor:</b>
-  <% if @obj.successor_id && !@obj.successor%>
-    <span style="color:red">[missing successor with id <%= @obj.successor_id %>]</span>
-  <% elsif @obj.successor %>
-    <%= link_to(@obj.successor.snip_content, @obj.successor) %>
-  <% end %>
-</p>
-
-
-<p>
-<%= render partial: 'children', locals: {obj: @obj} %>
-</p>
 
 
 
-<%= link_to 'Edit', edit_node_path(@obj) %> |
-<%= link_to 'Index', nodes_path %> |
-<%= link_to 'Repair Children', repair_children_node_path(@obj), method: :put %>
+
+
+

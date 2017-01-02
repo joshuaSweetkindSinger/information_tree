@@ -5,12 +5,6 @@
 class Basket < Node
   DAYS_TO_KEEP_NODE = 30 # A node in the basket will be deleted after this many days
 
-  # Return the basket node.
-  def self.basket
-    result = where("type_id = #{BASKET_TYPE_ID}").first
-    result || _make_basket_node
-  end
-
   # Make the basket node.
   def self._make_basket_node
     result = Basket.new(content:'Basket', rank:0, width:40, height:20)

@@ -14,7 +14,7 @@ class Node < ActiveRecord::Base
   DEFAULT_HEIGHT = 100
 
 
-  attr_accessible :content, :type_id, :width, :height
+  attr_accessible :content, :type_id, :width, :height, :parent_id, :predecessor_id, :successor_id, :rank
   belongs_to :parent, class_name: 'Node'
   belongs_to :predecessor, class_name: 'Node'
   belongs_to :successor, class_name: 'Node'
@@ -44,6 +44,18 @@ class Node < ActiveRecord::Base
   def self.roots
     self.where('parent_id is null')
   end
+
+  # Return an array of nodes that have no parent
+  def self.top
+    self.where("parent_id is null and content = 'top'").first
+  end
+
+  # Return the basket node.
+  def self.basket
+    result = where("type_id = #{BASKET_TYPE_ID}").first
+    result || _make_basket_node
+  end
+
 
   # =============================================================================
   #                                   Create Sub-Tree
@@ -350,7 +362,7 @@ class Node < ActiveRecord::Base
 
   # Remove self and children from the node hierarchy, patching up predecessor/successor links.
   # This moves the node and its children to the "basket" node. It doesn't really delete them.
-  def putInBasket
+  def put_in_basket
     Basket.basket.insert_child(self)
   end
 

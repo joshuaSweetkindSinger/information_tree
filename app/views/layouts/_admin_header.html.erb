@@ -1,8 +1,16 @@
 <div id="admin-header" class="app-header">
   <a class="app-header-item"
      title="This page allows you to look at the underlying db record for each node."
-     href=<%= nodes_path %>
-   >Admin</a>
+     href='/nodes/top'
+   >Top</a>
+  <a class="app-header-item"
+     title="This page allows you to look at the underlying db record for each node."
+     href='/nodes/basket'
+  >Basket</a>
+  <a class="app-header-item"
+     title="This page allows you to look at the underlying db record for each node."
+     href='/nodes/find_form'
+  >Search Nodes</a>
   <a class="app-header-item"
      title="This page allows you to look at the broken db records: those with inconsistent linkages."
      href=<%= show_broken_nodes_path %>

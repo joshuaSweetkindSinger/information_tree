@@ -68,7 +68,6 @@ class NodesController < ApplicationController
     end
   end
 
-
   # PUT /nodes/1
   # PUT /nodes/1.json
   def update
@@ -110,9 +109,18 @@ class NodesController < ApplicationController
     end
   end
 
+  # GET /nodes/top
+  def top
+    @obj = Node.top
+    respond_to do |format|
+      format.html {render 'show'}
+      format.json {render json: @obj}
+    end
+  end
+
   # GET /nodes/basket
   def basket
-    @obj = Basket.basket
+    @obj = Node.basket
     respond_to do |format|
       format.html {render 'show'}
       format.json {render json: @obj}
@@ -156,6 +164,80 @@ class NodesController < ApplicationController
     insert_node('insert_predecessor')
   end
 
+  # POST /nodes/:id/add_child
+  def add_child
+    @obj = Node.find(params[:id])
+    new_node = Node.new(content: 'New node')
+    if new_node.save
+      @obj.insert_child(new_node)
+    end
+    render 'show'
+  end
+
+  # POST /nodes/:id/add_successor
+  def add_successor
+    @obj = Node.find(params[:id])
+    new_node = Node.new(content: 'New node')
+    if new_node.save
+      @obj.insert_successor(new_node)
+      @obj = new_node
+    end
+    render 'show'
+  end
+
+  # POST /nodes/:id/add_predecessor
+  def add_predecessor
+    @obj = Node.find(params[:id])
+    new_node = Node.new(content: 'New node')
+    if new_node.save
+      @obj.insert_predecessor(new_node)
+      @obj = new_node
+    end
+    render 'show'
+  end
+
+  # PUT /nodes/:id/paste_child
+  # Paste the top of the basket as the first child of params[:id]
+  def paste_child
+    @obj = Node.find(params[:id])
+    node = Basket.basket.first_child
+
+    if node
+      @obj.insert_child(node)
+    end
+
+    render 'show'
+  end
+
+  # PUT /nodes/:id/paste_successor
+  # Paste the top of the basket as the successor of params[:id]
+  def paste_successor
+    @obj = Node.find(params[:id])
+    node = Basket.basket.first_child
+
+    if node
+      @obj.insert_successor(node)
+      @obj = node
+    end
+
+    render 'show'
+  end
+
+
+  # PUT /nodes/:id/paste_predecessor
+  # Paste the top of the basket as the predecessor of params[:id]
+  def paste_predecessor
+    @obj = Node.find(params[:id])
+    node = Basket.basket.first_child
+
+    if node
+      @obj.insert_predecessor(node)
+      @obj = node
+    end
+
+    render 'show'
+  end
+
   # PUT /nodes/:id/set_attributes
   # Set one or more attributes of the object whose id is params[:id].
   # The attributes and their values are passed in as a sub-hash on params[:node], e.g.
@@ -189,13 +271,21 @@ class NodesController < ApplicationController
 
   # Remove self from the node hierarchy, patching up predecessor/successor links.
   # This moves the node and its children under the "Basket" node. They're not really deleted.
-  # PUT /nodes/:id/cut
-  def cut
-    @obj = Node.find(params[:id])
-    @obj.putInBasket()
+  # PUT /nodes/:id/put_in_basket
+  def put_in_basket
+    node = Node.find(params[:id])
+    @obj = node.parent # We'll show the parent node, since we're about to put current node in basket.
+
+    # Don't put a top-level node in the basket. (It might be okay to put some toplevel nodes
+    # in the basket, but if we put the "top" node in the basket, I think we're screwed.)
+    if @obj
+      node.put_in_basket()
+    else
+      @obj = node # If not put in basket, then just re-show this node.
+    end
 
     respond_to do |format|
-      format.html { redirect_to nodes_url }
+      format.html { render 'show' }
       format.json { head :no_content }
     end
   end
@@ -269,6 +359,17 @@ class NodesController < ApplicationController
       format.html { redirect_to @obj, notice: 'Node was successfully created.' }
       format.json { render json: @obj, status: :created, location: @obj }
     end
+  end
+
+  # GET /nodes/find?keywords=<keyword>+<keyword>+...
+  def find
+    match_phrase = ''
+    sep = ''
+    params[:keywords].split.each do |keyword|
+      match_phrase += sep + "content like '%#{keyword}%'"
+      sep = ' and '
+    end
+    @matches = Node.where(match_phrase)
   end
 
   # ============================================= HELPERS

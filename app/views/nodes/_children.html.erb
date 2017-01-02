@@ -1,6 +1,3 @@
-<b>Children:</b>
-<ul>
-  <% obj.children.order(:rank).each do |child| %>
-    <li class="show-node-link"><%= link_to(child.snip_content, child) if child %></li>
-  <% end %>
-</ul>
+<% obj.children.order(:rank).each do |child| %>
+  <p><%= link_to(child.content, child) %></p>
+<% end %>
