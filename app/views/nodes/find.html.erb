@@ -1,3 +1,13 @@
 <% @matches.each do |node| %>
-  <p><%= link_to(node.content, node) %></p>
+  <p>
+      <% n = node.parent %>
+      <% sep = ' ' %>
+      <% while n do %>
+        <%= sep %>
+        <%= link_to(n.snip_content, n) %>
+        <% n = n.parent %>
+        <% sep = '<' %>
+      <% end %>
+    <%= link_to(node.content, node) %></p>
+  </p>
 <% end %>

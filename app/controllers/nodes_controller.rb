@@ -369,7 +369,7 @@ class NodesController < ApplicationController
       match_phrase += sep + "content like '%#{keyword}%'"
       sep = ' and '
     end
-    @matches = Node.where(match_phrase)
+    @matches = Node.where(match_phrase).order('updated_at desc')
   end
 
   # ============================================= HELPERS
