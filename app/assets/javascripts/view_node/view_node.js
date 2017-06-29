@@ -573,7 +573,7 @@ ViewNode.prototype.setAttributes = function (nodeUpdate) {
 // TODO: height is not set correctly for large amounts of text. Fix it.
 ViewNode.prototype.calcAutoSize = function() {
   var n = this.content.length
-  var maxWidth = 1000.0
+  var maxWidth = 100.0
   var charWidth  = 6.5
   var charHeight = 20.0
   var scrollBarWidth = 10;
@@ -588,9 +588,12 @@ ViewNode.prototype.calcAutoSize = function() {
   } else {
     widthInChars  = Math.min(maxWidth, Math.sqrt(3 * n  * charHeight / charWidth))
     heightInChars = n / widthInChars;
+    console.log(maxWidth,Math.sqrt(3 * n  * charHeight / charWidth), widthInChars )
+
   }
   width  = widthInChars * charWidth + scrollBarWidth;
   height = heightInChars * charHeight + scrollBarHeight;
+  console.log(width, height)
 
   return {width:width, height:height}
 }
