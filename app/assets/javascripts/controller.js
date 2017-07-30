@@ -114,12 +114,13 @@ Controller.prototype.visitNode = function (uiNode) {
 
 // Put the selected node in the basket.
 Controller.prototype.putInBasket = function (uiNode) {
+  var self = this
   uiNode = uiNode || this.selectedNode
-  uiNode.putInBasket()
+  uiNode.goToBasket()
     .success(function() {
-      if (uiNode === this.selectedNode) {
-        this.selectedNode = null    // We just deleted the selected node, so now there is none.
-        $(this.buttonPanel).hide()  // we just deleted the selected node, so hide the button panel.
+      if (uiNode === self.selectedNode) {
+        self.selectedNode = null    // We just deleted the selected node, so now there is none.
+        $(self.buttonPanel).hide()  // we just deleted the selected node, so hide the button panel.
       }
     })
 }

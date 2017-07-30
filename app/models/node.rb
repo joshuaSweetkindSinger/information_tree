@@ -109,7 +109,7 @@ class Node < ActiveRecord::Base
   def self.trash_orphans_disabled
     self.where(parent_id: nil).each do |node|
       if !node.is_system_node?
-        node.putInBasket
+        node.put_in_basket
       end
     end
   end

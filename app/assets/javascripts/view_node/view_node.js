@@ -367,6 +367,7 @@ ViewNode.prototype._isInvalidAddRequest = function (viewNode, mode) {
 }
 
 
+
 /*
  Insert the existing node viewNode into the information tree as the first child of <this>.
  Do this first on server side, then on client side.
@@ -455,8 +456,8 @@ ViewNode.prototype.paste = function(viewNode) {
 /*
  Tell the server to put the node represented by <this> in the basket, then do the same to it on the client side as well.
   */
-ViewNode.prototype.putInBasket = function() {
- return ITA.informationTree.basket.insertChild(this);
+ViewNode.prototype.goToBasket = function() {
+ return ITA.informationTree.basket.push(this);
 }
 
 // =========================================================================

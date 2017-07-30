@@ -23,3 +23,23 @@ BasketNode.prototype.empty = function () {
       self.childrenFetched = false
     })
 }
+
+
+/*
+ Ask the server to push a node, specified by the node object nodeToInsert,
+ onto the basket. After the server
+ responds with a success code and node rep, effect the same changes on the client-side.
+
+ nodeToInsert must contain an id, and the server will use the existing node
+ with that id for the push operation and move it to the new location at the top of the basket.
+ None of the attributes of the client-side node are used by the server.
+ */
+BasketNode.prototype.push = function (nodeToInsert) {
+  return ITA.server.putInBasket(nodeToInsert.id)
+    .success(function(nodeRep) {
+      return nodeToInsert.update(nodeRep)
+    })
+    .failure(function(error) {
+      console.log("Got an error attempting to put a node in the basket on the server. node-to-insert = ", nodeToInsert, "; error = ", error);
+    })
+}
