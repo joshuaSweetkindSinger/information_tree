@@ -457,7 +457,7 @@ ViewNode.prototype.paste = function(viewNode) {
  Tell the server to put the node represented by <this> in the basket, then do the same to it on the client side as well.
   */
 ViewNode.prototype.goToBasket = function() {
- return ITA.informationTree.basket.push(this);
+ return ITA.informationTree.basket.pushNode(this);
 }
 
 // =========================================================================

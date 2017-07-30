@@ -34,7 +34,7 @@ BasketNode.prototype.empty = function () {
  with that id for the push operation and move it to the new location at the top of the basket.
  None of the attributes of the client-side node are used by the server.
  */
-BasketNode.prototype.push = function (nodeToInsert) {
+BasketNode.prototype.pushNode = function (nodeToInsert) {
   return ITA.server.putInBasket(nodeToInsert.id)
     .success(function(nodeRep) {
       return nodeToInsert.update(nodeRep)

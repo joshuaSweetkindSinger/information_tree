@@ -52,11 +52,11 @@ UiBasketNode.prototype.empty = function () {
  Push the existing node viewNode onto the basket.
  Do this first on server side, then on client side.
  */
-UiBasketNode.prototype.push = function(viewNode) {
+UiBasketNode.prototype.pushNode = function(viewNode) {
   var isInvalidRequest = this._isInvalidAddRequest(viewNode, 'insertChild');
   if (isInvalidRequest) return isInvalidRequest;
 
-  return this.node.push(viewNode.node)
+  return this.node.pushNode(viewNode.node)
     .success(function(node) {
       viewNode.attachToTree();
       return viewNode
