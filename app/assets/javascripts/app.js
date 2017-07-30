@@ -26,9 +26,11 @@ var InformationTreeApp = function() {
 
 
 
-
+// This function doesn't seem used. Commenting it out.
+/*
 InformationTreeApp.prototype.getTreeTop = function () {
   var top = parseInt(document.location.pathname.split('/').pop()) // Get last token from loaded url and convert to integer.
   return top === NaN ? nil : top
 }
+*/
 
