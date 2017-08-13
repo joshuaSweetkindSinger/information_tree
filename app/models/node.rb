@@ -392,17 +392,6 @@ class Node < ActiveRecord::Base
   end
 
 
-  # Used by the basket node to calculate the rank of its children.
-  # Each successive child pushed onto the top of the child list is given a rank
-  # that is one less than its successor.
-  def calc_pushed_child_rank
-    if successor
-      successor.rank - 1
-    else
-      0
-    end
-  end
-
   # Calculate the rank for node, which should be a relative of ourselves (child, successor, predecessor),
   # as part of the process of inserting node as a relative of ourselves.
   def calc_child_rank (child_node)

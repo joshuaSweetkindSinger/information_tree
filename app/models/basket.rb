@@ -1,11 +1,11 @@
-# The Basket is a single system node that holds "cut" nodes. A cut node
+# The Basket is a single system child_node that holds "cut" nodes. A cut child_node
 # can later be pasted back into the main tree, or the basket's contents can be deleted,
 # which means all the nodes in the basket are deleted.
 
 class Basket < Node
-  DAYS_TO_KEEP_NODE = 30 # A node in the basket will be deleted after this many days
+  DAYS_TO_KEEP_NODE = 30 # A child_node in the basket will be deleted after this many days
 
-  # Make the basket node.
+  # Make the basket child_node.
   def self._make_basket_node
     result = Basket.new(content:'Basket', rank:0, width:40, height:20)
     result.type_id = BASKET_TYPE_ID
@@ -42,18 +42,23 @@ class Basket < Node
 
 
   def add_successor
-    raise "Cannot add a successor to the basket node--only children"
+    raise "Cannot add a successor to the basket child_node--only children"
   end
 
   def add_predecessor
-    raise "Cannot add a predecessor to the basket node--only children"
+    raise "Cannot add a predecessor to the basket child_node--only children"
   end
 
 
-  # Calculate our rank.
-  # Algorithm for calculating ranks: a node's rank is one less than it's successor's.
-  # If a node has no successor, its rank is 0.
-  def calc_child_rank (node)
-    node.calc_pushed_child_rank
+  # Calculate the rank of a child_node just pushed onto the basket.
+  # A child_node's rank is one less than it's successor's.
+  # If a child_node has no successor, its rank is 0.
+  def calc_child_rank (child_node)
+    if child_node.successor
+      child_node.successor.rank - 1
+    else
+      0
+    end
   end
 end
+
