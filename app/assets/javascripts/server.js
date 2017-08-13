@@ -141,7 +141,7 @@ Server.prototype.insertPredecessorPath = function (referenceNodeId) {
 }
 
 Server.prototype.putInBasket = function (nodeId) {
-  return new Request("PUT", this.nodePath(nodeId) + '/put_in_basket')
+  return new JsonRequest("PUT", this.nodePath(nodeId) + '/put_in_basket')
     .errorMsg("Could not put " + nodeId + " in the basket.")
 }
 

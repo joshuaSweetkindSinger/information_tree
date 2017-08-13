@@ -286,7 +286,7 @@ class NodesController < ApplicationController
 
     respond_to do |format|
       format.html { render 'show' }
-      format.json { head :no_content }
+      format.json { render json: node, status: :created, location: node }
     end
   end
 

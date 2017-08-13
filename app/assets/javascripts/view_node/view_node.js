@@ -589,12 +589,10 @@ ViewNode.prototype.calcAutoSize = function() {
   } else {
     widthInChars  = Math.min(maxWidth, Math.sqrt(3 * n  * charHeight / charWidth))
     heightInChars = n / widthInChars;
-    console.log(maxWidth,Math.sqrt(3 * n  * charHeight / charWidth), widthInChars )
 
   }
   width  = widthInChars * charWidth + scrollBarWidth;
   height = heightInChars * charHeight + scrollBarHeight;
-  console.log(width, height)
 
   return {width:width, height:height}
 }
