@@ -28,7 +28,10 @@ BasketNode.prototype.empty = function () {
 /*
  Ask the server to push a node, specified by the node object nodeToInsert,
  onto the basket. After the server
- responds with a success code and node rep, effect the same changes on the client-side.
+ responds with a success code and node rep, update node with node rep on the client side.
+
+ Note that putting the node in the basket is done by the class UiBasketNode, operating on nodeToInsert's
+ containing UiNode parent.
 
  nodeToInsert must contain an id, and the server will use the existing node
  with that id for the push operation and move it to the new location at the top of the basket.

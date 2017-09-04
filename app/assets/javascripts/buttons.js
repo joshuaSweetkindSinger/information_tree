@@ -40,6 +40,9 @@ ButtonPanel.prototype.afterCreate = function() {
   this.pasteButton = new PasteNode
   $this.append(this.pasteButton)
 
+  this.pasteSuccessorButton = new PasteSuccessorNode
+  $this.append(this.pasteSuccessorButton)
+
   this.followLinkButton = new FollowLink
   $this.append(this.followLinkButton)
 
@@ -277,18 +280,33 @@ CutNode.prototype.onClick = function (event) {
 // =========================================================================
 //                   Paste Button
 // =========================================================================
-// Pressing this button pastes the node in the copy buffer into the selected node, making
+// Pressing this button pastes the node at the top of the basket into the selected node, making
 // it a child of the selected node.
 var PasteNode = defCustomTag('paste-node', ButtonPanelButton)
 
 PasteNode.prototype.afterCreate = function() {
-  ButtonPanelButton.prototype.afterCreate.call(this, 'Paste', 'ctrl-v')
+  ButtonPanelButton.prototype.afterCreate.call(this, 'Paste Child', 'ctrl-v')
 }
 
 PasteNode.prototype.onClick = function (event) {
   ITA.controller.pasteNode();
 }
 
+
+// =========================================================================
+//                   Paste Successor Button
+// =========================================================================
+// Pressing this button pastes the node at the top of the basket after the selected node, making
+// it a successor of the selected node.
+var PasteSuccessorNode = defCustomTag('paste-successor-node', ButtonPanelButton)
+
+PasteSuccessorNode.prototype.afterCreate = function() {
+  ButtonPanelButton.prototype.afterCreate.call(this, 'Paste Successor', 'ctrl-shift-v')
+}
+
+PasteSuccessorNode.prototype.onClick = function (event) {
+  ITA.controller.pasteSuccessorNode();
+}
 
 // =========================================================================
 //                   Expand / Collapse Recursive Button

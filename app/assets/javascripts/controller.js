@@ -225,14 +225,14 @@ Controller.prototype.createPredecessor = function (uiNode) {
 }
 
 
-// Cut node == copy + delete
+// Cut node == Put node in basket.
 Controller.prototype.cutNode = function (uiNode) {
   uiNode = (uiNode || this.selectedNode)
   this.putInBasket(uiNode)
 }
 
 
-// Paste the copiedNode onto node.
+// Paste the node currently at the top of the basket as a new child of uiNode
 Controller.prototype.pasteNode = function (uiNode) {
   var nodeToPaste = ITA.informationTree.basket.kids()[0]
   if (nodeToPaste) {
@@ -242,6 +242,16 @@ Controller.prototype.pasteNode = function (uiNode) {
   }
 }
 
+
+// Paste the node currently at the top of the basket as a new successor of uiNode
+Controller.prototype.pasteSuccessorNode = function (uiNode) {
+  var nodeToPaste = ITA.informationTree.basket.kids()[0]
+  if (nodeToPaste) {
+    (uiNode || this.selectedNode).pasteSuccessor(nodeToPaste)
+  } else {
+    alert("There is no node in the basket to paste.")
+  }
+}
 
 Controller.prototype.saveNode = function (uiNode) {
   uiNode = uiNode || this.selectedNode;
@@ -398,6 +408,11 @@ Controller.prototype.keyPressedOnNode = function (uiNode, event) {
   } else if (event.charCode == 'v'.charCodeAt(0) && !event.altKey && !event.shiftKey && event.ctrlKey) {
     event.preventDefault()
     this.pasteNode(uiNode)
+
+    // control-shift-v -- paste the top of the basket as a successor of uiNode.
+  } else if (event.charCode == 'v'.charCodeAt(0) && !event.altKey && event.shiftKey && event.ctrlKey) {
+    event.preventDefault()
+    this.pasteSuccessorNode(uiNode)
 
     // control-x -- cut uiNode
   } else if (event.charCode == 'x'.charCodeAt(0) && !event.altKey && !event.shiftKey && event.ctrlKey) {

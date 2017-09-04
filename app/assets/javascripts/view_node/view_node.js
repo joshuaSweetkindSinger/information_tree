@@ -447,10 +447,16 @@ ViewNode.prototype.destroyEmpty = function () {
 // ==========================
 
 
-// Paste node onto ourselves. This means adding it as a child.
+// Paste node viewNode onto ourselves. This means adding it as a child.
 ViewNode.prototype.paste = function(viewNode) {
   return this.insertChild(viewNode);
 };
+
+// Paste node viewNode onto ourselves as a successor. This means adding it as a successor.
+ViewNode.prototype.pasteSuccessor = function(viewNode) {
+  return this.insertSuccessor(viewNode);
+};
+
 
 
 /*
