@@ -466,6 +466,22 @@ ViewNode.prototype.goToBasket = function() {
  return ITA.informationTree.basket.pushNode(this);
 }
 
+/*
+Create a new node with the same content as ourselves, then put that new node into the basket.
+ */
+ViewNode.prototype.copyToBasket = function() {
+  var spec = {content:this.node.content,
+              type_id:this.node.type_id,
+              width:this.node.width,
+              height:this.node.height}
+
+  ViewNode.createNode(spec)
+    .success(function(uiNode) {
+      ITA.informationTree.basket.pushNode(uiNode);
+    })
+}
+
+
 // =========================================================================
 //        Expand / Collapse Functionality
 // =========================================================================

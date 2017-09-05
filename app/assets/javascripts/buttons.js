@@ -37,6 +37,9 @@ ButtonPanel.prototype.afterCreate = function() {
   this.cutButton = new CutNode
   $this.append(this.cutButton)
 
+  this.copyButton = new CopyNode
+  $this.append(this.copyButton)
+
   this.pasteButton = new PasteNode
   $this.append(this.pasteButton)
 
@@ -266,8 +269,8 @@ Save.prototype.onClick = function(event) {
 // =========================================================================
 //                   Cut Button
 // =========================================================================
-// Pressing this button copies the selected node to the copy buffer for later pasting.
-var CutNode = defCustomTag('copy-node', ButtonPanelButton)
+// Pressing this button cuts the selected node to the top of the basket for later pasting.
+var CutNode = defCustomTag('cut-node', ButtonPanelButton)
 
 CutNode.prototype.afterCreate = function() {
   ButtonPanelButton.prototype.afterCreate.call(this, 'Cut', 'ctrl-x')
@@ -275,6 +278,21 @@ CutNode.prototype.afterCreate = function() {
 
 CutNode.prototype.onClick = function (event) {
   ITA.controller.cutNode();
+}
+
+
+// =========================================================================
+//                   Copy Button
+// =========================================================================
+// Pressing this button copies the selected node into the top of the basket.
+var CopyNode = defCustomTag('copy-node', ButtonPanelButton)
+
+CopyNode.prototype.afterCreate = function() {
+  ButtonPanelButton.prototype.afterCreate.call(this, 'Copy', 'ctrl-c')
+}
+
+CopyNode.prototype.onClick = function (event) {
+  ITA.controller.copyToBasket();
 }
 
 // =========================================================================

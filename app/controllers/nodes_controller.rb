@@ -274,15 +274,12 @@ class NodesController < ApplicationController
   # PUT /nodes/:id/put_in_basket
   def put_in_basket
     node = Node.find(params[:id])
-    @obj = node.parent # We'll show the parent node, since we're about to put current node in basket.
 
-    # Don't put a top-level node in the basket. (It might be okay to put some toplevel nodes
-    # in the basket, but if we put the "top" node in the basket, I think we're screwed.)
-    if @obj
-      node.put_in_basket()
-    else
-      @obj = node # If not put in basket, then just re-show this node.
-    end
+    # TODO: It is probably dangerous to put the TOP node in the basket. This would probably crash the system.
+    # Add some logic to fix this. Note that newly created nodes don't have a parent. These are technically
+    # root nodes, and these need to be able to
+    # be put in the basket as part of the copy() operation. It is only THE top node that shouldn't be put in the basket.
+    node.put_in_basket()
 
     respond_to do |format|
       format.html { render 'show' }

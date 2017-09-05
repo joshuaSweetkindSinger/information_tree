@@ -23,7 +23,7 @@ class Node < ActiveRecord::Base
   def initialize (params = {})
     # Only pass white-listed parameters to super for initialization, which means we don't raise an error if params
     # contains other properties.
-    super(params.select {|k| [:content, :type_id, :width, :height].include?(k)})
+    super(params.select {|k| ['content', 'type_id', 'width', 'height'].include?(k)})
 
     # Defaults
     self.type_id ||= BULLET_TYPE_ID # By default, new nodes are bullets rather than paragraphs or other types.

@@ -125,6 +125,15 @@ Controller.prototype.putInBasket = function (uiNode) {
     })
 }
 
+
+/*
+ Copy uiNode and attach it to the tree as a child of the basket.
+*/
+Controller.prototype.copyToBasket = function (uiNode) {
+  return (uiNode || this.selectedNode).copyToBasket()
+}
+
+
 Controller.prototype.emptyBasket = function () {
   ITA.informationTree.basket.empty()
 }
@@ -189,7 +198,7 @@ Controller.prototype.insertPredecessor = function (uiReferenceNode, uiNodeToInse
 
 
 /*
- Create a new uiNode and attach it to the tree as determined by mode, one of: createChild,
+ Create a new uiNode and attach it to the tree as a child/successor/predecessor of uiNode, as determined by mode, one of: createChild,
  createSuccessor, createPredecessor.
  */
 Controller.prototype.createNode = function (uiNode, mode) {
@@ -222,13 +231,6 @@ Controller.prototype.createSuccessor = function (uiNode) {
  */
 Controller.prototype.createPredecessor = function (uiNode) {
   return this.createNode(uiNode || this.selectedNode, 'createPredecessor')
-}
-
-
-// Cut node == Put node in basket.
-Controller.prototype.cutNode = function (uiNode) {
-  uiNode = (uiNode || this.selectedNode)
-  this.putInBasket(uiNode)
 }
 
 
@@ -397,7 +399,7 @@ Controller.prototype.keyPressedOnNode = function (uiNode, event) {
     // control-c -- copy uiNode
   } else if (event.charCode == 'c'.charCodeAt(0) && !event.altKey && !event.shiftKey && event.ctrlKey) {
     event.preventDefault()
-    this.copyNode(uiNode)
+    this.copyToBasket(uiNode)
 
   // control-f -- follow link
   } else if (event.charCode == 'f'.charCodeAt(0) && !event.altKey && !event.shiftKey && event.ctrlKey) {
@@ -417,7 +419,7 @@ Controller.prototype.keyPressedOnNode = function (uiNode, event) {
     // control-x -- cut uiNode
   } else if (event.charCode == 'x'.charCodeAt(0) && !event.altKey && !event.shiftKey && event.ctrlKey) {
     event.preventDefault()
-    this.cutNode(uiNode)
+    this.putInBasket(uiNode)
 
     // control-s -- save uiNode
   }  else if (event.charCode == 's'.charCodeAt(0) && !event.altKey && !event.shiftKey && event.ctrlKey) {

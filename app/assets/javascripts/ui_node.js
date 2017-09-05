@@ -19,6 +19,8 @@ ViewNode.uiClass = UiNode; // The class to instantiate.
  object and endows the Node object with UI-related functionality. The Node object is not a dom element,
  but the UiNode object is.
 
+ The arg <state> is 'expanded' or 'collapsed', indicating the desired expanded/collapsed state for the UI node.
+
  NOTE: afterCreate() is only called via programmatic creation of new objects, as opposed to static creation.
  We put all the logic in our afterCreate() method, because we know we are not doing static creation, and we
  need to pass args, which can only be passed via afterCreate().
